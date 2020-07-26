@@ -3,6 +3,8 @@ import discord
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as', self.user)
+        game = discord.Game("Shinkansen E5")
+        await client.change_presence(status=discord.Status.online, activity=game)        
 
     async def on_message(self, message):
         # don't respond to ourselves
