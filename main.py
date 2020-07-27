@@ -7,7 +7,7 @@ class MyClient(discord.Client):
     def __init__(self, **options):
         super().__init__(**options)
         # Add a series of games Hayato is going to play.
-        self.trains = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100', 'Shinkansen H5', 'Shinkansen E6']
+        self.trains = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100', 'Shinkansen H5', 'Shinkansen E6', 'Shinkansen E7']
         self.last_updated = datetime.now()
         self.pings = ['pong', 'pang', 'pung']
 
@@ -32,6 +32,11 @@ class MyClient(discord.Client):
             user_input = message.content[9:]
             answer = self.count_vowels(user_input)
             await message.channel.send('There are ' + str(answer) + ' vowels in the input!')
+        
+        if message.content.startswith('h!dashsep'):
+            user_input = message.content[10:]
+            answer = self.dash_separator(user_input)
+            await message.channel.send(str(answer))        
 
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
@@ -41,10 +46,27 @@ class MyClient(discord.Client):
     def count_vowels(self, string):
         count = 0
         for letter in string:
-            if letter in 'aeiou':
+            if letter in 'AEIOUaeiou':
                 count += 1
         return count
-
-
+    
+    # Dash separator
+    def dash_separator(string):
+        '''(str) -> str
+        Returns a string the separates each letter of the input string with a dash.
+        
+        >>> dash_separator('hello')
+        h-e-l-l-o
+        >>> Kirito
+        K-i-r-i-t-o
+        '''
+        result = ''
+        i = 0
+        while i < len(string) - 1:
+            result = result + string[i] + '-'
+            i += 1
+        result += string[i]
+        return result
+    
 client = MyClient()
 client.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM')
