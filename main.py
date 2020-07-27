@@ -140,7 +140,7 @@ class MyClient(discord.Client):
         if error == True:
             return "Are you trying to fool me?"
         else:
-            return "I pick " + hayatochoice + " for you!"
+            return "I pick **" + hayatochoice + "** for you!"
         
 client = MyClient()
 client.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM')
