@@ -61,7 +61,12 @@ class MyClient(discord.Client):
         if message.content.startswith('h!pick'):
             user_input = message.content[7:]
             answer = self.pick(user_input)
-            await message.channel.send(answer)            
+            await message.channel.send(answer) 
+            
+        if message.content.startswith('h!fascinated'):
+            user_input = message.content[13:]
+            answer = self.fascinated(user_input)
+            await message.channel.send(answer)   
             
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
@@ -110,6 +115,7 @@ class MyClient(discord.Client):
         fahrenheit = float(celsius) * 9 / 5 + 32
         return fahrenheit  
     
+    # lbs/kg converter
     def cvt_lb_kg(self, lbs):
         kg = float(lbs) / 2.2
         return kg
@@ -118,6 +124,7 @@ class MyClient(discord.Client):
         lb = float(kg) * 2.2
         return lb
     
+    # Random pick
     def pick(self, all_choices):
         '''
         Input several choices that split with "," and Hayato will help you choose one.
@@ -141,6 +148,16 @@ class MyClient(discord.Client):
             return "Are you trying to fool me?"
         else:
             return "I pick **" + hayatochoice + "** for you!"
+    
+    # KouFascinated    
+    def fascinated(self, count):
+        result = ''
+        if count == '':
+            result = 'https://cdn.discordapp.com/emojis/705279783340212265.gif'
+        else:
+            for i in range(0, count):
+                result += '<a:KouFascinated:705279783340212265> '
+        return result
         
 client = MyClient()
 client.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM')
