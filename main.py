@@ -155,7 +155,7 @@ class MyClient(discord.Client):
         if count == '':
             result = 'https://cdn.discordapp.com/emojis/705279783340212265.gif'
         else:
-            for i in range(0, count):
+            for i in range(0, int(count)):
                 result += '<a:KouFascinated:705279783340212265> '
         return result
         
