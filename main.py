@@ -41,12 +41,12 @@ class MyClient(discord.Client):
         if message.content.startswith('h!cvt f c'):
             user_input = message.content[10:]
             answer = self.cvt_f_c(user_input)
-            await message.channel.send(str(user_input) + '¢K' + ' is equal to ' + 'answer' + '¢J.')  
+            await message.channel.send(str(user_input) + '\u2109' + ' is equal to ' + str(answer) + '\u2103.')
             
         if message.content.startswith('h!cvt c f'):
             user_input = message.content[10:]
             answer = self.cvt_c_f(user_input)
-            await message.channel.send(str(user_input) + '¢J' + ' is equal to ' + 'answer' + '¢K.')  
+            await message.channel.send(str(user_input) + '\u2103' + ' is equal to ' + str(answer) + '\u2109.')
             
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
@@ -61,7 +61,7 @@ class MyClient(discord.Client):
         return count
     
     # Dash separator
-    def dash_separator(string):
+    def dash_separator(self, string):
         '''(str) -> str
         Returns a string the separates each letter of the input string with a dash.
         
@@ -78,20 +78,20 @@ class MyClient(discord.Client):
         result += string[i]
         return result
     
-    # Convert ¢K to ¢J
-    def cvt_f_c(fahrenheit):
+    # Convert ï¿½K to ï¿½J
+    def cvt_f_c(self, fahrenheit):
         '''(float) -> float
         Return the temperature in celsius.
         '''
-        celsius = (fahrenheit - 32) * 5 / 9
+        celsius = (int(fahrenheit) - 32) * 5 / 9
         return celsius
     
-     # Convert ¢J to ¢K
-    def cvt_c_f(celsius):
+     # Convert ï¿½J to ï¿½K
+    def cvt_c_f(self, celsius):
         '''(float) -> float
         Return the temperature in Fahrenheit.
         '''
-        fahrenheit = celsius * 9 / 5 + 32
+        fahrenheit = int(celsius) * 9 / 5 + 32
         return fahrenheit    
     
 client = MyClient()
