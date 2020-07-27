@@ -24,7 +24,9 @@ class MyClient(discord.Client):
         # Don't respond to ourselves
         if message.author == self.user:
             return
-
+        if message.content == 'h!help':
+            await message.channel.send('Here is a list of commands for Hayato:\n`cvt` Convert units. Celsius/Fahrenheit and kg/lbs converter is available.\n`dashsep` Separate every letter of your input with a dash.\n`fascinated` Sends a certain number KouFascinated emote.\n`pick` Hayato will help you pick one choice randomly.\n`vowels` Count the number of vowels in the input.')
+            
         if message.content == 'h!ping':
             await message.channel.send(random.choice(self.pings))
 
