@@ -66,7 +66,12 @@ class MyClient(discord.Client):
         if message.content.startswith('h!fascinated'):
             user_input = message.content[13:]
             answer = self.fascinated(user_input)
-            await message.channel.send(answer)   
+            await message.channel.send(answer) 
+            
+        if message.content.startswith('h!verifyemail'):
+            user_input = message.content[14:]
+            answer = self.verify_email(user_input)
+            await message.channel.send(answer)  
             
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
@@ -158,6 +163,82 @@ class MyClient(discord.Client):
             for i in range(0, int(count)):
                 result += '<a:KouFascinated:705279783340212265> '
         return result
+
+    DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}
+    
+    def check_name_or_host(self, input_string):
+        '''
+        (str) -> bool
         
+        Return True if the name or host obeys the following rules:
+        - NAME, HOST cannot contain any of {(, ), @, space}
+        - NAME, HOST must be in between 1 and 100 characters
+        >>> utoronto
+        True
+        >>> marco.miu
+        True
+        >>> de@gh(fe)
+        False
+        '''
+        # Check if the name of host contains '(' or ')' or '@' or ' '
+        # If there is, we have found an error   
+        error = False
+        if '(' in input_string or ')' in input_string or '@' in input_string or ' ' in input_string:
+            error = True
+        else:
+        # Else, check the length of the name and host
+        # If the length is out the allowed range, we have found an error
+            if len(input_string) < 1 or len(input_string) > 100:
+                error = True
+                
+        return not error
+        
+    def verify_email(self, email):
+        '''
+        (str) -> bool
+        
+        Return True if and only if the email is valid according to the following rules:
+        - Must be formatted as NAME@HOST.DOMAIN
+        - NAME, HOST cannot contain any of {(, ), @, space}
+        - NAME, HOST must be in between 1 and 100 characters
+        - DOMAIN must be in the set listed
+        >>> verify_email('abc@def.com')
+        True
+        >>> verify_email('ab@c@de.f@.gh')
+        False
+        '''
+        # Start of assuming no errors
+        found_error = False
+        # First check whether we can split the name, host and domain
+        # If we cannot find @ and dot, there is an error
+        if not '@' in email or not '.' in email:
+            found_error = True
+        # else find the index of @ and .
+        else:
+            at_index = email.index('@')
+            dot_index = email.rindex('.')
+        # if index of @ > index of ., there is an error
+            if at_index > dot_index:
+                found_error = True
+        # else we can split
+            else:
+                name = email[0:at_index]
+                host = email[at_index + 1:dot_index]
+                domain = email[dot_index + 1:]
+       
+        # Check name and host
+        valid_name = self.check_name_or_host(name)
+        valid_host = self.check_name_or_host(host)
+        if valid_name == False or valid_host == False:
+            found_error = True
+        # Check domain
+        if not domain in DOMAINS:
+            found_error = True
+        
+        if found_error == True:
+            return "This email is not plausible!"
+        else:
+            return "This email is plausible!"
+    
 client = MyClient()
 client.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM')
