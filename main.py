@@ -36,8 +36,18 @@ class MyClient(discord.Client):
         if message.content.startswith('h!dashsep'):
             user_input = message.content[10:]
             answer = self.dash_separator(user_input)
-            await message.channel.send(str(answer))        
-
+            await message.channel.send(str(answer))
+            
+        if message.content.startswith('h!cvt f c'):
+            user_input = message.content[10:]
+            answer = self.cvt_f_c(user_input)
+            await message.channel.send(str(user_input) + '¢K' + ' is equal to ' + 'answer' + '¢J.')  
+            
+        if message.content.startswith('h!cvt c f'):
+            user_input = message.content[10:]
+            answer = self.cvt_c_f(user_input)
+            await message.channel.send(str(user_input) + '¢J' + ' is equal to ' + 'answer' + '¢K.')  
+            
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
             await self.switch_presence()
@@ -67,6 +77,22 @@ class MyClient(discord.Client):
             i += 1
         result += string[i]
         return result
+    
+    # Convert ¢K to ¢J
+    def cvt_f_c(fahrenheit):
+        '''(float) -> float
+        Return the temperature in celsius.
+        '''
+        celsius = (fahrenheit - 32) * 5 / 9
+        return celsius
+    
+     # Convert ¢J to ¢K
+    def cvt_c_f(celsius):
+        '''(float) -> float
+        Return the temperature in Fahrenheit.
+        '''
+        fahrenheit = celsius * 9 / 5 + 32
+        return fahrenheit    
     
 client = MyClient()
 client.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM')
