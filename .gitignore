@@ -2,4 +2,7 @@ dist/
 build/
 __pycache__/
 .idea/
+Lib/
+Scripts/
+main.spec
 pyvenv.cfg
