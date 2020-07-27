@@ -51,6 +51,7 @@ class MyClient(discord.Client):
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
             await self.switch_presence()
+            self.last_updated = datetime.now()
 
     # Count vowels
     def count_vowels(self, string):
