@@ -232,7 +232,7 @@ class MyClient(discord.Client):
         if valid_name == False or valid_host == False:
             found_error = True
         # Check domain
-        if not domain in DOMAINS:
+        if not domain in self.DOMAINS:
             found_error = True
         
         if found_error == True:
