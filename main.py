@@ -56,7 +56,12 @@ class MyClient(discord.Client):
         if message.content.startswith('h!cvt kg lbs'):
             user_input = message.content[13:]
             answer = self.cvt_kg_lb(user_input)
-            await message.channel.send(str(user_input) + 'kg' + ' is equal to ' + str(answer) + 'lbs!')    
+            await message.channel.send(str(user_input) + 'kg' + ' is equal to ' + str(answer) + 'lbs!')
+            
+        if message.content.startswith('h!pick'):
+            user_input = message.content[7:]
+            answer = self.pick(user_input)
+            await message.channel.send(answer)            
             
         # Switch presence every hour
         if (datetime.now() - self.last_updated).seconds > 3600:
@@ -113,5 +118,29 @@ class MyClient(discord.Client):
         lb = float(kg) * 2.2
         return lb
     
+    def pick(self, all_choices):
+        '''
+        Input several choices that split with "," and Hayato will help you choose one.
+        '''
+        error = False
+        # Separate the choices into a list
+        all_choices = all_choices.split(",")
+        # For each choice remove the spaces
+        for index in range(0, len(all_choices)):
+            choice = all_choices[index].strip(" ")
+            # If someone tries to fool Hayato, it is impossible
+            if choice == "":
+                error = True
+                break        
+            # Replace the choice with the no-blank-space one
+            all_choices[index] = choice
+        # Pick a random choice from the list
+        hayatochoice = random.choice(all_choices)
+        # return the choice
+        if error == True:
+            return "Are you trying to fool me?"
+        else:
+            return "I pick " + hayatochoice + " for you!"
+        
 client = MyClient()
 client.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM')
