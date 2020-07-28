@@ -49,27 +49,12 @@ class MyClient(discord.Client):
             user_input = message.content[10:]
             answer = self.dash_separator(user_input)
             await message.channel.send(str(answer))
-            
-        if message.content.startswith('h!cvt f c'):
-            user_input = message.content[10:]
-            answer = self.cvt_f_c(user_input)
-            await message.channel.send(str(user_input) + '\u2109' + ' is equal to ' + str(answer) + '\u2103!')
-            
-        if message.content.startswith('h!cvt c f'):
-            user_input = message.content[10:]
-            answer = self.cvt_c_f(user_input)
-            await message.channel.send(str(user_input) + '\u2103' + ' is equal to ' + str(answer) + '\u2109!')
-        
-        if message.content.startswith('h!cvt lbs kg'):
-            user_input = message.content[13:]
-            answer = self.cvt_lb_kg(user_input)
-            await message.channel.send(str(user_input) + 'lbs' + ' is equal to ' + str(answer) + 'kg!') 
-        
-        if message.content.startswith('h!cvt kg lbs'):
-            user_input = message.content[13:]
-            answer = self.cvt_kg_lb(user_input)
-            await message.channel.send(str(user_input) + 'kg' + ' is equal to ' + str(answer) + 'lbs!')
-            
+
+        if message.content.startswith('h!cvt'):
+            user_input = message.content[6:]
+            answer = self.cvt(user_input)
+            await message.channel.send(str(answer[0]) + answer[2] + ' is equal to ' + str(answer[1]) + answer[3] + '!')
+
         if message.content.startswith('h!pick'):
             user_input = message.content[7:]
             answer = self.pick(user_input)
@@ -117,30 +102,44 @@ class MyClient(discord.Client):
         return result
     
     # Convert fahrenheit to celsius
-    def cvt_f_c(self, fahrenheit: str) -> float:
-        '''(float) -> float
-        Return the temperature in celsius.
-        '''
-        celsius = (float(fahrenheit) - 32) * 5 / 9
-        return celsius
-    
-    # Convert celsius to fahrenheit
-    def cvt_c_f(self, celsius: str) -> float:
-        '''(float) -> float
-        Return the temperature in Fahrenheit.
-        '''
-        fahrenheit = float(celsius) * 9 / 5 + 32
-        return fahrenheit  
-    
-    # lbs/kg converter
-    def cvt_lb_kg(self, lbs: str) -> float:
-        kg = float(lbs) / 2.2
-        return kg
-    
-    def cvt_kg_lb(self, kg: str) -> float:
-        lb = float(kg) * 2.2
-        return lb
-    
+    def cvt(self, user_input):
+        source = ''
+        target = ''
+        unit_source = ''
+        unit_target = ''
+        if 'f c' in user_input:
+            source = float(user_input[4:])
+            target = (source - 32) * 5 / 9
+            unit_source = '\u2109'
+            unit_target = '\u2103'
+        if 'c f' in user_input:
+            source = float(user_input[4:])
+            target = source * 9 / 5 + 32
+            unit_source = '\u2103'
+            unit_target = '\u2109'
+        if 'lbs kg' in user_input:
+            source = float(user_input[7:])
+            target = source / 2.2
+            unit_source = 'lbs'
+            unit_target = 'kg'
+        if 'kg lbs' in user_input:
+            source = float(user_input[7:])
+            target = source * 2.2
+            unit_source = 'kg'
+            unit_target = 'lbs'
+        if 'inch cm' in user_input:
+            source = float(user_input[8:])
+            target = source * 2.54
+            unit_source = 'inch'
+            unit_target = 'cm'
+        if 'cm inch' in user_input:
+            source = float(user_input[8:])
+            target = source / 2.54
+            unit_source = 'cm'
+            unit_target = 'inch'
+        return source, target, unit_source, unit_target
+
+
     # Random pick
     def pick(self, all_choices: str) -> str:
         '''
