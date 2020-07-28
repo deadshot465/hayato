@@ -28,7 +28,7 @@ class MyClient(discord.Client):
         if message.content == 'h!about':
             avatar_url = str(self.user.avatar_url)
             embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
-                                  description='Hayato the best boi is inspired by the anime Shinkalion. It is meant for practing making a Discord bot in Discord.py, but new features will be added from time to time.\n\nHayato version 1.0 was made and developed by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
+                                  description='Hayato the best boi is inspired by the anime Shinkalion. It is meant for practising making a Discord bot in Discord.py, but new features will be added from time to time.\n\nHayato version 1.0 was made and developed by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
                 text='Hayato Bot: Release 1.0 | 2020-07-28').set_author(name='Hayasugi Hayato from Shinkalion',
                                                                         icon_url=avatar_url).set_thumbnail(
                 url='https://pbs.twimg.com/profile_images/1245939758695510016/UOG9MGdU_400x400.png')
