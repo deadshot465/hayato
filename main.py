@@ -28,7 +28,7 @@ class MyClient(discord.Client):
         if message.content == 'h!about':
             avatar_url = str(self.user.avatar_url)
             embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
-                                  description='Hayato is inspired by the anime Shinkalion. It is meant for practing making a Discord bot in Discord.py, but new features will be added from time to time.\n\nHayato version 1.0 was made and developed by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
+                                  description='Hayato the best boi is inspired by the anime Shinkalion. It is meant for practing making a Discord bot in Discord.py, but new features will be added from time to time.\n\nHayato version 1.0 was made and developed by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
                 text='Hayato Bot: Release 1.0 | 2020-07-28').set_author(name='Hayasugi Hayato from Shinkalion',
                                                                         icon_url=avatar_url).set_thumbnail(
                 url='https://pbs.twimg.com/profile_images/1245939758695510016/UOG9MGdU_400x400.png')
@@ -91,7 +91,7 @@ class MyClient(discord.Client):
             self.last_updated = datetime.now()
 
     # Count vowels
-    def count_vowels(self, string):
+    def count_vowels(self, string: str) -> int:
         count = 0
         for letter in string:
             if letter in 'AEIOUaeiou':
@@ -99,7 +99,7 @@ class MyClient(discord.Client):
         return count
     
     # Dash separator
-    def dash_separator(self, string):
+    def dash_separator(self, string: str) -> str:
         '''(str) -> str
         Returns a string the separates each letter of the input string with a dash.
         
@@ -117,7 +117,7 @@ class MyClient(discord.Client):
         return result
     
     # Convert fahrenheit to celsius
-    def cvt_f_c(self, fahrenheit):
+    def cvt_f_c(self, fahrenheit: str) -> float:
         '''(float) -> float
         Return the temperature in celsius.
         '''
@@ -125,7 +125,7 @@ class MyClient(discord.Client):
         return celsius
     
     # Convert celsius to fahrenheit
-    def cvt_c_f(self, celsius):
+    def cvt_c_f(self, celsius: str) -> float:
         '''(float) -> float
         Return the temperature in Fahrenheit.
         '''
@@ -133,16 +133,16 @@ class MyClient(discord.Client):
         return fahrenheit  
     
     # lbs/kg converter
-    def cvt_lb_kg(self, lbs):
+    def cvt_lb_kg(self, lbs: str) -> float:
         kg = float(lbs) / 2.2
         return kg
     
-    def cvt_kg_lb(self, kg):
+    def cvt_kg_lb(self, kg: str) -> float:
         lb = float(kg) * 2.2
         return lb
     
     # Random pick
-    def pick(self, all_choices):
+    def pick(self, all_choices: str) -> str:
         '''
         Input several choices that split with "," and Hayato will help you choose one.
         '''
@@ -205,10 +205,8 @@ class MyClient(discord.Client):
                 
         return not error
         
-    def verify_email(self, email):
+    def verify_email(self, email: str) -> str:
         '''
-        (str) -> bool
-        
         Return True if and only if the email is valid according to the following rules:
         - Must be formatted as NAME@HOST.DOMAIN
         - NAME, HOST cannot contain any of {(, ), @, space}
