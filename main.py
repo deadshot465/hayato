@@ -101,7 +101,7 @@ class MyClient(discord.Client):
         result += string[i]
         return result
     
-    # Convert fahrenheit to celsius
+    # Converter
     def cvt(self, user_input):
         source = ''
         target = ''
@@ -109,12 +109,12 @@ class MyClient(discord.Client):
         unit_target = ''
         if 'f c' in user_input:
             source = float(user_input[4:])
-            target = (source - 32) * 5 / 9
+            target = round((source - 32) * 5 / 9, 2)
             unit_source = '\u2109'
             unit_target = '\u2103'
         if 'c f' in user_input:
             source = float(user_input[4:])
-            target = source * 9 / 5 + 32
+            target = round(source * 9 / 5 + 32, 2)
             unit_source = '\u2103'
             unit_target = '\u2109'
         if 'lbs kg' in user_input:
