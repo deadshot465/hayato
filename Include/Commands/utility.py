@@ -164,7 +164,7 @@ def verifyemail(email: str) -> str:
         return 'This email is plausible!'
 
 
-class UtilityCog(commands.Cog):
+class Utility(commands.Cog):
 
 
     @commands.command()
@@ -196,4 +196,4 @@ class UtilityCog(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(UtilityCog(bot))
+    bot.add_cog(Utility(bot))

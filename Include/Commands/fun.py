@@ -2,7 +2,7 @@ import typing
 from discord.ext import commands
 
 
-class FunCog(commands.Cog):
+class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
@@ -28,4 +28,4 @@ class FunCog(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(FunCog(bot))
+    bot.add_cog(Fun(bot))

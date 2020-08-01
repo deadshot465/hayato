@@ -12,7 +12,7 @@ def parse_hex_color(hex: str) -> typing.Tuple[int, int, int]:
     return int(r, 16), int(g, 16), int(b, 16)
 
 
-class ShinkansenCog(commands.Cog):
+class JapanRailway(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
@@ -48,4 +48,4 @@ class ShinkansenCog(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(ShinkansenCog(bot))
+    bot.add_cog(JapanRailway(bot))

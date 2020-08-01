@@ -3,7 +3,7 @@ import random
 from discord.ext import commands
 
 
-class InfoCog(commands.Cog):
+class Info(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
@@ -37,4 +37,4 @@ class InfoCog(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(InfoCog(bot))
+    bot.add_cog(Info(bot))
