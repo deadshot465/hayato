@@ -2,6 +2,9 @@ from discord.ext import commands
 from typing import Tuple
 import random
 
+# Available domains.
+DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}
+
 
 # Count vowels
 def count_vowels(string: str) -> int:
@@ -90,6 +93,77 @@ def pick(all_choices: str) -> str:
         return "I pick **" + hayato_choice + "** for you!"
 
 
+def check_name_or_host(input_string: str) -> bool:
+    '''
+    (str) -> bool
+
+    Return True if the name or host obeys the following rules:
+    - NAME, HOST cannot contain any of {(, ), @, space}
+    - NAME, HOST must be in between 1 and 100 characters
+    '''
+    # Check if the name of host contains '(' or ')' or '@' or ' '
+    # If there is, we have found an error
+    error = False
+    if '(' in input_string or ')' in input_string or '@' in input_string or ' ' in input_string:
+        error = True
+    else:
+        # Else, check the length of the name and host
+        # If the length is out the allowed range, we have found an error
+        if len(input_string) < 1 or len(input_string) > 100:
+            error = True
+    return not error
+
+
+def verifyemail(email: str) -> str:
+    '''
+    (str) -> bool
+
+    Return True if and only if the email is valid according to the following rules:
+    - Must be formatted as NAME@HOST.DOMAIN
+    - NAME, HOST cannot contain any of {(, ), @, space}
+    - NAME, HOST must be in between 1 and 100 characters
+    - DOMAIN must be in the set listed
+    >>> verify_email('abc@def.com')
+    True
+    >>> verify_email('ab@c@de.f@.gh')
+    False
+    '''
+    # Start of assuming no errors
+    found_error = False
+    # First check whether we can split the name, host and domain
+    # If we cannot find @ and dot, there is an error
+    name: str = ''
+    host: str = ''
+    domain: str = ''
+    if not '@' in email or not '.' in email:
+        found_error = True
+    # else find the index of @ and .
+    else:
+        at_index = email.index('@')
+        dot_index = email.rindex('.')
+        # if index of @ > index of ., there is an error
+        if at_index > dot_index:
+            found_error = True
+        # else we can split
+        else:
+            name = email[0:at_index]
+            host = email[at_index + 1:dot_index]
+            domain = email[dot_index + 1:]
+    # Check name and host
+    valid_name = check_name_or_host(name)
+    valid_host = check_name_or_host(host)
+    if valid_name == False or valid_host == False:
+        found_error = True
+    # Check domain
+    if not domain in DOMAINS:
+        found_error = True
+
+    if found_error:
+        return 'This email is not plausible!'
+    else:
+        return 'This email is plausible!'
+
+
 class UtilityCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
@@ -102,6 +176,8 @@ class UtilityCog(commands.Cog):
 
     @commands.command()
     async def dashsep(self, ctx: commands.Context, *, args: str):
+        # async def dashsep(self, ctx: commands.Context, args: str):
+        # h!dashsep Hello, World, Marco is cute. -> Hello,
         answer = dash_separator(args)
         await ctx.send(answer)
 
@@ -113,6 +189,11 @@ class UtilityCog(commands.Cog):
     @commands.command()
     async def pick(self, ctx: commands.Context, *, args: str):
         answer = pick(args)
+        await ctx.send(answer)
+
+    @commands.command()
+    async def verifyemail(self, ctx: commands.Context, *, args: str):
+        answer = verifyemail(args)
         await ctx.send(answer)
 
 

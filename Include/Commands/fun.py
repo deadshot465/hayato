@@ -17,6 +17,15 @@ class FunCog(commands.Cog):
                 result += '<a:KouFascinated:705279783340212265> '
         await ctx.send(result)
 
+    @commands.command()
+    async def bakanii(self, ctx: commands.Context, count: typing.Optional[int] = 0):
+        #h!bakanii 5 or h!bakanii <- X
+        return
+
+    @commands.command()
+    async def owoify(self, ctx: commands.Context, level: str, *, args: str):
+        return
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(FunCog(bot))
