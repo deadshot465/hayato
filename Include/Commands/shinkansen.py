@@ -41,7 +41,7 @@ class ShinkansenCog(commands.Cog):
         embed.add_field(name='Train Length (m)', value=train['length (m)'], inline=True)
         embed.add_field(name='Track Gauge (mm)', value=train['gauge (mm)'], inline=True)
         embed.add_field(name='Lines Served', value=train['lines_served'], inline=False)
-        embed.set_footer(text='Why not try to ride ' + train['name'] + '?')
+        embed.set_footer(text='Why not try to ride Shinkansen ' + train['name'] + ' Series?')
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
 
