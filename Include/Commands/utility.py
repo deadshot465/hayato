@@ -165,9 +165,7 @@ def verifyemail(email: str) -> str:
 
 
 class UtilityCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        super().__init__()
-        self.bot = bot
+
 
     @commands.command()
     async def vowels(self, ctx: commands.Context, *, args: str):
