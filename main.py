@@ -27,9 +27,6 @@ async def set_presence():
     await bot.change_presence(status=discord.Status.online, activity=game)
 
 
-
-
-
 @bot.event
 async def on_message(message: discord.Message):
     if message.author == bot.user:
@@ -48,9 +45,6 @@ async def on_ready():
     await set_presence()
 
 
-
-
-
 if __name__ == '__main__':
     for extension in EXTENSIONS:
         bot.load_extension(extension)
@@ -58,3 +52,6 @@ if __name__ == '__main__':
 
 bot.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM', bot=True, reconnect=True)
 
+
+def test_bot():
+    return
