@@ -11,7 +11,7 @@
     "length (km)": 14.3,
     "gauge (mm)": 1435,
     "train_formation": "6 cars",
-    "opened": "December 30, 1927",
+    "opened": "30 December, 1927",
     "daily_ridership": 943606
   },
   {
@@ -26,7 +26,7 @@
     "length (km)": 27.4,
     "gauge (mm)": 1435,
     "train_formation": "6 cars",
-    "opened": "January 20, 1954",
+    "opened": "20 January, 1954",
     "daily_ridership": 1159898
   },
   {
@@ -41,7 +41,7 @@
     "length (km)": 20.3,
     "gauge (mm)": 1067,
     "train_formation": "7 cars",
-    "opened": "March 28, 1961",
+    "opened": "28 March, 1961",
     "daily_ridership": 1213492
   },
   {
@@ -56,7 +56,7 @@
     "length (km)": 30.8,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "December 23, 1964",
+    "opened": "23 December, 1964",
     "daily_ridership": 1642378
   },
   {
@@ -71,7 +71,7 @@
     "length (km)": 24.0,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "December 20, 1969",
+    "opened": "20 December, 1969",
     "daily_ridership": 1447730
   },
   {
@@ -86,7 +86,7 @@
     "length (km)": 28.3,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "October 30, 1974",
+    "opened": "30 October, 1974",
     "daily_ridership": 1124478
   },
   {
@@ -101,7 +101,7 @@
     "length (km)": 16.8,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "August 1, 1978",
+    "opened": "1 August, 1978",
     "daily_ridership": 1006682
   },
   {
@@ -116,7 +116,7 @@
     "length (km)": 21.3,
     "gauge (mm)": 1067,
     "train_formation": "6 cars",
-    "opened": "November 29, 1991",
+    "opened": "29 November, 1991",
     "daily_ridership": 522736
   },
   {
@@ -131,7 +131,7 @@
     "length (km)": 20.2,
     "gauge (mm)": 1067,
     "train_formation": "8 or 10 cars",
-    "opened": "December 7, 1994",
+    "opened": "7 December, 1994",
     "daily_ridership": 362654
   }
 ]

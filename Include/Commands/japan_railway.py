@@ -22,6 +22,9 @@ class JapanRailway(commands.Cog):
         with open('Storage/tokyo_metro.json', 'r', encoding='utf-8') as file_2:
             raw_metrolines = file_2.read()
             self.metrolines = json.loads(raw_metrolines)
+        with open('Storage/toei_subway.json', 'r', encoding='utf-8') as file_3:
+            raw_toeilines = file_3.read()
+            self.toeilines = json.loads(raw_toeilines)
 
     @commands.command(description='Randomly get or query information on a vehicle.', help='This command will randomly show information on a vehicle, or specific vehicle when it\'s specified.', aliases=['shinkansen', 'ressha'])
     async def train(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
@@ -82,6 +85,37 @@ class JapanRailway(commands.Cog):
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
 
-
+    @commands.command(description='Randomly get or query information on a Toei Subway line.', help='This command will randomly show information on a Toei Subway line, or specific line when it\'s specified.', aliases=['toeisubway'])
+    async def toei(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
+        author: discord.User = ctx.author
+        if specific == '':
+            line = random.choice(self.toeilines)
+        elif specific == 'info':
+            embed = discord.Embed(color=discord.Color.from_rgb(31, 143, 47),
+                                  title='Toei Subway', description='The Toei Subway is one of two rapid transit systems which make up the Tokyo subway system, the other being Tokyo Metro. It is operated by the Tokyo Metropolitan Government which operates public transport services in Tokyo. In 2014, the Toei Subway had an average daily ridership of 6.84 million passengers, with 4 lines and 106 stations.\n \nTokyo Metro and Toei trains form completely separate networks. While users of prepaid rail passes can freely interchange between the two networks, regular ticket holders must purchase a second ticket, or a special transfer ticket, to change from a Toei line to a Tokyo Metro line and vice versa.')
+            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/739495626638753792/Toei.png')
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride the Toei Subway!')
+            await ctx.send(embed=embed)
+            return
+        else:
+            specific = specific[0].upper()
+            for item in self.toeilines:
+                if specific == item['abbrev']:
+                    line = item
+        colour = parse_hex_colour(line['colour'])
+        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
+                              title='Toei ' + line['name'] + ' Line', description=line['overview'], )
+        embed.set_image(url=line['image'])
+        embed.add_field(name='Route', value=line['route'], inline=False)
+        embed.add_field(name='Stations', value=line['stations'], inline=True)
+        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
+        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
+        embed.add_field(name='Opened', value=line['opened'], inline=True)
+        embed.add_field(name='Daily ridership', value=line['daily_ridership'], inline=True)
+        embed.set_thumbnail(url=line['logo'])
+        embed.set_footer(text='Ride the Toei Subway!')
+        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        await ctx.send(embed=embed)
 def setup(bot: commands.Bot):
     bot.add_cog(JapanRailway(bot))
