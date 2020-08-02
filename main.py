@@ -53,3 +53,6 @@ if __name__ == '__main__':
 
 bot.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM', bot=True, reconnect=True)
 
+
+def test_bot():
+    return
