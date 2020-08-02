@@ -16,8 +16,13 @@ EXTENSIONS = ['Include.Commands.fun',
               'Include.Commands.japan_railway',
               'Include.Commands.utility']
 
-# Initialize our bot and set the prefix to 'h!', also set up the description.
-bot = commands.Bot(command_prefix='h!', description=DESCRIPTION, help_command=help.Help())
+# Initialize our bot and set the prefix to 'h!', also set up the description and help command.
+HELP = {
+    'description': 'List and show helps for available commands.',
+    'help': 'List available commands. Specifying a category will show available commands under that specific category. Specifying a command will show detailed usage and description of that command.',
+    'aliases': ['manual']
+}
+bot = commands.Bot(command_prefix='h!', description=DESCRIPTION, help_command=help.Help(command_attrs=HELP))
 # Record the initial update time for switching presences every hour.
 last_updated = datetime.now()
 

@@ -23,7 +23,7 @@ class JapanRailway(commands.Cog):
             raw_metrolines = file_2.read()
             self.metrolines = json.loads(raw_metrolines)
 
-    @commands.command()
+    @commands.command(description='Randomly get or query information on a vehicle.', help='This command will randomly show information on a vehicle, or specific vehicle when it\'s specified.', aliases=['shinkansen', 'ressha'])
     async def train(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
         author: discord.User = ctx.author
         if specific == '':
@@ -48,7 +48,7 @@ class JapanRailway(commands.Cog):
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(description='Randomly get or query information on a Tokyo Metro line.', help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.', aliases=['tokyometro'])
     async def metro(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
         author: discord.User = ctx.author
         if specific == '':

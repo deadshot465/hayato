@@ -9,12 +9,12 @@ class Info(commands.Cog):
         self.bot = bot
         self.pings = ['pong', 'pang', 'peng', 'pung']
 
-    @commands.command()
+    @commands.command(description='See the information about Hayato.', help='The information about Hayato, e.g. authors, version number, etc.', aliases=['credits'])
     async def about(self, ctx: commands.Context):
         avatar_url = str(self.bot.user.avatar_url)
         embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
                               description='Hayato the best boi is inspired by the anime Shinkalion. It is meant for '
-                                          'practising making a Discord bot in Discord.py, but new features will be '
+                                          'practising making a Discord bot in [Python](https://www.python.org/) with the awesome [discord.py](https://github.com/Rapptz/discord.py), but new features will be '
                                           'added from time to time.\n\nHayato version 2.0 was made and developed '
                                           'by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed '
                                           'under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
@@ -23,15 +23,7 @@ class Info(commands.Cog):
             url='https://pbs.twimg.com/profile_images/1245939758695510016/UOG9MGdU_400x400.png')
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def list(self, ctx: commands.Context):
-        await ctx.send('Here is a list of commands for Hayato:\n`cvt` Convert units. Celsius/Fahrenheit and kg/lbs '
-                       'converter is available.\n`dashsep` Separate every letter of your input with a '
-                       'dash.\n`fascinated` Sends a certain number KouFascinated emote.\n`pick` Hayato will help you '
-                       'pick one choice randomly.\n`verifyemail` Check if the email is plausible.\n`vowels` Count the '
-                       'number of vowels in the input.')
-
-    @commands.command()
+    @commands.command(description='Play a ping-pong message with Hayato and check if Hayato is fine.', help='Send a simple ping command to Hayato and get response.', aliases=['pong'])
     async def ping(self, ctx: commands.Context):
         await ctx.send(random.choice(self.pings))
 
