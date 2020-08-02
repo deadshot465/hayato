@@ -165,31 +165,33 @@ def verifyemail(email: str) -> str:
 
 
 class Utility(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        super().__init__()
+        self.bot = bot
 
-
-    @commands.command()
+    @commands.command(description='Count the number of vowels in the input.', help='Count the total number of vowels in a word or a sentence.', aliases=['vowel'])
     async def vowels(self, ctx: commands.Context, *, args: str):
         answer = count_vowels(args)
         await ctx.send('There are {} vowels in the input!'.format(answer))
 
-    @commands.command()
+    @commands.command(description='Separate every letter of your input with a dash.', help='Type in a word or sentence, and let Hayato separate each letter with a dash.', aliases=['separate'])
     async def dashsep(self, ctx: commands.Context, *, args: str):
         # async def dashsep(self, ctx: commands.Context, args: str):
         # h!dashsep Hello, World, Marco is cute. -> Hello,
         answer = dash_separator(args)
         await ctx.send(answer)
 
-    @commands.command()
+    @commands.command(description='Convert units. Celsius/Fahrenheit, kg/lbs, inch/cm converter are available.', help='Convert values between Celsius and Fahrenheit, between kilograms and pounds, or between inches and centimeters', aliases=['convert'])
     async def cvt(self, ctx: commands.Context, unit1: str, unit2: str, value: float):
         answer = cvt(unit1, unit2, value)
         await ctx.send('{}{} is equal to {}{}!'.format(answer[0], answer[2], answer[1], answer[3]))
 
-    @commands.command()
+    @commands.command(description='Hayato will help you pick one choice randomly.', help='Send multiple options to Hayato and let Hayato pick one from those options for you.', aliases=['choose'])
     async def pick(self, ctx: commands.Context, *, args: str):
         answer = pick(args)
         await ctx.send(answer)
 
-    @commands.command()
+    @commands.command(description='Check if the email is plausible.', help='Check if the email address inputted is a plausibly valid email address or not.', aliases=['email'])
     async def verifyemail(self, ctx: commands.Context, *, args: str):
         answer = verifyemail(args)
         await ctx.send(answer)
