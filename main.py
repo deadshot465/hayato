@@ -1,4 +1,5 @@
 import discord
+import help
 import random
 from datetime import datetime
 from discord.ext import commands
@@ -16,7 +17,7 @@ EXTENSIONS = ['Include.Commands.fun',
               'Include.Commands.utility']
 
 # Initialize our bot and set the prefix to 'h!', also set up the description.
-bot = commands.Bot(command_prefix='h!', description=DESCRIPTION)
+bot = commands.Bot(command_prefix='h!', description=DESCRIPTION, help_command=help.Help())
 # Record the initial update time for switching presences every hour.
 last_updated = datetime.now()
 
@@ -25,9 +26,6 @@ last_updated = datetime.now()
 async def set_presence():
     game = discord.Game(random.choice(TRAINS))
     await bot.change_presence(status=discord.Status.online, activity=game)
-
-
-
 
 
 @bot.event
@@ -46,9 +44,6 @@ async def on_message(message: discord.Message):
 async def on_ready():
     print('Logged on as', bot.user)
     await set_presence()
-
-
-
 
 
 if __name__ == '__main__':
