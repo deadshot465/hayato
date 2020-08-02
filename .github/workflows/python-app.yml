@@ -5,9 +5,9 @@ name: Python application
 
 on:
   push:
-    branches: [ master, feature/help_rewrite ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, feature/help_rewrite ]
+    branches: [ master ]
 
 jobs:
   build:
