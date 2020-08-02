@@ -55,7 +55,7 @@ class JapanRailway(commands.Cog):
             line = random.choice(self.metrolines)
         elif specific == 'info':
             embed = discord.Embed(color=discord.Color.from_rgb(20, 157, 211),
-                                  title='Tokyo Metro', description='The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it is not the only rapid transit system operating in Tokyo, it has the higher ridership among the two subway operators: in 2014, the Tokyo Metro had an average daily ridership of 6.84 million passengers, while the other system, the Toei Subway, had 2.85 million average daily rides.\n \n Tokyo Metro is operated by Tokyo Metro Co., Ltd., a private company jointly owned by the Japanese government (through the Ministry of Finance) and the Tokyo metropolitan government.')
+                                  title='Tokyo Metro', description='The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it is not the only rapid transit system operating in Tokyo, it has the higher ridership among the two subway operators: in 2014, the Tokyo Metro had an average daily ridership of 6.84 million passengers, with 9 lines and 180 stations.\n \n Tokyo Metro is operated by Tokyo Metro Co., Ltd., a private company jointly owned by the Japanese government (through the Ministry of Finance) and the Tokyo metropolitan government.')
             embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034/Tokyo_Metro.png')
             embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
             embed.set_footer(text='Ride the Tokyo Metro!')
