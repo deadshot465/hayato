@@ -14,6 +14,7 @@ TRAINS = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100
 EXTENSIONS = ['Include.Commands.fun',
               'Include.Commands.info',
               'Include.Commands.japan_railway',
+              'Include.Commands.hk',
               'Include.Commands.utility']
 
 # Initialize our bot and set the prefix to 'h!', also set up the description and help command.
