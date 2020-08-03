@@ -31,6 +31,21 @@ class JapanRailway(commands.Cog):
         author: discord.User = ctx.author
         if specific == '':
             train = random.choice(self.trains)
+        elif specific == 'list':
+            train_list = []
+            for item in self.trains:
+                train_list.append('Shinkansen ' + item['name'] + ' Series')
+                train_list.sort()
+            train_list_str = ''
+            for item in train_list:
+                train_list_str = train_list_str + item + '\n'
+            embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
+                                  title='Shinkansen Trains',
+                                  description='Here is a list of trains in Shinkansen:\n \n' + train_list_str)
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride the Shinkansen!')
+            await ctx.send(embed=embed)
+            return
         else:
             specific = specific.upper()
             count = 0
