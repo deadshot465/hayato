@@ -18,13 +18,13 @@ class JapanRailway(commands.Cog):
         self.bot = bot
         with open('Storage/trains.json', 'r', encoding='utf-8') as file:
             raw_trains = file.read()
-            self.trains = json.loads(raw_trains)
+            self.trains: typing.List[object] = json.loads(raw_trains)
         with open('Storage/tokyo_metro.json', 'r', encoding='utf-8') as file_2:
             raw_metrolines = file_2.read()
-            self.metrolines = json.loads(raw_metrolines)
+            self.metrolines: typing.List[object] = json.loads(raw_metrolines)
         with open('Storage/toei_subway.json', 'r', encoding='utf-8') as file_3:
             raw_toeilines = file_3.read()
-            self.toeilines = json.loads(raw_toeilines)
+            self.toeilines: typing.List[object] = json.loads(raw_toeilines)
 
     @commands.command(description='Randomly get or query information on a vehicle.', help='This command will randomly show information on a vehicle, or specific vehicle when it\'s specified.', aliases=['shinkansen', 'ressha'])
     async def train(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
@@ -33,9 +33,15 @@ class JapanRailway(commands.Cog):
             train = random.choice(self.trains)
         else:
             specific = specific.upper()
+            count = 0
+            found = False
             for item in self.trains:
-                if specific in item['name']:
+                if specific == item['name']:
                     train = item
+                    found = True
+                count += 1
+                if count == len(self.trains) and found == False:
+                    await ctx.send("There is no such train information at the moment!")
         colour = parse_hex_colour(train['colour'])
         embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),title='Shinkansen ' + train['name'] + ' Series', description=train['overview'],)
         embed.set_image(url=train['link'])
@@ -64,11 +70,35 @@ class JapanRailway(commands.Cog):
             embed.set_footer(text='Ride the Tokyo Metro!')
             await ctx.send(embed=embed)
             return
-        else:
-            specific = specific[0].upper()
+        elif specific == 'list':
+            line_list = []
             for item in self.metrolines:
-                if specific == item['abbrev']:
+                line_list.append(item['name'] + ' Line')
+                line_list.sort()
+            line_list_str = ''
+            for item in line_list:
+                line_list_str = line_list_str + item + '\n'
+            embed = discord.Embed(color=discord.Color.from_rgb(20, 157, 211),
+                                  title='Tokyo Metro',
+                                  description='Here is a list of lines in the Tokyo Metro:\n \n' + line_list_str)
+            embed.set_thumbnail(
+                url='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034/Tokyo_Metro.png')
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride the Tokyo Metro!')
+            await ctx.send(embed=embed)
+            return
+        else:
+            first_letter = specific[0].upper()
+            specific = first_letter + specific[1:]
+            count = 0
+            found = False
+            for item in self.metrolines:
+                if item['name'] in specific or specific == item['abbrev']:
                     line = item
+                    found = True
+                count += 1
+                if count == len(self.metrolines) and found == False:
+                    await ctx.send("There is no such line in Tokyo Metro!")
         colour = parse_hex_colour(line['colour'])
         embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
                               title='Tokyo Metro ' + line['name'] + ' Line', description=line['overview'], )
@@ -98,11 +128,34 @@ class JapanRailway(commands.Cog):
             embed.set_footer(text='Ride the Toei Subway!')
             await ctx.send(embed=embed)
             return
-        else:
-            specific = specific[0].upper()
+        elif specific == 'list':
+            line_list = []
             for item in self.toeilines:
-                if specific == item['abbrev']:
+                line_list.append(item['name'] + ' Line')
+                line_list.sort()
+            line_list_str = ''
+            for item in line_list:
+                line_list_str = line_list_str + item + '\n'
+            embed = discord.Embed(color=discord.Color.from_rgb(31, 143, 47),
+                                  title='Toei Subway',
+                                  description='Here is a list of lines in the Toei Subway:\n \n' + line_list_str)
+            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/739495626638753792/Toei.png')
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride the Toei Subway!')
+            await ctx.send(embed=embed)
+            return
+        else:
+            first_letter = specific[0].upper()
+            specific = first_letter + specific[1:]
+            count = 0
+            found = False
+            for item in self.toeilines:
+                if item['name'] in specific or specific == item['abbrev']:
                     line = item
+                    found = True
+                count += 1
+                if count == len(self.toeilines) and found == False:
+                    await ctx.send("There is no such line in Toei Subway!")
         colour = parse_hex_colour(line['colour'])
         embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
                               title='Toei ' + line['name'] + ' Line', description=line['overview'], )
@@ -117,5 +170,7 @@ class JapanRailway(commands.Cog):
         embed.set_footer(text='Ride the Toei Subway!')
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
+
+
 def setup(bot: commands.Bot):
     bot.add_cog(JapanRailway(bot))
