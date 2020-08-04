@@ -5,6 +5,7 @@ import discord
 import typing
 
 
+# Convert colour in hex to dec
 def parse_hex_colour(hex: str) -> typing.Tuple[int, int, int]:
     r = hex[0:2]
     g = hex[2:4]
@@ -29,9 +30,12 @@ class JapanRailway(commands.Cog):
     @commands.command(description='Randomly get or query information on a vehicle.', help='This command will randomly show information on a vehicle, or specific vehicle when it\'s specified.', aliases=['shinkansen', 'ressha'])
     async def train(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
         author: discord.User = ctx.author
+        # If the user does not specify which train, it will return a random train
         if specific == '':
             train = random.choice(self.trains)
+        # Return a list of trains in the database if the user specified "list"
         elif specific == 'list':
+            # Add the name of the trains into a list and sort in alphabetical order
             train_list = []
             for item in self.trains:
                 train_list.append('Shinkansen ' + item['name'] + ' Series')
@@ -47,6 +51,7 @@ class JapanRailway(commands.Cog):
             await ctx.send(embed=embed)
             return
         else:
+            # Search the name of the train
             specific = specific.upper()
             count = 0
             found = False
@@ -75,8 +80,10 @@ class JapanRailway(commands.Cog):
     @commands.command(description='Randomly get or query information on a Tokyo Metro line.', help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.', aliases=['tokyometro'])
     async def metro(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
         author: discord.User = ctx.author
+        # If the user does not specify which line, it will return a random line
         if specific == '':
             line = random.choice(self.metrolines)
+        # Return information about the Tokyo Metro if the user specified "info"
         elif specific == 'info':
             embed = discord.Embed(color=discord.Color.from_rgb(20, 157, 211),
                                   title='Tokyo Metro', description='The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it is not the only rapid transit system operating in Tokyo, it has the higher ridership among the two subway operators: in 2014, the Tokyo Metro had an average daily ridership of 6.84 million passengers, with 9 lines and 180 stations.\n \n Tokyo Metro is operated by Tokyo Metro Co., Ltd., a private company jointly owned by the Japanese government (through the Ministry of Finance) and the Tokyo metropolitan government.')
@@ -85,6 +92,7 @@ class JapanRailway(commands.Cog):
             embed.set_footer(text='Ride the Tokyo Metro!')
             await ctx.send(embed=embed)
             return
+        # Return a list of lines in the database if the user specified "list"
         elif specific == 'list':
             line_list = []
             for item in self.metrolines:
@@ -103,6 +111,7 @@ class JapanRailway(commands.Cog):
             await ctx.send(embed=embed)
             return
         else:
+            # Search the name of the line
             first_letter = specific[0].upper()
             specific = first_letter + specific[1:]
             count = 0
