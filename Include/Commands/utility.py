@@ -1,6 +1,9 @@
 from discord.ext import commands
-from typing import Tuple
+from typing import Optional, Tuple
+from Utils.utils import search_user
 import random
+import re
+
 
 # Available domains.
 DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}
@@ -168,6 +171,10 @@ class Utility(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
+        self.emote_regex = re.compile(r'(<a?:\w+:\d+>)')
+        self.emote_id_regex = re.compile(r'[^:]+(?=>)')
+        self.emote_is_animated_regex = re.compile(r'(<a)')
+        self.emote_base_link = 'https://cdn.discordapp.com/emojis/'
 
     @commands.command(description='Count the number of vowels in the input.', help='Count the total number of vowels in a word or a sentence.', aliases=['vowel'])
     async def vowels(self, ctx: commands.Context, *, args: str):
@@ -195,6 +202,44 @@ class Utility(commands.Cog):
     async def verifyemail(self, ctx: commands.Context, *, args: str):
         answer = verifyemail(args)
         await ctx.send(answer)
+
+    @commands.command(description='Enlarge one to multiple emotes.', help='Enlarge one or multiple emotes by getting permanent links of the emotes, to see emotes more clearly or download emotes.', aliases=['emoji'])
+    async def enlarge(self, ctx: commands.Context, *, args: str):
+        result = self.emote_regex.search(args)
+        if result is None:
+            await ctx.send('Sorry, but you need to provide me an emote to use this command~!')
+            return
+        split = args.split(' ')
+        emote_links = []
+        for item in split:
+            if self.emote_regex.search(item) is not None:
+                for single in self.emote_regex.finditer(item):
+                    suffix: str
+                    if self.emote_is_animated_regex.search(single.group()) is not None:
+                        suffix = '.gif'
+                    else:
+                        suffix = '.png'
+                    emote_id = self.emote_id_regex.search(single.group())
+                    emote_links.append(self.emote_base_link + str(emote_id.group()) + suffix)
+        if len(emote_links) > 1:
+            await ctx.send('{}, here are your requested emotes!'.format(ctx.author.mention))
+        else:
+            await ctx.send('{}, here is your requested emote!'.format(ctx.author.mention))
+        for link in emote_links:
+            await ctx.send(link)
+
+    @commands.command(description='Get the avatar of yourself or another member in the guild.', help='Get the avatar of yourself or another member in the guild. Supported search patterns include searching by pinging, user tag, user id, and partial user names.', aliases=['pfp'])
+    async def avatar(self, ctx: commands.Context, user: Optional[str] = ''):
+        if user is None or len(user) == 0:
+            await ctx.send('{}, here is your personal avatar!'.format(ctx.author.mention))
+            await ctx.send(ctx.author.avatar_url)
+            return
+        member = search_user(ctx, user)
+        if len(member) == 0:
+            await ctx.send('{} Sorry, but I can\'t find that user'.format(ctx.author.mention))
+            return
+        await ctx.send('{}, here is {}\'s avatar!'.format(ctx.author.mention, member[0].display_name))
+        await ctx.send(member[0].avatar_url)
 
 
 def setup(bot: commands.Bot):

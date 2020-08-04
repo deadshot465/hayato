@@ -1,8 +1,10 @@
 import discord
 import help
+import os
 import random
 from datetime import datetime
 from discord.ext import commands
+from dotenv import load_dotenv
 
 # A simple description of our bot.
 DESCRIPTION = 'A Discord bot that can do some fun stuffs.'
@@ -56,7 +58,8 @@ if __name__ == '__main__':
         bot.load_extension(extension)
     print('Extensions successfully loaded.')
 
-bot.run('NzM3MDE3MjMxNTIyOTIyNTU2.Xx3OyQ.YondP6gak5j5G4jzTJx88IKzPRM', bot=True, reconnect=True)
+load_dotenv(verbose=True)
+bot.run(os.getenv('TOKEN'), bot=True, reconnect=True)
 
 
 def test_bot():
