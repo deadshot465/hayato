@@ -11,7 +11,7 @@
     "length (km)": 14.3,
     "gauge (mm)": 1435,
     "train_formation": "6 cars",
-    "opened": "December 30, 1927",
+    "opened": "30 December, 1927",
     "daily_ridership": 943606
   },
   {
@@ -26,7 +26,7 @@
     "length (km)": 27.4,
     "gauge (mm)": 1435,
     "train_formation": "6 cars",
-    "opened": "January 20, 1954",
+    "opened": "20 January, 1954",
     "daily_ridership": 1159898
   },
   {
@@ -41,22 +41,22 @@
     "length (km)": 20.3,
     "gauge (mm)": 1067,
     "train_formation": "7 cars",
-    "opened": "March 28, 1961",
+    "opened": "28 March, 1961",
     "daily_ridership": 1213492
   },
   {
-    "name": "Tōzai",
+    "name": "Tozai",
     "abbrev": "T",
     "image": "https://cdn.discordapp.com/attachments/734604988717858846/739281483231133798/Tozai.jpg",
     "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739277920111165510/Tozai_logo.png",
     "colour": "009bbf",
-    "overview": "The Tokyo Metro Tozai Line is a rapid transit line in Tokyo and Chiba Prefecture, Japan, owned and operated by Tokyo Metro. Its name literally means East-West Line. The line runs between Nakano Station in Nakano, Tokyo and Nishi-Funabashi Station in Funabashi, Chiba. The Tōzai Line was referred to as Line 5 during the planning stages, thus the seldom-used official name is Line 5 Tōzai Line. On average, the line carries 1,642,378 passengers daily (2017), the highest of all lines in the Tokyo Metro network. On maps, diagrams and signboards, the Tōzai Line is shown using the color sky blue, and its stations are given numbers using the letter T.",
+    "overview": "The Tokyo Metro Tōzai Line is a rapid transit line in Tokyo and Chiba Prefecture, Japan, owned and operated by Tokyo Metro. Its name literally means East-West Line. The line runs between Nakano Station in Nakano, Tokyo and Nishi-Funabashi Station in Funabashi, Chiba. The Tōzai Line was referred to as Line 5 during the planning stages, thus the seldom-used official name is Line 5 Tōzai Line. On average, the line carries 1,642,378 passengers daily (2017), the highest of all lines in the Tokyo Metro network. On maps, diagrams and signboards, the Tōzai Line is shown using the color sky blue, and its stations are given numbers using the letter T.",
     "route": "Nakano to Nishi-Funabashi",
     "stations": 23,
     "length (km)": 30.8,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "December 23, 1964",
+    "opened": "23 December, 1964",
     "daily_ridership": 1642378
   },
   {
@@ -71,26 +71,26 @@
     "length (km)": 24.0,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "December 20, 1969",
+    "opened": "20 December, 1969",
     "daily_ridership": 1447730
   },
   {
-    "name": "Yūrakuchō",
+    "name": "Yurakucho",
     "abbrev": "Y",
     "image": "https://cdn.discordapp.com/attachments/734604988717858846/739281483499569262/Yurakucho.jpg",
     "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739277921952202783/Yurakucho_logo.png",
     "colour": "c1a470",
-    "overview": "The Tokyo Metro Yurakucho Line is a subway line in Japan owned and operated by Tokyo Metro. The line connects Wakōshi Station in Wakō, Saitama and Shin-Kiba Station in Kōtō, Tokyo. On maps, diagrams and signboards, the line is shown using the color gold, and its stations are given numbers using the letter Y. The line was named after the Yūrakuchō business district in Chiyoda, Tokyo. The proper name as given in an annual report of the Ministry of Land, Infrastructure and Transport is Line No. 8 Yūrakuchō Line.",
+    "overview": "The Tokyo Metro Yūrakuchō Line is a subway line in Japan owned and operated by Tokyo Metro. The line connects Wakōshi Station in Wakō, Saitama and Shin-Kiba Station in Kōtō, Tokyo. On maps, diagrams and signboards, the line is shown using the color gold, and its stations are given numbers using the letter Y. The line was named after the Yūrakuchō business district in Chiyoda, Tokyo. The proper name as given in an annual report of the Ministry of Land, Infrastructure and Transport is Line No. 8 Yūrakuchō Line.",
     "route": "Wakōshi to Shin-Kiba",
     "stations": 24,
     "length (km)": 28.3,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "October 30, 1974",
+    "opened": "30 October, 1974",
     "daily_ridership": 1124478
   },
   {
-    "name": "Hanzōmon",
+    "name": "Hanzomon",
     "abbrev": "Z",
     "image": "https://cdn.discordapp.com/attachments/734604988717858846/739281472258703371/Hanzomon.jpg",
     "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739277913609863168/Hanzomon_logo.png",
@@ -101,7 +101,7 @@
     "length (km)": 16.8,
     "gauge (mm)": 1067,
     "train_formation": "10 cars",
-    "opened": "August 1, 1978",
+    "opened": "1 August, 1978",
     "daily_ridership": 1006682
   },
   {
@@ -116,7 +116,7 @@
     "length (km)": 21.3,
     "gauge (mm)": 1067,
     "train_formation": "6 cars",
-    "opened": "November 29, 1991",
+    "opened": "29 November, 1991",
     "daily_ridership": 522736
   },
   {
@@ -131,7 +131,7 @@
     "length (km)": 20.2,
     "gauge (mm)": 1067,
     "train_formation": "8 or 10 cars",
-    "opened": "December 7, 1994",
+    "opened": "7 December, 1994",
     "daily_ridership": 362654
   }
 ]
