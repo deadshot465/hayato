@@ -13,6 +13,57 @@ def parse_hex_colour(hex: str) -> typing.Tuple[int, int, int]:
     return int(r, 16), int(g, 16), int(b, 16)
 
 
+# It's generally a bad idea to name the function using the same name.
+def get_train(ctx: commands.Context, trains: typing.List[object], specific: typing.Optional[str] = ''):
+    author: discord.User = ctx.author
+    # If the user does not specify which train, it will return a random train
+    if specific == '':
+        train = random.choice(trains)
+    # Return a list of trains in the database if the user specified "list"
+    elif specific == 'list':
+        # Add the name of the trains into a list and sort in alphabetical order
+        train_list = []
+        for item in trains:
+            train_list.append('Shinkansen ' + item['name'] + ' Series')
+            train_list.sort()
+        train_list_str = ''
+        for item in train_list:
+            train_list_str = train_list_str + item + '\n'
+        embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
+                              title='Shinkansen Trains',
+                              description='Here is a list of trains in Shinkansen:\n \n' + train_list_str)
+        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        embed.set_footer(text='Ride the Shinkansen!')
+        return embed
+    else:
+        # Search the name of the train
+        specific = specific.upper()
+        count = 0
+        found = False
+        for item in trains:
+            if specific == item['name']:
+                train = item
+                found = True
+            count += 1
+            if count == len(trains) and found == False:
+                return "There is no such train information at the moment!"
+    colour = parse_hex_colour(train['colour'])
+    embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
+                          title='Shinkansen ' + train['name'] + ' Series', description=train['overview'], )
+    embed.set_image(url=train['link'])
+    embed.add_field(name='Constructed', value=train['constructed'], inline=True)
+    embed.add_field(name='Formation', value=train['formation'], inline=True)
+    embed.add_field(name='Capacity', value=train['capacity'], inline=False)
+    embed.add_field(name='Maximum Speed', value=train['maximum_speed'], inline=False)
+    embed.add_field(name='Acceleration', value=train['acceleration'], inline=True)
+    embed.add_field(name='Train Length (m)', value=train['length (m)'], inline=True)
+    embed.add_field(name='Track Gauge (mm)', value=train['gauge (mm)'], inline=True)
+    embed.add_field(name='Lines Served', value=train['lines_served'], inline=False)
+    embed.set_footer(text='Why not try to ride Shinkansen ' + train['name'] + ' Series?')
+    embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+    return embed
+
+
 class Rails(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
@@ -29,56 +80,10 @@ class Rails(commands.Cog):
         with open('Storage/mtr.json', 'r', encoding='utf-8') as file_4:
             raw_mtrlines = file_4.read()
             self.mtrlines: typing.List[object] = json.loads(raw_mtrlines)
+        with open('Storage/shinkansen.json', 'r', encoding='utf-8') as file_5:
+            raw_shinkansen = file_5.read()
+            self.shinkansen: typing.List[object] = json.loads(raw_shinkansen)
 
-    @commands.command(description='Randomly get or query information on a vehicle.', help='This command will randomly show information on a vehicle, or specific vehicle when it\'s specified.', aliases=['shinkansen', 'ressha'])
-    async def train(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
-        author: discord.User = ctx.author
-        # If the user does not specify which train, it will return a random train
-        if specific == '':
-            train = random.choice(self.trains)
-        # Return a list of trains in the database if the user specified "list"
-        elif specific == 'list':
-            # Add the name of the trains into a list and sort in alphabetical order
-            train_list = []
-            for item in self.trains:
-                train_list.append('Shinkansen ' + item['name'] + ' Series')
-                train_list.sort()
-            train_list_str = ''
-            for item in train_list:
-                train_list_str = train_list_str + item + '\n'
-            embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
-                                  title='Shinkansen Trains',
-                                  description='Here is a list of trains in Shinkansen:\n \n' + train_list_str)
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Shinkansen!')
-            await ctx.send(embed=embed)
-            return
-        else:
-            # Search the name of the train
-            specific = specific.upper()
-            count = 0
-            found = False
-            for item in self.trains:
-                if specific == item['name']:
-                    train = item
-                    found = True
-                count += 1
-                if count == len(self.trains) and found == False:
-                    await ctx.send("There is no such train information at the moment!")
-        colour = parse_hex_colour(train['colour'])
-        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),title='Shinkansen ' + train['name'] + ' Series', description=train['overview'],)
-        embed.set_image(url=train['link'])
-        embed.add_field(name='Constructed', value=train['constructed'], inline=True)
-        embed.add_field(name='Formation', value=train['formation'], inline=True)
-        embed.add_field(name='Capacity', value=train['capacity'], inline=False)
-        embed.add_field(name='Maximum Speed', value=train['maximum_speed'], inline=False)
-        embed.add_field(name='Acceleration', value=train['acceleration'], inline=True)
-        embed.add_field(name='Train Length (m)', value=train['length (m)'], inline=True)
-        embed.add_field(name='Track Gauge (mm)', value=train['gauge (mm)'], inline=True)
-        embed.add_field(name='Lines Served', value=train['lines_served'], inline=False)
-        embed.set_footer(text='Why not try to ride Shinkansen ' + train['name'] + ' Series?')
-        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-        await ctx.send(embed=embed)
 
     @commands.command(description='Randomly get or query information on a Tokyo Metro line.', help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.', aliases=['tokyometro'])
     async def metro(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
@@ -261,6 +266,72 @@ class Rails(commands.Cog):
         embed.add_field(name='Opened', value=line['opened'], inline=True)
         embed.add_field(name='Daily ridership', value=line['daily_ridership'], inline=True)
         embed.set_footer(text='Ride the MTR!')
+        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        await ctx.send(embed=embed)
+
+    @commands.command(description='Randomly get or query information on a Shinkansen line or a vehicle used in Shinkansen.',
+                      help='This command will randomly show information on a Shinkansen line or vehicle, or specific line/vehicle when it\'s specified.',
+                      aliases=['bullettrain'])
+    async def shinkansen(self, ctx: commands.Context, arg_1: typing.Optional[str] = '', arg_2: typing.Optional[str] = ''):
+        author: discord.User = ctx.author
+        if arg_1 == '':
+            line = random.choice(self.shinkansen)
+        elif arg_1 == 'info':
+            embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
+                                  title='Shinkansen',
+                                  description='The Shinkansen (Japanese: 新幹線), colloquially known in English as the bullet train, is a network of high-speed railway lines in Japan. Initially, it was built to connect distant Japanese regions with Tokyo, the capital, in order to aid economic growth and development. Beyond long-distance travel, some sections around the largest metropolitan areas are used as a commuter rail network. It is operated by five Japan Railways Group companies. Over the Shinkansen\'s 50-plus year history, carrying over 10 billion passengers, there has been not a single passenger fatality or injury due to train accidents.')
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride the Shinkansen!')
+            await ctx.send(embed=embed)
+            return
+        elif arg_1 == 'train':
+            embed = get_train(ctx, self.trains, arg_2)
+            if isinstance(embed, str):
+                await ctx.send(embed)
+            elif isinstance(embed, discord.Embed):
+                await ctx.send(embed=embed)
+            return
+        elif arg_1 == 'list':
+            line_list = []
+            for item in self.shinkansen:
+                line_list.append(item['name'] + ' Shinkansen')
+                line_list.sort()
+            line_list_str = ''
+            for item in line_list:
+                line_list_str = line_list_str + item + '\n'
+            embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
+                                  title='Shinkansen',
+                                  description='Here is a list of lines in Shinkansen:\n \n' + line_list_str)
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride the Shinkansen!')
+            await ctx.send(embed=embed)
+            return
+        else:
+            first_letter = arg_1[0].upper()
+            arg_1 = first_letter + arg_1[1:]
+            count = 0
+            found = False
+            for item in self.shinkansen:
+                if arg_1 in item['name'] or item['name'] in arg_1:
+                    line = item
+                    found = True
+                count += 1
+                if count == len(self.shinkansen) and found == False:
+                    await ctx.send("There is no such line in the Shinkansen!")
+        colour = parse_hex_colour(line['colour'])
+        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
+                              title=line['name'] + ' Shinkansen', description=line['overview'], )
+        embed.set_image(url=line['image'])
+        embed.add_field(name='Route', value=line['route'], inline=False)
+        embed.add_field(name='Stations', value=line['stations'], inline=True)
+        embed.add_field(name='Maxiumum Speed', value=line['maximum_speed'], inline=True)
+        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
+        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
+        embed.add_field(name='Rolling stock', value=line['rolling_stock'], inline=True)
+        embed.add_field(name='Opened', value=line['opened'], inline=True)
+        embed.add_field(name='Operator', value=line['operator'], inline=True)
+        embed.set_thumbnail(url=line['icon'])
+        embed.set_footer(text='Ride the Shinkansen!')
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
 
