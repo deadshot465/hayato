@@ -83,6 +83,9 @@ class Rails(commands.Cog):
         with open('Storage/shinkansen.json', 'r', encoding='utf-8') as file_5:
             raw_shinkansen = file_5.read()
             self.shinkansen: typing.List[object] = json.loads(raw_shinkansen)
+        with open('Storage/jrwest.json', 'r', encoding='utf-8') as file_6:
+            raw_jrwestlines = file_6.read()
+            self.jrwestlines: typing.List[object] = json.loads(raw_jrwestlines)
 
 
     @commands.command(description='Randomly get or query information on a Tokyo Metro line.', help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.', aliases=['tokyometro'])
@@ -246,7 +249,7 @@ class Rails(commands.Cog):
             count = 0
             found = False
             for item in self.mtrlines:
-                if specific in item['name'] or item['name'] in specific or specific == item['abbrev']:
+                if specific in item['name'] or item['name'] in specific or specific in item['abbrev']:
                     line = item
                     found = True
                 count += 1
@@ -332,6 +335,67 @@ class Rails(commands.Cog):
         embed.add_field(name='Operator', value=line['operator'], inline=True)
         embed.set_thumbnail(url=line['icon'])
         embed.set_footer(text='Ride the Shinkansen!')
+        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        await ctx.send(embed=embed)
+
+    @commands.command(description='Randomly get or query information on JR West Line.',
+                      help='This command will randomly show information on a JR West line, or specific line when it\'s specified.',
+                      aliases=['west'])
+    async def jrwest(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
+        author: discord.User = ctx.author
+        if specific == '':
+            line = random.choice(self.jrwestlines)
+        elif specific == 'info':
+            embed = discord.Embed(color=discord.Color.from_rgb(4, 115, 189),
+                                  title='West Japan Railway Company',
+                                  description='West Japan Railway Company (西日本旅客鉄道株式会社, Nishi-Nihon Ryokaku Tetsudō Kabushiki-gaisha), also referred to as JR-West (JR西日本, Jeiāru Nishi-Nihon), is one of the Japan Railways Group (JR Group) companies and operates in western Honshu. It has its headquarters in Kita-ku, Osaka.')
+            embed.set_thumbnail(
+                url='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride JR West!')
+            await ctx.send(embed=embed)
+            return
+        elif specific == 'list':
+            line_list = []
+            for item in self.jrwestlines:
+                line_list.append(item['name'] + ' Line')
+                line_list.sort()
+            line_list_str = ''
+            for item in line_list:
+                line_list_str = line_list_str + item + '\n'
+            embed = discord.Embed(color=discord.Color.from_rgb(4, 115, 189),
+                                  title='JR West',
+                                  description='Here is a list of lines in JR West:\n \n' + line_list_str)
+            embed.set_thumbnail(
+                url='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
+            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+            embed.set_footer(text='Ride JR West!')
+            await ctx.send(embed=embed)
+            return
+        else:
+            first_letter = specific[0].upper()
+            specific = first_letter + specific[1:]
+            count = 0
+            found = False
+            for item in self.jrwestlines:
+                if specific in item['name'] or item['name'] in specific:
+                    line = item
+                    found = True
+                count += 1
+                if count == len(self.jrwestlines) and found == False:
+                    await ctx.send("There is no such line in JR West!")
+        colour = parse_hex_colour(line['colour'])
+        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
+                              title=line['name'] + ' Line', description=line['overview'], )
+        embed.set_image(url=line['image'])
+        embed.add_field(name='Route', value=line['route'], inline=False)
+        embed.add_field(name='Stations', value=line['stations'], inline=True)
+        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
+        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
+        embed.add_field(name='Maximum Speed', value=line['maximum_speed'], inline=True)
+        embed.add_field(name='Opened', value=line['opened'], inline=True)
+        embed.set_thumbnail(url=line['logo'])
+        embed.set_footer(text='Ride JR West!')
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
         await ctx.send(embed=embed)
 

@@ -22,7 +22,7 @@ class Info(commands.Cog):
                                           'added from time to time.\n\nHayato version 2.1 was made and developed '
                                           'by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed '
                                           'under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
-            text='Hayato Bot: Release 2.1 | 2020-08-02').set_author(name='Hayasugi Hayato from Shinkalion',
+            text='Hayato Bot: Release 2.2 | 2020-08-09').set_author(name='Hayasugi Hayato from Shinkalion',
                                                                     icon_url=avatar_url).set_thumbnail(
             url='https://pbs.twimg.com/profile_images/1245939758695510016/UOG9MGdU_400x400.png')
         await ctx.send(embed=embed)
