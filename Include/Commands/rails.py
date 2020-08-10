@@ -64,6 +64,49 @@ def get_train(ctx: commands.Context, trains: typing.List[object], specific: typi
     return embed
 
 
+def get_embed(ctx: commands.Context, title: str, color: discord.Color, description: str, *,
+              route: typing.Optional[str] = '', stations: typing.Optional[int] = 0,
+              length: typing.Optional[float] = 0.0, track_gauge: typing.Optional[float] = 0.0,
+              formation: typing.Optional[str] = '', opened: typing.Optional[str] = '',
+              running_time: typing.Optional[str] = '', rolling_stock: typing.Optional[str] = '',
+              maximum_speed: typing.Optional[str] = '', ridership: typing.Optional[str] = '',
+              operator: typing.Optional[str] = '', image: typing.Optional[str] = '',
+              thumbnail: typing.Optional[str] = '', footer_name: typing.Optional[str] = '') -> discord.Embed:
+    author: discord.User = ctx.author
+    embed = discord.Embed(title=title, color=color, description=description).set_author(name=author.display_name,
+                                                                                        icon_url=author.avatar_url)
+    if len(route) > 0:
+        embed.add_field(name='Route', value=route, inline=False)
+    if stations > 0:
+        embed.add_field(name='Stations', value=stations, inline=True)
+    if len(maximum_speed) > 0:
+        embed.add_field(name='Maxiumum Speed', value=maximum_speed, inline=True)
+    if length > 0.0:
+        embed.add_field(name='Length (km)', value=length, inline=True)
+    if track_gauge > 0.0:
+        embed.add_field(name='Track Gauge (mm)', value=track_gauge, inline=True)
+    if len(formation) > 0:
+        embed.add_field(name='Train formation', value=formation, inline=True)
+    if len(running_time) > 0:
+        embed.add_field(name='Running time (mins)', value=running_time, inline=True)
+    if len(opened) > 0:
+        embed.add_field(name='Opened', value=opened, inline=True)
+    if len(ridership) > 0:
+        embed.add_field(name='Daily ridership', value=ridership, inline=True)
+    if len(rolling_stock) > 0:
+        embed.add_field(name='Rolling stock', value=rolling_stock, inline=False)
+    if len(operator):
+        embed.add_field(name='Operator', value=operator, inline=False)
+
+    if len(thumbnail) > 0:
+        embed.set_thumbnail(url=thumbnail)
+    if len(image) > 0:
+        embed.set_image(url=image)
+
+    embed.set_footer(text=f'Ride {footer_name}!')
+    return embed
+
+
 class Rails(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
@@ -87,20 +130,25 @@ class Rails(commands.Cog):
             raw_jrwestlines = file_6.read()
             self.jrwestlines: typing.List[object] = json.loads(raw_jrwestlines)
 
-
-    @commands.command(description='Randomly get or query information on a Tokyo Metro line.', help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.', aliases=['tokyometro'])
+    @commands.command(description='Randomly get or query information on a Tokyo Metro line.',
+                      help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.',
+                      aliases=['tokyometro'])
     async def metro(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
-        author: discord.User = ctx.author
         # If the user does not specify which line, it will return a random line
         if specific == '':
             line = random.choice(self.metrolines)
         # Return information about the Tokyo Metro if the user specified "info"
         elif specific == 'info':
-            embed = discord.Embed(color=discord.Color.from_rgb(20, 157, 211),
-                                  title='Tokyo Metro', description='The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it is not the only rapid transit system operating in Tokyo, it has the higher ridership among the two subway operators: in 2014, the Tokyo Metro had an average daily ridership of 6.84 million passengers, with 9 lines and 180 stations.\n \n Tokyo Metro is operated by Tokyo Metro Co., Ltd., a private company jointly owned by the Japanese government (through the Ministry of Finance) and the Tokyo metropolitan government.')
-            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034/Tokyo_Metro.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Tokyo Metro!')
+            embed = get_embed(ctx, 'Tokyo Metro', discord.Color.from_rgb(20, 157, 211),
+                              'The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it is not the '
+                              'only rapid transit system operating in Tokyo, it has the higher ridership among the '
+                              'two subway operators: in 2014, the Tokyo Metro had an average daily ridership of 6.84 '
+                              'million passengers, with 9 lines and 180 stations.\n \n Tokyo Metro is operated by '
+                              'Tokyo Metro Co., Ltd., a private company jointly owned by the Japanese government ('
+                              'through the Ministry of Finance) and the Tokyo metropolitan government.',
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034'
+                                        '/Tokyo_Metro.png',
+                              footer_name='the Tokyo Metro')
             await ctx.send(embed=embed)
             return
         # Return a list of lines in the database if the user specified "list"
@@ -112,13 +160,10 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = discord.Embed(color=discord.Color.from_rgb(20, 157, 211),
-                                  title='Tokyo Metro',
-                                  description='Here is a list of lines in the Tokyo Metro:\n \n' + line_list_str)
-            embed.set_thumbnail(
-                url='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034/Tokyo_Metro.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Tokyo Metro!')
+            embed = get_embed(ctx, 'Tokyo Metro', discord.Color.from_rgb(20, 157, 211), 'Here is a list of lines in the Tokyo Metro:\n \n' + line_list_str,
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034'
+                                        '/Tokyo_Metro.png',
+                              footer_name='the Tokyo Metro')
             await ctx.send(embed=embed)
             return
         else:
@@ -132,35 +177,27 @@ class Rails(commands.Cog):
                     line = item
                     found = True
                 count += 1
-                if count == len(self.metrolines) and found == False:
+                if count == len(self.metrolines) and found is False:
                     await ctx.send("There is no such line in Tokyo Metro!")
         colour = parse_hex_colour(line['colour'])
-        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
-                              title='Tokyo Metro ' + line['name'] + ' Line', description=line['overview'], )
-        embed.set_image(url=line['image'])
-        embed.add_field(name='Route', value=line['route'], inline=False)
-        embed.add_field(name='Stations', value=line['stations'], inline=True)
-        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
-        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
-        embed.add_field(name='Train formation', value=line['train_formation'], inline=True)
-        embed.add_field(name='Opened', value=line['opened'], inline=True)
-        embed.add_field(name='Daily ridership', value=line['daily_ridership'], inline=False)
-        embed.set_thumbnail(url=line['logo'])
-        embed.set_footer(text='Ride the Tokyo Metro!')
-        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        embed = get_embed(ctx, title='Tokyo Metro ' + line['name'] + ' Line', color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
+                          route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
+                          length=line['length (km)'], formation=line['train_formation'], opened=line['opened'],
+                          ridership=str(line['daily_ridership']), thumbnail=line['logo'], footer_name='the Tokyo Metro',
+                          image=line['image'])
         await ctx.send(embed=embed)
 
-    @commands.command(description='Randomly get or query information on a Toei Subway line.', help='This command will randomly show information on a Toei Subway line, or specific line when it\'s specified.', aliases=['toeisubway'])
+    @commands.command(description='Randomly get or query information on a Toei Subway line.',
+                      help='This command will randomly show information on a Toei Subway line, or specific line when it\'s specified.',
+                      aliases=['toeisubway'])
     async def toei(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
-        author: discord.User = ctx.author
         if specific == '':
             line = random.choice(self.toeilines)
         elif specific == 'info':
-            embed = discord.Embed(color=discord.Color.from_rgb(31, 143, 47),
-                                  title='Toei Subway', description='The Toei Subway is one of two rapid transit systems which make up the Tokyo subway system, the other being Tokyo Metro. It is operated by the Tokyo Metropolitan Government which operates public transport services in Tokyo. In 2014, the Toei Subway had an average daily ridership of 6.84 million passengers, with 4 lines and 106 stations.\n \nTokyo Metro and Toei trains form completely separate networks. While users of prepaid rail passes can freely interchange between the two networks, regular ticket holders must purchase a second ticket, or a special transfer ticket, to change from a Toei line to a Tokyo Metro line and vice versa.')
-            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/739495626638753792/Toei.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Toei Subway!')
+            embed = get_embed(ctx, 'Toei Subway', discord.Color.from_rgb(31, 143, 47),
+                              'The Toei Subway is one of two rapid transit systems which make up the Tokyo subway system, the other being Tokyo Metro. It is operated by the Tokyo Metropolitan Government which operates public transport services in Tokyo. In 2014, the Toei Subway had an average daily ridership of 6.84 million passengers, with 4 lines and 106 stations.\n \nTokyo Metro and Toei trains form completely separate networks. While users of prepaid rail passes can freely interchange between the two networks, regular ticket holders must purchase a second ticket, or a special transfer ticket, to change from a Toei line to a Tokyo Metro line and vice versa.',
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739495626638753792/Toei.png',
+                              footer_name='the Toei Subway')
             await ctx.send(embed=embed)
             return
         elif specific == 'list':
@@ -171,12 +208,10 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = discord.Embed(color=discord.Color.from_rgb(31, 143, 47),
-                                  title='Toei Subway',
-                                  description='Here is a list of lines in the Toei Subway:\n \n' + line_list_str)
-            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/739495626638753792/Toei.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Toei Subway!')
+            embed = get_embed(ctx, 'Toei Subway', discord.Color.from_rgb(31, 143, 47),
+                              'Here is a list of lines in the Toei Subway:\n \n' + line_list_str,
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739495626638753792/Toei.png',
+                              footer_name='the Toei Subway')
             await ctx.send(embed=embed)
             return
         else:
@@ -192,18 +227,12 @@ class Rails(commands.Cog):
                 if count == len(self.toeilines) and found == False:
                     await ctx.send("There is no such line in Toei Subway!")
         colour = parse_hex_colour(line['colour'])
-        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
-                              title='Toei ' + line['name'] + ' Line', description=line['overview'], )
-        embed.set_image(url=line['image'])
-        embed.add_field(name='Route', value=line['route'], inline=False)
-        embed.add_field(name='Stations', value=line['stations'], inline=True)
-        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
-        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
-        embed.add_field(name='Opened', value=line['opened'], inline=True)
-        embed.add_field(name='Daily ridership', value=line['daily_ridership'], inline=True)
-        embed.set_thumbnail(url=line['logo'])
-        embed.set_footer(text='Ride the Toei Subway!')
-        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        embed = get_embed(ctx, title='Toei ' + line['name'] + ' Line',
+                          color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
+                          route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
+                          length=line['length (km)'], opened=line['opened'],
+                          ridership=str(line['daily_ridership']), thumbnail=line['logo'], footer_name='the Toei Subway',
+                          image=line['image'])
         await ctx.send(embed=embed)
 
     @commands.command(description='Randomly get or query information on an MTR Line.',
@@ -214,13 +243,10 @@ class Rails(commands.Cog):
         if specific == '':
             line = random.choice(self.mtrlines)
         elif specific == 'info':
-            embed = discord.Embed(color=discord.Color.from_rgb(157, 33, 51),
-                                  title='MTR',
-                                  description='The Mass Transit Railway (MTR; Chinese: 港鐵) is a major public transport network serving Hong Kong. Operated by the MTR Corporation Limited (MTRCL), it consists of heavy rail, light rail, and feeder bus service centred on an 11-line rapid transit network serving the urbanised areas of Hong Kong Island, Kowloon, and the New Territories. The system included 230.9 km of rail in 2018 with 163 stations. The MTR was ranked the number one metro system in the world by CNN in 2017.\n \nThe MTR system is a common mode of public transport in Hong Kong, with over five million trips made in an average weekday. It consistently achieves a 99.9 per cent on-time rate on its train journeys. As of 2018, the MTR has a 49.3 per cent market share of the franchised public transport market, making it the most popular transport option in Hong Kong. The integration of the Octopus smart card fare-payment technology into the MTR system in September 1997 has further enhanced the ease of commuting on the MTR.')
-            embed.set_thumbnail(
-                url='https://cdn.discordapp.com/attachments/734604988717858846/739961151005130882/MTR.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the MTR!')
+            embed = get_embed(ctx, 'MTR', discord.Color.from_rgb(157, 33, 51),
+                              'The Mass Transit Railway (MTR; Chinese: 港鐵) is a major public transport network serving Hong Kong. Operated by the MTR Corporation Limited (MTRCL), it consists of heavy rail, light rail, and feeder bus service centred on an 11-line rapid transit network serving the urbanised areas of Hong Kong Island, Kowloon, and the New Territories. The system included 230.9 km of rail in 2018 with 163 stations. The MTR was ranked the number one metro system in the world by CNN in 2017.\n \nThe MTR system is a common mode of public transport in Hong Kong, with over five million trips made in an average weekday. It consistently achieves a 99.9 per cent on-time rate on its train journeys. As of 2018, the MTR has a 49.3 per cent market share of the franchised public transport market, making it the most popular transport option in Hong Kong. The integration of the Octopus smart card fare-payment technology into the MTR system in September 1997 has further enhanced the ease of commuting on the MTR.',
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739961151005130882/MTR.png',
+                              footer_name='the MTR')
             await ctx.send(embed=embed)
             return
         elif specific == 'list':
@@ -234,13 +260,10 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = discord.Embed(color=discord.Color.from_rgb(157, 33, 51),
-                                  title='MTR',
-                                  description='Here is a list of lines in the MTR:\n \n' + line_list_str)
-            embed.set_thumbnail(
-                url='https://cdn.discordapp.com/attachments/734604988717858846/739961151005130882/MTR.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the MTR!')
+            embed = get_embed(ctx, 'MTR', discord.Color.from_rgb(157, 33, 51),
+                              'Here is a list of lines in the MTR:\n \n' + line_list_str,
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739961151005130882/MTR.png',
+                              footer_name='the MTR')
             await ctx.send(embed=embed)
             return
         else:
@@ -255,36 +278,32 @@ class Rails(commands.Cog):
                 count += 1
                 if count == len(self.mtrlines) and found == False:
                     await ctx.send("There is no such line in the MTR!")
+                    return
         colour = parse_hex_colour(line['colour'])
-        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
-                              title=line['name'] + ' Line', description=line['overview'], )
-        embed.set_image(url=line['image'])
-        embed.add_field(name='Route', value=line['route'], inline=False)
-        embed.add_field(name='Stations', value=line['stations'], inline=True)
-        embed.add_field(name='Running time (mins)', value=line['running_time (mins)'], inline=True)
-        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
-        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
-        embed.add_field(name='Train formation', value=line['train_formation'], inline=True)
-        embed.add_field(name='Rolling stock', value=line['rolling stock'], inline=True)
-        embed.add_field(name='Opened', value=line['opened'], inline=True)
-        embed.add_field(name='Daily ridership', value=line['daily_ridership'], inline=True)
-        embed.set_footer(text='Ride the MTR!')
-        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        embed = get_embed(ctx, title=line['name'] + ' Line',
+                          color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
+                          route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
+                          length=line['length (km)'], opened=line['opened'],
+                          running_time=str(line['running_time (mins)']),
+                          formation=line['train_formation'],
+                          rolling_stock=line['rolling_stock'],
+                          ridership=str(line['daily_ridership']), footer_name='the MTR',
+                          image=line['image'])
         await ctx.send(embed=embed)
 
-    @commands.command(description='Randomly get or query information on a Shinkansen line or a vehicle used in Shinkansen.',
-                      help='This command will randomly show information on a Shinkansen line or vehicle, or specific line/vehicle when it\'s specified.',
-                      aliases=['bullettrain'])
-    async def shinkansen(self, ctx: commands.Context, arg_1: typing.Optional[str] = '', arg_2: typing.Optional[str] = ''):
+    @commands.command(
+        description='Randomly get or query information on a Shinkansen line or a vehicle used in Shinkansen.',
+        help='This command will randomly show information on a Shinkansen line or vehicle, or specific line/vehicle when it\'s specified.',
+        aliases=['bullettrain'])
+    async def shinkansen(self, ctx: commands.Context, arg_1: typing.Optional[str] = '',
+                         arg_2: typing.Optional[str] = ''):
         author: discord.User = ctx.author
         if arg_1 == '':
             line = random.choice(self.shinkansen)
         elif arg_1 == 'info':
-            embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
-                                  title='Shinkansen',
-                                  description='The Shinkansen (Japanese: 新幹線), colloquially known in English as the bullet train, is a network of high-speed railway lines in Japan. Initially, it was built to connect distant Japanese regions with Tokyo, the capital, in order to aid economic growth and development. Beyond long-distance travel, some sections around the largest metropolitan areas are used as a commuter rail network. It is operated by five Japan Railways Group companies. Over the Shinkansen\'s 50-plus year history, carrying over 10 billion passengers, there has been not a single passenger fatality or injury due to train accidents.')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Shinkansen!')
+            embed = get_embed(ctx, 'Shinkansen', discord.Color.from_rgb(30, 99, 175),
+                              'The Shinkansen (Japanese: 新幹線), colloquially known in English as the bullet train, is a network of high-speed railway lines in Japan. Initially, it was built to connect distant Japanese regions with Tokyo, the capital, in order to aid economic growth and development. Beyond long-distance travel, some sections around the largest metropolitan areas are used as a commuter rail network. It is operated by five Japan Railways Group companies. Over the Shinkansen\'s 50-plus year history, carrying over 10 billion passengers, there has been not a single passenger fatality or injury due to train accidents.',
+                              footer_name='the Shinkansen')
             await ctx.send(embed=embed)
             return
         elif arg_1 == 'train':
@@ -302,11 +321,9 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
-                                  title='Shinkansen',
-                                  description='Here is a list of lines in Shinkansen:\n \n' + line_list_str)
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride the Shinkansen!')
+            embed = get_embed(ctx, 'Shinkansen', discord.Color.from_rgb(30, 99, 175),
+                              'Here is a list of lines in Shinkansen:\n \n' + line_list_str,
+                              footer_name='the Shinkansen')
             await ctx.send(embed=embed)
             return
         else:
@@ -321,21 +338,17 @@ class Rails(commands.Cog):
                 count += 1
                 if count == len(self.shinkansen) and found == False:
                     await ctx.send("There is no such line in the Shinkansen!")
+                    return
         colour = parse_hex_colour(line['colour'])
-        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
-                              title=line['name'] + ' Shinkansen', description=line['overview'], )
-        embed.set_image(url=line['image'])
-        embed.add_field(name='Route', value=line['route'], inline=False)
-        embed.add_field(name='Stations', value=line['stations'], inline=True)
-        embed.add_field(name='Maxiumum Speed', value=line['maximum_speed'], inline=True)
-        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
-        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
-        embed.add_field(name='Rolling stock', value=line['rolling_stock'], inline=True)
-        embed.add_field(name='Opened', value=line['opened'], inline=True)
-        embed.add_field(name='Operator', value=line['operator'], inline=True)
-        embed.set_thumbnail(url=line['icon'])
-        embed.set_footer(text='Ride the Shinkansen!')
-        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        embed = get_embed(ctx, title=line['name'] + ' Shinkansen',
+                          color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
+                          route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
+                          length=line['length (km)'], opened=line['opened'],
+                          rolling_stock=line['rolling_stock'],
+                          maximum_speed=line['maximum_speed'],
+                          operator=line['operator'],
+                          thumbnail=line['icon'], footer_name='the Shinkansen',
+                          image=line['image'])
         await ctx.send(embed=embed)
 
     @commands.command(description='Randomly get or query information on JR West Line.',
@@ -346,13 +359,9 @@ class Rails(commands.Cog):
         if specific == '':
             line = random.choice(self.jrwestlines)
         elif specific == 'info':
-            embed = discord.Embed(color=discord.Color.from_rgb(4, 115, 189),
-                                  title='West Japan Railway Company',
-                                  description='West Japan Railway Company (西日本旅客鉄道株式会社, Nishi-Nihon Ryokaku Tetsudō Kabushiki-gaisha), also referred to as JR-West (JR西日本, Jeiāru Nishi-Nihon), is one of the Japan Railways Group (JR Group) companies and operates in western Honshu. It has its headquarters in Kita-ku, Osaka.')
-            embed.set_thumbnail(
-                url='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride JR West!')
+            embed = get_embed(ctx, 'West Japan Railway Company', discord.Color.from_rgb(4, 115, 189),
+                              'West Japan Railway Company (西日本旅客鉄道株式会社, Nishi-Nihon Ryokaku Tetsudō Kabushiki-gaisha), also referred to as JR-West (JR西日本, Jeiāru Nishi-Nihon), is one of the Japan Railways Group (JR Group) companies and operates in western Honshu. It has its headquarters in Kita-ku, Osaka.',
+                              footer_name='JR West', thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
             await ctx.send(embed=embed)
             return
         elif specific == 'list':
@@ -363,13 +372,10 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = discord.Embed(color=discord.Color.from_rgb(4, 115, 189),
-                                  title='JR West',
-                                  description='Here is a list of lines in JR West:\n \n' + line_list_str)
-            embed.set_thumbnail(
-                url='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
-            embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
-            embed.set_footer(text='Ride JR West!')
+            embed = get_embed(ctx, 'JR West', discord.Color.from_rgb(4, 115, 189),
+                              'Here is a list of lines in JR West:\n \n' + line_list_str,
+                              footer_name='JR West',
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
             await ctx.send(embed=embed)
             return
         else:
@@ -385,18 +391,13 @@ class Rails(commands.Cog):
                 if count == len(self.jrwestlines) and found == False:
                     await ctx.send("There is no such line in JR West!")
         colour = parse_hex_colour(line['colour'])
-        embed = discord.Embed(color=discord.Color.from_rgb(colour[0], colour[1], colour[2]),
-                              title=line['name'] + ' Line', description=line['overview'], )
-        embed.set_image(url=line['image'])
-        embed.add_field(name='Route', value=line['route'], inline=False)
-        embed.add_field(name='Stations', value=line['stations'], inline=True)
-        embed.add_field(name='Length (km)', value=line['length (km)'], inline=True)
-        embed.add_field(name='Track Gauge (mm)', value=line['gauge (mm)'], inline=True)
-        embed.add_field(name='Maximum Speed', value=line['maximum_speed'], inline=True)
-        embed.add_field(name='Opened', value=line['opened'], inline=True)
-        embed.set_thumbnail(url=line['logo'])
-        embed.set_footer(text='Ride JR West!')
-        embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
+        embed = get_embed(ctx, title=line['name'] + ' Line',
+                          color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
+                          route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
+                          length=line['length (km)'], opened=line['opened'],
+                          maximum_speed=line['maximum_speed'],
+                          thumbnail=line['logo'], footer_name='JR West',
+                          image=line['image'])
         await ctx.send(embed=embed)
 
 
