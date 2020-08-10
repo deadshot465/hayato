@@ -87,7 +87,6 @@ class Rails(commands.Cog):
             raw_jrwestlines = file_6.read()
             self.jrwestlines: typing.List[object] = json.loads(raw_jrwestlines)
 
-
     @commands.command(description='Randomly get or query information on a Tokyo Metro line.', help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.', aliases=['tokyometro'])
     async def metro(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
         author: discord.User = ctx.author
