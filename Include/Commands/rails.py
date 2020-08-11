@@ -1,4 +1,5 @@
 from discord.ext import commands
+from similarity.damerau import Damerau
 import json
 import random
 import discord
@@ -107,34 +108,95 @@ def get_embed(ctx: commands.Context, title: str, color: discord.Color, descripti
     return embed
 
 
+def fuzzy_search(ctx: commands.Context, query: str, lines: typing.List[object]) -> typing.Optional[discord.Embed]:
+    line_names = list(map(lambda x: x['name'], lines))
+    author: discord.User = ctx.author
+    damerau = Damerau()
+
+    def check_distance(name: str) -> bool:
+        distance = damerau.distance(query, name)
+        return distance <= 5.0
+
+    line_names = list(filter(check_distance, line_names))
+    if len(line_names) == 0:
+        return None
+    else:
+        embed = discord.Embed(title='Search Result', description='Sorry, I cannot find any results. Did you mean...',
+                              color=discord.Color.from_rgb(30, 99, 175)).set_author(name=author.display_name,
+                                                                                    icon_url=author.avatar_url)
+        joined = '\n'.join(list(map(lambda x: '`{}`'.format(x), line_names)))
+        embed.add_field(name='Results', value=joined, inline=False)
+        return embed
+
+
+def get_multiple_result_embed(ctx: commands.Context, lines: typing.List[object]) -> discord.Embed:
+    author: discord.User = ctx.author
+    embed = discord.Embed(title='Search Result', description='The following are possible search results.', color=discord.Color.from_rgb(30, 99, 175)).set_author(name=author.display_name, icon_url=author.avatar_url)
+    line_names = list(map(lambda x: '`{}`'.format(x['name']), lines))
+    joined = '\n'.join(line_names)
+    embed.add_field(name='Results', value=joined, inline=False)
+    return embed
+
+
+async def search_line(ctx: commands.Context, specific: str, lines: typing.List[dict], railway_name: str) -> typing.Union[typing.Optional[discord.Embed], dict]:
+    specific = specific.lower()
+    found = False
+    found_lines = []
+    line = dict()
+    for item in lines:
+        if specific == item['abbrev']:
+            line = item
+            found = True
+            break
+        elif specific in item['name'].lower() and len(specific) >= 3:
+            line = item
+            found_lines.append(item)
+            found = True
+        elif len(specific) < 3:
+            await ctx.send('The keyword has to be at least 3 characters long!')
+            return None
+
+    if len(found_lines) > 1:
+        embed = get_multiple_result_embed(ctx, found_lines)
+        return embed
+    elif not found:
+        embed = fuzzy_search(ctx, specific, lines)
+        if embed is None:
+            await ctx.send('There is no such line in {}!'.format(railway_name))
+            return None
+        return embed
+    return line
+
+
 class Rails(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
         with open('Storage/trains.json', 'r', encoding='utf-8') as file:
             raw_trains = file.read()
-            self.trains: typing.List[object] = json.loads(raw_trains)
+            self.trains: typing.List[dict] = json.loads(raw_trains)
         with open('Storage/tokyo_metro.json', 'r', encoding='utf-8') as file_2:
             raw_metrolines = file_2.read()
-            self.metrolines: typing.List[object] = json.loads(raw_metrolines)
+            self.metrolines: typing.List[dict] = json.loads(raw_metrolines)
         with open('Storage/toei_subway.json', 'r', encoding='utf-8') as file_3:
             raw_toeilines = file_3.read()
-            self.toeilines: typing.List[object] = json.loads(raw_toeilines)
+            self.toeilines: typing.List[dict] = json.loads(raw_toeilines)
         with open('Storage/mtr.json', 'r', encoding='utf-8') as file_4:
             raw_mtrlines = file_4.read()
-            self.mtrlines: typing.List[object] = json.loads(raw_mtrlines)
+            self.mtrlines: typing.List[dict] = json.loads(raw_mtrlines)
         with open('Storage/shinkansen.json', 'r', encoding='utf-8') as file_5:
             raw_shinkansen = file_5.read()
-            self.shinkansen: typing.List[object] = json.loads(raw_shinkansen)
+            self.shinkansen: typing.List[dict] = json.loads(raw_shinkansen)
         with open('Storage/jrwest.json', 'r', encoding='utf-8') as file_6:
             raw_jrwestlines = file_6.read()
-            self.jrwestlines: typing.List[object] = json.loads(raw_jrwestlines)
+            self.jrwestlines: typing.List[dict] = json.loads(raw_jrwestlines)
 
     @commands.command(description='Randomly get or query information on a Tokyo Metro line.',
                       help='This command will randomly show information on a Tokyo Metro line, or specific line when it\'s specified.',
                       aliases=['tokyometro'])
     async def metro(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
         # If the user does not specify which line, it will return a random line
+        line = dict()
         if specific == '':
             line = random.choice(self.metrolines)
         # Return information about the Tokyo Metro if the user specified "info"
@@ -168,17 +230,15 @@ class Rails(commands.Cog):
             return
         else:
             # Search the name of the line
-            first_letter = specific[0].upper()
-            specific = first_letter + specific[1:]
-            count = 0
-            found = False
-            for item in self.metrolines:
-                if item['name'] in specific or specific == item['abbrev']:
-                    line = item
-                    found = True
-                count += 1
-                if count == len(self.metrolines) and found is False:
-                    await ctx.send("There is no such line in Tokyo Metro!")
+            result = await search_line(ctx, specific, self.metrolines, 'Tokyo Metro')
+            if isinstance(result, discord.Embed):
+                await ctx.send(embed=result)
+                return
+            elif isinstance(result, dict):
+                line = result
+            else:
+                return
+
         colour = parse_hex_colour(line['colour'])
         embed = get_embed(ctx, title='Tokyo Metro ' + line['name'] + ' Line', color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
                           route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
@@ -191,6 +251,7 @@ class Rails(commands.Cog):
                       help='This command will randomly show information on a Toei Subway line, or specific line when it\'s specified.',
                       aliases=['toeisubway'])
     async def toei(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
+        line = dict()
         if specific == '':
             line = random.choice(self.toeilines)
         elif specific == 'info':
@@ -215,17 +276,15 @@ class Rails(commands.Cog):
             await ctx.send(embed=embed)
             return
         else:
-            first_letter = specific[0].upper()
-            specific = first_letter + specific[1:]
-            count = 0
-            found = False
-            for item in self.toeilines:
-                if item['name'] in specific or specific == item['abbrev']:
-                    line = item
-                    found = True
-                count += 1
-                if count == len(self.toeilines) and found == False:
-                    await ctx.send("There is no such line in Toei Subway!")
+            result = await search_line(ctx, specific, self.toeilines, 'Toei Subway')
+            if isinstance(result, discord.Embed):
+                await ctx.send(embed=result)
+                return
+            elif isinstance(result, dict):
+                line = result
+            else:
+                return
+
         colour = parse_hex_colour(line['colour'])
         embed = get_embed(ctx, title='Toei ' + line['name'] + ' Line',
                           color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
@@ -239,7 +298,7 @@ class Rails(commands.Cog):
                       help='This command will randomly show information on an MTR line, or specific line when it\'s specified.',
                       aliases=['hkmtr'])
     async def mtr(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
-        author: discord.User = ctx.author
+        line = dict()
         if specific == '':
             line = random.choice(self.mtrlines)
         elif specific == 'info':
@@ -267,18 +326,14 @@ class Rails(commands.Cog):
             await ctx.send(embed=embed)
             return
         else:
-            first_letter = specific[0].upper()
-            specific = first_letter + specific[1:]
-            count = 0
-            found = False
-            for item in self.mtrlines:
-                if specific in item['name'] or item['name'] in specific or specific in item['abbrev']:
-                    line = item
-                    found = True
-                count += 1
-                if count == len(self.mtrlines) and found == False:
-                    await ctx.send("There is no such line in the MTR!")
-                    return
+            result = await search_line(ctx, specific, self.mtrlines, 'MTR')
+            if isinstance(result, discord.Embed):
+                await ctx.send(embed=result)
+                return
+            elif isinstance(result, dict):
+                line = result
+            else:
+                return
         colour = parse_hex_colour(line['colour'])
         embed = get_embed(ctx, title=line['name'] + ' Line',
                           color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
@@ -297,7 +352,7 @@ class Rails(commands.Cog):
         aliases=['bullettrain'])
     async def shinkansen(self, ctx: commands.Context, arg_1: typing.Optional[str] = '',
                          arg_2: typing.Optional[str] = ''):
-        author: discord.User = ctx.author
+        line = dict()
         if arg_1 == '':
             line = random.choice(self.shinkansen)
         elif arg_1 == 'info':
@@ -327,18 +382,32 @@ class Rails(commands.Cog):
             await ctx.send(embed=embed)
             return
         else:
-            first_letter = arg_1[0].upper()
-            arg_1 = first_letter + arg_1[1:]
-            count = 0
+            # Since Shinkansen doesn't have abbreviations, we have to do it for Shinkansen specifically.
+            arg_1 = arg_1.lower()
             found = False
+            found_lines = []
             for item in self.shinkansen:
-                if arg_1 in item['name'] or item['name'] in arg_1:
+                if arg_1 in item['name'].lower() and len(arg_1) >= 3:
                     line = item
+                    found_lines.append(item)
                     found = True
-                count += 1
-                if count == len(self.shinkansen) and found == False:
-                    await ctx.send("There is no such line in the Shinkansen!")
+                elif len(arg_1) < 3:
+                    await ctx.send('The keyword has to be at least 3 characters long!')
                     return
+
+            if len(found_lines) > 1:
+                embed = get_multiple_result_embed(ctx, found_lines)
+                await ctx.send(embed=embed)
+                return
+            elif not found:
+                embed = fuzzy_search(ctx, arg_1, self.shinkansen)
+                if embed is None:
+                    await ctx.send('There is no such line in the Shinkansen!')
+                    return
+                else:
+                    await ctx.send(embed=embed)
+                    return
+
         colour = parse_hex_colour(line['colour'])
         embed = get_embed(ctx, title=line['name'] + ' Shinkansen',
                           color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
@@ -355,7 +424,7 @@ class Rails(commands.Cog):
                       help='This command will randomly show information on a JR West line, or specific line when it\'s specified.',
                       aliases=['west'])
     async def jrwest(self, ctx: commands.Context, specific: typing.Optional[str] = ''):
-        author: discord.User = ctx.author
+        line = dict()
         if specific == '':
             line = random.choice(self.jrwestlines)
         elif specific == 'info':
@@ -379,17 +448,14 @@ class Rails(commands.Cog):
             await ctx.send(embed=embed)
             return
         else:
-            first_letter = specific[0].upper()
-            specific = first_letter + specific[1:]
-            count = 0
-            found = False
-            for item in self.jrwestlines:
-                if specific in item['name'] or item['name'] in specific:
-                    line = item
-                    found = True
-                count += 1
-                if count == len(self.jrwestlines) and found == False:
-                    await ctx.send("There is no such line in JR West!")
+            result = await search_line(ctx, specific, self.jrwestlines, 'JR West')
+            if isinstance(result, discord.Embed):
+                await ctx.send(embed=result)
+                return
+            elif isinstance(result, dict):
+                line = result
+            else:
+                return
         colour = parse_hex_colour(line['colour'])
         embed = get_embed(ctx, title=line['name'] + ' Line',
                           color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
