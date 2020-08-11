@@ -1,4 +1,5 @@
 from discord.ext import commands
+from similarity.damerau import Damerau
 import json
 import random
 import discord
@@ -107,6 +108,37 @@ def get_embed(ctx: commands.Context, title: str, color: discord.Color, descripti
     return embed
 
 
+def fuzzy_search(ctx: commands.Context, query: str, lines: typing.List[object]) -> typing.Optional[discord.Embed]:
+    line_names = list(map(lambda x: x['name'], lines))
+    author: discord.User = ctx.author
+    damerau = Damerau()
+
+    def check_distance(name: str) -> bool:
+        distance = damerau.distance(query, name)
+        print(distance)
+        return distance <= 5.0
+
+    line_names = list(filter(check_distance, line_names))
+    if len(line_names) == 0:
+        return None
+    else:
+        embed = discord.Embed(title='Search Result', description='Sorry, I cannot find any results. Did you mean...',
+                              color=discord.Color.from_rgb(30, 99, 175)).set_author(name=author.display_name,
+                                                                                    icon_url=author.avatar_url)
+        joined = '\n'.join(list(map(lambda x: '`{}`'.format(x), line_names)))
+        embed.add_field(name='Results', value=joined, inline=False)
+        return embed
+
+
+def get_multiple_result_embed(ctx: commands.Context, lines: typing.List[object]) -> discord.Embed:
+    author: discord.User = ctx.author
+    embed = discord.Embed(title='Search Result', description='The following are possible search results.', color=discord.Color.from_rgb(30, 99, 175)).set_author(name=author.display_name, icon_url=author.avatar_url)
+    line_names = list(map(lambda x: '`{}`'.format(x['name']), lines))
+    joined = '\n'.join(line_names)
+    embed.add_field(name='Results', value=joined, inline=False)
+    return embed
+
+
 class Rails(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
@@ -168,17 +200,35 @@ class Rails(commands.Cog):
             return
         else:
             # Search the name of the line
-            first_letter = specific[0].upper()
-            specific = first_letter + specific[1:]
-            count = 0
+            specific = specific.lower()
             found = False
+            lines = []
             for item in self.metrolines:
-                if item['name'] in specific or specific == item['abbrev']:
+                if specific == item['abbrev']:
                     line = item
                     found = True
-                count += 1
-                if count == len(self.metrolines) and found is False:
-                    await ctx.send("There is no such line in Tokyo Metro!")
+                    break
+                elif specific in item['name'].lower() and len(specific) >= 3:
+                    line = item
+                    lines.append(item)
+                    found = True
+                elif len(specific) < 3:
+                    await ctx.send('The keyword has to be at least 3 characters long!')
+                    return
+
+            if len(lines) > 1:
+                embed = get_multiple_result_embed(ctx, lines)
+                await ctx.send(embed=embed)
+                return
+            elif not found:
+                embed = fuzzy_search(ctx, specific, self.metrolines)
+                if embed is None:
+                    await ctx.send('There is no such line in Tokyo Metro!')
+                    return
+                else:
+                    await ctx.send(embed=embed)
+                    return
+
         colour = parse_hex_colour(line['colour'])
         embed = get_embed(ctx, title='Tokyo Metro ' + line['name'] + ' Line', color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
                           route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
