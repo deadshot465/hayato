@@ -115,7 +115,7 @@ def fuzzy_search(ctx: commands.Context, query: str, lines: typing.List[object]) 
 
     def check_distance(name: str) -> bool:
         distance = damerau.distance(query, name)
-        return distance <= 5.0
+        return distance <= 4.0
 
     line_names = list(filter(check_distance, line_names))
     if len(line_names) == 0:
@@ -139,7 +139,6 @@ def get_multiple_result_embed(ctx: commands.Context, lines: typing.List[object])
 
 
 async def search_line(ctx: commands.Context, specific: str, lines: typing.List[dict], railway_name: str) -> typing.Union[typing.Optional[discord.Embed], dict]:
-    specific = specific.lower()
     found = False
     found_lines = []
     line = dict()
@@ -148,7 +147,8 @@ async def search_line(ctx: commands.Context, specific: str, lines: typing.List[d
             line = item
             found = True
             break
-        elif specific in item['name'].lower() and len(specific) >= 3:
+        specific = specific.lower()
+        if specific in item['name'].lower() and len(specific) >= 3:
             line = item
             found_lines.append(item)
             found = True
