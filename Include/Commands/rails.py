@@ -147,12 +147,16 @@ async def search_line(ctx: commands.Context, specific: str, lines: typing.List[d
             line = item
             found = True
             break
-        specific = specific.lower()
-        if specific in item['name'].lower() and len(specific) >= 3:
+        _specific = specific.lower()
+        if _specific == item['name'].lower():
+            line = item
+            found = True
+            break
+        if _specific in item['name'].lower() and len(_specific) >= 3:
             line = item
             found_lines.append(item)
             found = True
-        elif len(specific) < 3:
+        elif len(_specific) < 3 and len(_specific) != 1:
             await ctx.send('The keyword has to be at least 3 characters long!')
             return None
 
