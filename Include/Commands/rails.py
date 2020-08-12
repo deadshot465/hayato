@@ -143,7 +143,7 @@ async def search_line(ctx: commands.Context, specific: str, lines: typing.List[d
     found_lines = []
     line = dict()
     for item in lines:
-        if specific == item['abbrev']:
+        if specific.lower() == item['abbrev'].lower():
             line = item
             found = True
             break
