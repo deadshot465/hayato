@@ -6,6 +6,8 @@ from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
 
+
+load_dotenv(verbose=True)
 # A simple description of our bot.
 DESCRIPTION = 'A Discord bot that can do some fun stuffs.'
 # Various trains for Hayato to play.
@@ -24,7 +26,10 @@ HELP = {
     'help': 'List available commands. Specifying a category will show available commands under that specific category. Specifying a command will show detailed usage and description of that command.',
     'aliases': ['manual']
 }
-bot = commands.Bot(command_prefix='h!', description=DESCRIPTION, help_command=help.Help(command_attrs=HELP))
+
+# Load prefix from .env file, or use a default prefix.
+PREFIX = os.getenv('PREFIX') or 'h!'
+bot = commands.Bot(command_prefix=PREFIX, description=DESCRIPTION, help_command=help.Help(command_attrs=HELP))
 # Record the initial update time for switching presences every hour.
 last_updated = datetime.now()
 
@@ -58,7 +63,6 @@ if __name__ == '__main__':
         bot.load_extension(extension)
     print('Extensions successfully loaded.')
 
-load_dotenv(verbose=True)
 bot.run(os.getenv('TOKEN'), bot=True, reconnect=True)
 
 

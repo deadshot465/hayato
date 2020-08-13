@@ -1,10 +1,17 @@
 import datetime
 import discord
+import googlemaps
 import json
+import os
 import random
 import requests
+import time as _time
 import typing
 from discord.ext import commands
+
+
+GOOGLE_ENDPOINT = 'https://maps.googleapis.com/maps/api/timezone/{}?{}'
+gmaps = googlemaps.Client(key=os.getenv('GOOGLE_API_KEY'))
 
 
 class Info(commands.Cog):
@@ -45,8 +52,17 @@ class Info(commands.Cog):
                 time_zone_name = time_zone
                 break
         if time_zone_name == '':
-            await ctx.send('Sorry, I don\'t know the time of this city!')
-            return
+            try:
+                geocode = gmaps.geocode(args)
+                item: dict = geocode[0]
+                geometry: dict = item['geometry']
+                location: dict = geometry['location']
+                actual_location = (location['lat'], location['lng'])
+                time_zone_data: dict = gmaps.timezone(actual_location, _time.time())
+                time_zone_name = time_zone_data['timeZoneId']
+            except:
+                await ctx.send('Sorry, I don\'t know the time of this city!')
+                return
         response = requests.get(url='http://worldtimeapi.org/api/timezone/' + time_zone_name)
         time_info = json.loads(response.text)
         time_string: str = time_info['datetime']
