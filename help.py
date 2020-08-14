@@ -1,5 +1,5 @@
 from discord.ext import commands
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Set
 import discord
 
 
@@ -13,7 +13,8 @@ class Help(commands.HelpCommand):
         embed = discord.Embed(description='Here is a list of commands for Hayato.', color=self.color)
         for item in mapping.items():
             cmds: List[commands.Command] = await self.filter_commands(commands=item[1], sort=True)
-            cmd_names = map(lambda x: '`' + x.name + '`', cmds)
+            cmds_dedup: Set[commands.Command] = set(cmds)
+            cmd_names = map(lambda x: '`' + x.name + '`', cmds_dedup)
             cmd_string = ' '.join(cmd_names)
             category_name: str
             if item[0] is not None:
