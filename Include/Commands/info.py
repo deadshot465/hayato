@@ -19,6 +19,7 @@ class Info(commands.Cog):
         super().__init__()
         self.bot = bot
         self.pings = ['pong', 'pang', 'peng', 'pung']
+        self.color = discord.Color.from_rgb(30, 99, 175)
 
     @commands.command(description='See the information about Hayato.', help='The information about Hayato, e.g. authors, version number, etc.', aliases=['credits'])
     async def about(self, ctx: commands.Context):
@@ -68,6 +69,34 @@ class Info(commands.Cog):
         time_string: str = time_info['datetime']
         time = datetime.datetime.fromisoformat(time_string)
         await ctx.send('The local time of **' + time_zone_name.replace('_', ' ') + '** is ' + time.strftime('%Y-%m-%d %H:%M:%S') + '!')
+
+    @commands.command(description='Get the information about this server.', help='Get detailed information about this server, including the owner, etc.', aliases=['server'])
+    async def guild(self, ctx: commands.Context):
+        guild: discord.Guild = ctx.guild
+        author: typing.Union[discord.User, discord.Member] = ctx.author
+        embed = discord.Embed(title='Server Information', description=f'Here is the detailed information of {guild.name}.', color=self.color)
+        embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+        embed.set_thumbnail(url=guild.icon_url)
+        if guild.banner is not None:
+            embed.add_field(name='Banner', value=guild.banner, inline=False)
+        if guild.banner_url is not None and len(str(guild.banner_url)) > 0:
+            embed.add_field(name='Banner URL', value=str(guild.banner_url), inline=False)
+        embed.add_field(name='Creation Date', value=guild.created_at.strftime('%Y-%m-%d %H:%M:%S'), inline=False)
+        if guild.description is not None:
+            embed.add_field(name='Description', value=guild.description, inline=False)
+        if len(guild.features) > 0:
+            embed.add_field(name='Features', value=(', '.join(guild.features)), inline=False)
+        embed.add_field(name='Guild ID', value=guild.id, inline=False)
+        embed.add_field(name='Owner', value='{}#{} [{}]'.format(guild.owner.display_name, guild.owner.discriminator, guild.owner.id), inline=False)
+        if guild.splash is not None:
+            embed.add_field(name='Splash', value=guild.splash, inline=False)
+        if guild.splash_url is not None and len(str(guild.splash_url)) > 0:
+            embed.add_field(name='Splash URL', value=str(guild.splash_url), inline=False)
+        embed.add_field(name='Emoji Limits', value=guild.emoji_limit, inline=True)
+        embed.add_field(name='File Size Limits', value=guild.filesize_limit, inline=True)
+        embed.add_field(name='Members', value=guild.member_count, inline=True)
+        embed.add_field(name='Voice Region', value=str(guild.region), inline=True)
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot):
