@@ -1,12 +1,19 @@
 from discord.ext import commands
 from typing import Optional, Tuple
 from Utils.utils import search_user
+import json
 import random
 import re
+import typing
 
 
 # Available domains.
 DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}
+
+
+with open('Storage/convert.json', 'r', encoding='utf-8') as file:
+    raw_convert_table = file.read()
+    convert_table: typing.Dict[object, object] = json.loads(raw_convert_table)
 
 
 # Count vowels
@@ -38,36 +45,109 @@ def dash_separator(string: str) -> str:
     return result
 
 
-# Convert fahrenheit to celsius
-def cvt(unit1: str, unit2: str, value: float) -> Tuple[float, float, str, str]:
-    target = 0.0
+def cvt_units(unit1: str, unit2: str, value: float):
+    # Convert temperature units
+    output = 0.0
+    error = False
     unit_source = ''
     unit_target = ''
-    if unit1 == 'f' and unit2 == 'c':
-        target = (value - 32.0) * 5.0 / 9.0
-        unit_source = '\u2109'
-        unit_target = '\u2103'
-    if unit1 == 'c' and unit2 == 'f':
-        target = value * 9.0 / 5.0 + 32.0
+    if unit1 == 'c':
         unit_source = '\u2103'
-        unit_target = '\u2109'
-    if unit1 == 'lbs' and unit2 == 'kg':
-        target = value / 2.2
+        if unit1 == unit2:
+            output = value
+            unit_target = unit_source
+        elif unit2 == 'k':
+            output = value + 273.15
+            unit_target = 'K'
+        elif unit2 == 'f':
+            output = value * 9/5 + 32
+            unit_target = '\u2109'
+        else:
+            error = True
+    elif unit1 == 'f':
+        unit_source = '\u2109'
+        if unit1 == unit2:
+            output = value
+            unit_target = unit_source
+        else:
+            output = (value - 32) * 5 / 9
+            if unit2 == 'c':
+                unit_target = '\u2103'
+            elif unit2 == 'k':
+                output = value + 273.15
+                unit_target = 'K'
+            else:
+                error = True
+    elif unit1 == 'k':
+        unit_source = 'K'
+        if unit1 == unit2:
+            output = value
+            unit_source = unit_target
+        else:
+            output = value - 273.15
+            if unit2 == 'c':
+                unit_target = '\u2103'
+            elif unit2 == 'f':
+                output = value * 9/5 + 32
+                unit_target = '\u2109'
+            else:
+                error = True
+    elif unit1 == 'g':
+        unit_source = unit1
+        if unit1 == unit2:
+            output = value
+            unit_target = unit_source
+        elif unit2 == 'kg':
+            output = value * 0.001
+            unit_target = 'kg'
+        elif unit2 == 'lbs' or unit2 == 'lb':
+            output = value * 0.0022
+            unit_target = 'lbs'
+        else:
+            error = True
+    elif unit1 == 'kg':
+        unit_source = unit1
+        if unit1 == unit2:
+            output = value
+            unit_target = unit_source
+        elif unit2 == 'g':
+            output = value * 1000
+            unit_target = 'g'
+        elif unit2 == 'lbs' or unit2 == 'lb':
+            output = value * 2.2
+            unit_target = 'lbs'
+        else:
+            error = True
+    elif unit1 == 'lbs' or unit1 == 'lb':
         unit_source = 'lbs'
-        unit_target = 'kg'
-    if unit1 == 'kg' and unit2 == 'lbs':
-        target = value * 2.2
-        unit_source = 'kg'
-        unit_target = 'lbs'
-    if unit1 == 'inch' and unit2 == 'cm':
-        target = value * 2.54
-        unit_source = 'inch'
-        unit_target = 'cm'
-    if unit1 == 'cm' and unit2 == 'inch':
-        target = value / 2.54
-        unit_source = 'cm'
-        unit_target = 'inch'
-    return value, target, unit_source, unit_target
+        if unit1 == unit2:
+            output = value
+            unit_target = unit_source
+        elif unit2 == 'kg':
+            output = value / 2.2
+            unit_target = 'kg'
+        elif unit2 == 'g':
+            output = (value / 2.2) * 1000
+            unit_target = 'g'
+        else:
+            error = True
+    else:
+        cvt_factor = convert_table['length'].get(unit2)
+        if cvt_factor == None:
+            error = True
+        else:
+            cvt_factor = cvt_factor.get(unit1)
+            if cvt_factor == None:
+                error = True
+            else:
+                output = value * cvt_factor
+                unit_source = unit1
+                unit_target = unit2
+    if error:
+        return 'Are you trying to fool me? This won\'t work!'
+    else:
+        output = round(output, 2)
+        return [value, output, unit_source, unit_target]
 
 
 # Random pick
@@ -188,10 +268,13 @@ class Utility(commands.Cog):
         answer = dash_separator(args)
         await ctx.send(answer)
 
-    @commands.command(description='Convert units. Celsius/Fahrenheit, kg/lbs, inch/cm converter are available.', help='Convert values between Celsius and Fahrenheit, between kilograms and pounds, or between inches and centimeters', aliases=['convert'])
-    async def cvt(self, ctx: commands.Context, unit1: str, unit2: str, value: float):
-        answer = cvt(unit1, unit2, value)
-        await ctx.send('{}{} is equal to {}{}!'.format(answer[0], answer[2], answer[1], answer[3]))
+    @commands.command(description='Convert units.', help='This command will help you convert between units of temperature, length and weight.', aliases=['convert'])
+    async def cvt(self, ctx: commands.Context, unit1: str, unit2: str, value: typing.Optional[float] = 0.0):
+        answer = cvt_units(unit1, unit2, value)
+        if isinstance(answer, str):
+            await ctx.send(answer)
+        elif isinstance(answer, list):
+            await ctx.send('{}{} is equal to {}{}!'.format(answer[0], answer[2], answer[1], answer[3]))
 
     @commands.command(description='Hayato will help you pick one choice randomly.', help='Send multiple options to Hayato and let Hayato pick one from those options for you.', aliases=['choose'])
     async def pick(self, ctx: commands.Context, *, args: str):
