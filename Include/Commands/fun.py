@@ -1,5 +1,6 @@
 import typing
 import random
+import time
 from discord.ext import commands
 
 
@@ -26,6 +27,19 @@ def add_player(name: str, numbers: str):
     return 'Your request is successfully processed!'
 
 
+def compare_numbers(drawn_numbers: list):
+    result_dict = {}
+    for name in LOTTERY_DICT:
+        count = 0
+        player_numbers = LOTTERY_DICT[name]
+        for number in player_numbers:
+            if number in drawn_numbers:
+                count += 1
+        result_dict[name] = count
+    LOTTERY_DICT.clear()
+    return result_dict
+
+
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
@@ -44,13 +58,32 @@ class Fun(commands.Cog):
     @commands.command(description='Wanna try your luck?',
                       help='Join the lottery every week! Maybe you can gain a lot from it!')
     async def lottery(self,ctx: commands.Context, name: typing.Optional[str] = '', *, numbers: typing.Optional[str] = ''):
+        if name == 'start':
+            await ctx.send('The lottery will start in 10 seconds!')
+            time.sleep(1)
+            drawn_numbers = []
+            word_list = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
+            for word in word_list:
+                number = random.randint(1, 49)
+                while number in drawn_numbers:
+                    number = random.randint(1, 49)
+                drawn_numbers.append(number)
+                await ctx.send('The ' + word + ' drawn number is **' + str(number) + '**!')
+                time.sleep(1)
+            drawn_numbers.sort()
+            await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
+            result = compare_numbers(drawn_numbers)
+            for player in result:
+                await ctx.send(player + ' hits **' + str(result[player]) + '** numbers!')
+            return
         if name == '':
             await ctx.send("Are you trying to fool me? Give me your name first!")
             return
         if numbers == '':
             await ctx.send("Are you trying to fool me? Give me the numbers!")
             return
-        result = add_player(name, numbers)
+        else:
+            result = add_player(name, numbers)
         await ctx.send(result)
 
 
