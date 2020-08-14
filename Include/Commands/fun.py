@@ -1,3 +1,4 @@
+import discord
 import typing
 import random
 import time
@@ -23,19 +24,24 @@ def add_player(name: str, numbers: str):
             return 'You need numbers between 1 and 49!'
     if not len(number_set) == 6:
         return 'You need exactly 6 numbers!'
-    LOTTERY_DICT[name] = number_set
+    if LOTTERY_DICT.get(name) is None:
+        LOTTERY_DICT[name] = []
+    LOTTERY_DICT[name].append(number_set)
     return 'Your request is successfully processed!'
 
 
 def compare_numbers(drawn_numbers: list):
     result_dict = {}
     for name in LOTTERY_DICT:
-        count = 0
-        player_numbers = LOTTERY_DICT[name]
-        for number in player_numbers:
-            if number in drawn_numbers:
-                count += 1
-        result_dict[name] = count
+        player_numbers_list = LOTTERY_DICT[name]
+        for numbers_set in player_numbers_list:
+            count = 0
+            for number in numbers_set:
+                if number in drawn_numbers:
+                    count += 1
+            if result_dict.get(name) is None:
+                result_dict[name] = []
+            result_dict[name].append(count)
     LOTTERY_DICT.clear()
     return result_dict
 
@@ -57,32 +63,36 @@ class Fun(commands.Cog):
 
     @commands.command(description='Wanna try your luck?',
                       help='Join the lottery every week! Maybe you can gain a lot from it!')
-    async def lottery(self,ctx: commands.Context, name: typing.Optional[str] = '', *, numbers: typing.Optional[str] = ''):
-        if name == 'start':
-            await ctx.send('The lottery will start in 10 seconds!')
-            time.sleep(1)
-            drawn_numbers = []
-            word_list = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
-            for word in word_list:
-                number = random.randint(1, 49)
-                while number in drawn_numbers:
-                    number = random.randint(1, 49)
-                drawn_numbers.append(number)
-                await ctx.send('The ' + word + ' drawn number is **' + str(number) + '**!')
+    async def lottery(self,ctx: commands.Context, *, numbers: typing.Optional[str] = ''):
+        if numbers == 'start':
+            permission: discord.Permissions = ctx.author.permissions_in(ctx.channel)
+            is_administrator = permission.administrator
+            if not is_administrator:
+                await ctx.send('You are not an administrator, you can\'t start the lottery yourself!')
+                return
+            else:
+                await ctx.send('The lottery will start in 10 seconds!')
                 time.sleep(1)
-            drawn_numbers.sort()
-            await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
-            result = compare_numbers(drawn_numbers)
-            for player in result:
-                await ctx.send(player + ' hits **' + str(result[player]) + '** numbers!')
-            return
-        if name == '':
-            await ctx.send("Are you trying to fool me? Give me your name first!")
-            return
+                drawn_numbers = []
+                word_list = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
+                for word in word_list:
+                    number = random.randint(1, 49)
+                    while number in drawn_numbers:
+                        number = random.randint(1, 49)
+                    drawn_numbers.append(number)
+                    await ctx.send('The ' + word + ' drawn number is **' + str(number) + '**!')
+                    time.sleep(1)
+                drawn_numbers.sort()
+                await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
+                result = compare_numbers(drawn_numbers)
+                for player in result:
+                    await ctx.send(player.display_name + ' hits **' + str(result[player]) + '** numbers!')
+                return
         if numbers == '':
             await ctx.send("Are you trying to fool me? Give me the numbers!")
             return
         else:
+            name = ctx.author
             result = add_player(name, numbers)
         await ctx.send(result)
 
