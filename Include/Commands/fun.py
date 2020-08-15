@@ -1,14 +1,22 @@
+import asyncio
+import datetime
 import discord
+import json
+import marshmallow_dataclass
 import typing
 import random
 import time
 from discord.ext import commands
+from Include.Commands.lottery.lottery import LotteryParticipant
+from marshmallow import Schema
 
 
-LOTTERY_DICT = {}
+# We don't use a global dictionary anymore.
+# LOTTERY_DICT = {}
 
 
-def add_player(name: str, numbers: str):
+# Also we use an user instead of an arbitrary name.
+def add_player(author: typing.Union[discord.User, discord.Member], numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
     # Separate the choices into a list
     number_list = numbers.split(',')
     # For each number remove the spaces
@@ -24,29 +32,51 @@ def add_player(name: str, numbers: str):
             return 'You need numbers between 1 and 49!'
     if not len(number_set) == 6:
         return 'You need exactly 6 numbers!'
-    if LOTTERY_DICT.get(name) is None:
-        LOTTERY_DICT[name] = []
-    LOTTERY_DICT[name].append(number_set)
-    return 'Your request is successfully processed!'
+    participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
+    participant: LotteryParticipant
+    if len(participant_data) > 0:
+        participant = participant_data[0]
+        if participant.lottery_choices is None:
+            participant.lottery_choices = list()
+        participant.lottery_choices.append(sorted(number_set))
+        serialized = schema().dumps(lottery_data, many=True)
+        with open('Storage/lottery.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return 'Your request is successfully processed!'
+    else:
+        participant = LotteryParticipant(author.display_name, author.id, list(), 0, datetime.datetime.now())
+        participant.lottery_choices.append(sorted(number_set))
+        lottery_data.append(participant)
+        serialized = schema().dumps(lottery_data, many=True)
+        with open('Storage/lottery.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return 'Your request is successfully processed!'
 
 
-def compare_numbers(drawn_numbers: list):
-    result_dict = {}
-    for name in LOTTERY_DICT:
-        player_numbers_list = LOTTERY_DICT[name]
-        for numbers_set in player_numbers_list:
+async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    for participant in lottery_data:
+        player_numbers_list = participant.lottery_choices
+        for numbers_set in enumerate(player_numbers_list):
             count = 0
-            for number in numbers_set:
+            for number in numbers_set[1]:
                 if number in drawn_numbers:
                     count += 1
-            if result_dict.get(name) is None:
-                result_dict[name] = []
-            result_dict[name].append(count)
-    LOTTERY_DICT.clear()
-    return result_dict
+            await ctx.send('{}\'s lottery #{} hits **{}** numbers!'.format(participant.username, numbers_set[0] + 1, count))
+            count = 0
+        participant.lottery_choices.clear()
+        serialized = schema().dumps(lottery_data, many=True)
+        with open('Storage/lottery.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
 
 
 class Fun(commands.Cog):
+    participant_schema = marshmallow_dataclass.class_schema(LotteryParticipant)
+    with open('Storage/lottery.json') as file_1:
+        lottery_data: typing.List[LotteryParticipant] = participant_schema().loads(json_data=file_1.read(), many=True)
+
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
@@ -84,16 +114,14 @@ class Fun(commands.Cog):
                     time.sleep(1)
                 drawn_numbers.sort()
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
-                result = compare_numbers(drawn_numbers)
-                for player in result:
-                    await ctx.send(player.display_name + ' hits **' + str(result[player]) + '** numbers!')
+                await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
                 return
         if numbers == '':
             await ctx.send("Are you trying to fool me? Give me the numbers!")
             return
         else:
             name = ctx.author
-            result = add_player(name, numbers)
+            result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
         await ctx.send(result)
 
 

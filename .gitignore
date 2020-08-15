@@ -10,3 +10,6 @@ bin/
 lib/
 lib64/
 .env
+Include/Commands/__pycache__/
+Include/Commands/lottery/__pycache__/
+Storage/lottery.json
