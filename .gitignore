@@ -12,4 +12,5 @@ lib64/
 .env
 Include/Commands/__pycache__/
 Include/Commands/lottery/__pycache__/
+Include/Utils/__pycache__/
 Storage/lottery.json

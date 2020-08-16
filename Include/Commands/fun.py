@@ -8,6 +8,7 @@ import random
 import time
 from discord.ext import commands
 from Include.Commands.lottery.lottery import LotteryParticipant
+from Include.Utils.utils import USER_MENTION_REGEX
 from marshmallow import Schema
 
 
@@ -132,6 +133,7 @@ class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
+        self.color = discord.Colour.from_rgb(30, 99, 175)
 
     @commands.command(description='Sends a certain number KouFascinated emote.', help='Send a single KouFascinated emote, or arbitrary number of KouFascinated emotes if specified. Max allowed emotes in a single message is subject to Discord\'s limitation.', aliases=['koufascinated'])
     async def fascinated(self, ctx: commands.Context, count: typing.Optional[int] = 0):
@@ -146,14 +148,53 @@ class Fun(commands.Cog):
     @commands.command(description='Wanna try your luck?',
                       help='Join the lottery every week! Maybe you can gain a lot from it!')
     async def lottery(self,ctx: commands.Context, *, numbers: typing.Optional[str] = ''):
-        if numbers == 'info':
+        if numbers.lower().startswith('transfer') or numbers.lower().startswith('trade'):
+            # Split all texts following the command.
+            args = list(map(lambda x: x.strip(), numbers.split(' ')))
+            # Pop out the first argument, which in this case might be 'transfer' or 'trade.'
+            args.pop(0)
+            # Get the amount to trade.
+            try:
+                amount = int(args.pop(0))
+            except ValueError:
+                await ctx.send('Please input a correct amount of credits to transfer!')
+                return
+            if USER_MENTION_REGEX.match(args[0]) is None:
+                await ctx.send('The second argument has to be a valid user mention!')
+                return
+            elif amount < 0:
+                await ctx.send('You can\'t trade with negative amounts!')
+                return
+            participants_1 = list(filter(lambda x: x.user_id == ctx.author.id, self.lottery_data))
+            target_id = USER_MENTION_REGEX.match(args[0]).group(1)
+            participants_2 = list(filter(lambda x: x.user_id == int(target_id), self.lottery_data))
+            if len(participants_1) == 0:
+                await ctx.send('You can\'t trade with other people when you don\'t have an account!\nCreate an account first by buying a lottery.')
+                return
+            if participants_1[0].credits - amount < 0:
+                await ctx.send('You cannot transfer more credits than you currently have!')
+                return
+            if len(participants_2) == 0:
+                await ctx.send('Sorry! I cannot find the user you want to transfer credits to.\nEither the user does not exist, or the user has\'t joined in the lottery yet.')
+                return
+            participants_1[0].credits -= amount
+            participants_2[0].credits += amount
+            serialized = Fun.participant_schema().dumps(Fun.lottery_data, many=True)
+            with open('Storage/lottery.json', 'w') as file_1:
+                obj = json.loads(serialized)
+                file_1.write(json.dumps(obj, indent=2))
+            embed = discord.Embed(title='Transfer Credits', description='{} has transferred {} credits to {}!'.format(participants_1[0].username, amount, participants_2[0].username), color=self.color)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            embed.add_field(name='Balance', value=str(participants_1[0].credits), inline=False)
+            await ctx.send(embed=embed)
+
+        elif numbers == 'info':
             return
-        if numbers == 'start':
+        elif numbers == 'start':
             permission: discord.Permissions = ctx.author.permissions_in(ctx.channel)
             is_administrator = permission.administrator
             if not is_administrator:
                 await ctx.send('You are not an administrator, you can\'t start the lottery yourself!')
-                return
             else:
                 await ctx.send('The lottery will start in 10 seconds!')
                 time.sleep(1)
@@ -169,25 +210,20 @@ class Fun(commands.Cog):
                 drawn_numbers.sort()
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
                 await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
-                return
-        if numbers == 'daily':
+        elif numbers == 'daily':
             result = get_daily(ctx.author, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
-            return
-        if numbers == 'balance' or numbers == 'account':
+        elif numbers == 'balance' or numbers == 'account':
             result = get_balance(ctx.author, Fun.lottery_data)
             if isinstance(result, str):
                 await ctx.send(result)
             else:
                 await ctx.send(embed=result)
-            return
-        if numbers == '':
+        elif numbers == '':
             await ctx.send("Are you trying to fool me? Give me the numbers!")
-            return
         else:
-            name = ctx.author
             result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
-        await ctx.send(result)
+            await ctx.send(result)
 
 
 def setup(bot: commands.Bot):
