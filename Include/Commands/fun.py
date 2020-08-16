@@ -104,7 +104,7 @@ def get_weekly(author: typing.Union[discord.User, discord.Member], lottery_data:
             hours = (days - int(days)) * 24
             minutes = (hours - int(hours)) * 60
             seconds = (minutes - int(minutes)) * 60
-            result = '%01d:%02d:%02d:%02d' % (days, hours, minutes, seconds)
+            result = '%01d Days %02d:%02d:%02d' % (days, hours, minutes, seconds)
             return 'You need to wait at least 7 days to receive the next weekly credits! Time left: ' + result
     else:
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
