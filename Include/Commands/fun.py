@@ -49,7 +49,7 @@ def add_player(author: typing.Union[discord.User, discord.Member], numbers: str,
             file_1.write(json.dumps(obj, indent=2))
         return 'Your request is successfully processed! Deducted 10 credits from your account.'
     else:
-        participant = LotteryParticipant(author.display_name, author.id, list(), 100, datetime.datetime.now())
+        participant = LotteryParticipant(author.display_name, author.id, list(), 100, datetime.datetime.now(), datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
         lottery_data.append(participant)
         serialized = schema().dumps(lottery_data, many=True)
@@ -81,6 +81,31 @@ def get_daily(author: typing.Union[discord.User, discord.Member], lottery_data: 
             seconds = leftover_sec - (60 * minutes)
             result = '%02d:%02d:%02d' % (hours, minutes, seconds)
             return 'You need to wait at least 24 hours to receive the next daily credits! Time left: ' + result
+    else:
+        return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
+
+
+def get_weekly(author: typing.Union[discord.User, discord.Member], lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
+    participant: LotteryParticipant
+    if len(participant_data) > 0:
+        participant = participant_data[0]
+        elapsed_time = datetime.datetime.now() - participant.last_weekly_time
+        if elapsed_time.seconds > 604800:
+            participant.credits += 30
+            participant.last_weekly_time = datetime.datetime.now()
+            serialized = schema().dumps(lottery_data, many=True)
+            with open('Storage/lottery.json', 'w') as file_1:
+                obj = json.loads(serialized)
+                file_1.write(json.dumps(obj, indent=2))
+            return 'You have received your weekly 30 credits!'
+        else:
+            days = 7 - elapsed_time.seconds / 60 / 60 / 24
+            hours = (days - int(days)) * 24
+            minutes = (hours - int(hours)) * 60
+            seconds = (minutes - int(minutes)) * 60
+            result = '%01d:%02d:%02d:%02d' % (days, hours, minutes, seconds)
+            return 'You need to wait at least 7 days to receive the next daily credits! Time left: ' + result
     else:
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
@@ -233,6 +258,9 @@ class Fun(commands.Cog):
                 await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
         elif numbers == 'daily':
             result = get_daily(ctx.author, Fun.lottery_data, self.participant_schema)
+            await ctx.send(result)
+        elif numbers == 'weekly':
+            result = get_weekly(ctx.author, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
         elif numbers == 'balance' or numbers == 'account':
             result = get_balance(ctx.author, Fun.lottery_data)
