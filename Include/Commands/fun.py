@@ -65,7 +65,7 @@ def get_daily(author: typing.Union[discord.User, discord.Member], lottery_data: 
     if len(participant_data) > 0:
         participant = participant_data[0]
         elapsed_time = datetime.datetime.now() - participant.last_daily_time
-        if elapsed_time.seconds > 86400:
+        if elapsed_time.total_seconds() > 86400:
             participant.credits += 10
             participant.last_daily_time = datetime.datetime.now()
             serialized = schema().dumps(lottery_data, many=True)
@@ -91,7 +91,7 @@ def get_weekly(author: typing.Union[discord.User, discord.Member], lottery_data:
     if len(participant_data) > 0:
         participant = participant_data[0]
         elapsed_time = datetime.datetime.now() - participant.last_weekly_time
-        if elapsed_time.seconds > 604800:
+        if elapsed_time.total_seconds() > 604800:
             participant.credits += 30
             participant.last_weekly_time = datetime.datetime.now()
             serialized = schema().dumps(lottery_data, many=True)
