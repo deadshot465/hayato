@@ -230,7 +230,7 @@ class Fun(commands.Cog):
                    '4 numbers match: 150 credits\n' \
                    '5 numbers match: 500 credits\n' \
                    '6 numbers match: 2000 credits\n\n' \
-                   'You can get daily and weekly credits with the command `h!lottery daily` and `h!lottery weekly. Within a 24-hour period, you can receive 10 credits. You can also receive 30 credits for every 7 days. If you don’t have enough credits, or you want to give some credits to your friends, you can transfer credits with them. The command is `h!lottery transfer <amount> <recipient>`. You must ping the recipient in order to finish the transaction.\n\n' \
+                   'You can get daily and weekly credits with the command `h!lottery daily` and `h!lottery weekly`. Within a 24-hour period, you can receive 10 credits. You can also receive 30 credits for every 7 days. If you don’t have enough credits, or you want to give some credits to your friends, you can transfer credits with them. The command is `h!lottery transfer <amount> <recipient>`. You must ping the recipient in order to finish the transaction.\n\n' \
                    'Good luck!\n\n' \
                    'Examples of commands:\n`h!lottery 1,2,3,4,5,6` Correct\n`h!lottery 1-2-3-4-5-6` Incorrect, numbers must be separated by comma\n`h!lottery 2,2,3,5,7,7` Incorrect, numbers cannot be repeated.'
             embed = discord.Embed(title='Lottery', description=desc, colour=self.color)
