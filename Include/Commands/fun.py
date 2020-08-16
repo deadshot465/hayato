@@ -82,7 +82,7 @@ def get_daily(author: typing.Union[discord.User, discord.Member], lottery_data: 
             result = '%02d:%02d:%02d' % (hours, minutes, seconds)
             return 'You need to wait at least 24 hours to receive the next daily credits! Time left: ' + result
     else:
-        return 'You need to create an account by buying a lottery first! The first lottery you buy is free.'
+        return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
 def get_balance(author: typing.Union[discord.User, discord.Member], lottery_data: typing.List[LotteryParticipant]):
@@ -95,7 +95,7 @@ def get_balance(author: typing.Union[discord.User, discord.Member], lottery_data
         embed.add_field(name='Credits', value=str(participant.credits), inline=True)
         return embed
     else:
-        return 'You need to create an account by buying a lottery first! The first lottery you buy is free.'
+        return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
 async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
@@ -107,16 +107,23 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
                 if number in drawn_numbers:
                     count += 1
             if count == 2:
-                participant.credits += 10
-            if count == 3:
-                participant.credits += 20
-            if count == 4:
-                participant.credits += 150
-            if count == 5:
-                participant.credits += 500
-            if count == 6:
-                participant.credits += 2000
-            await ctx.send('{}\'s lottery #{} hits **{}** numbers!'.format(participant.username, numbers_set[0] + 1, count))
+                add_credits = 10
+                participant.credits += add_credits
+            elif count == 3:
+                add_credits = 20
+                participant.credits += add_credits
+            elif count == 4:
+                add_credits = 150
+                participant.credits += add_credits
+            elif count == 5:
+                add_credits = 500
+                participant.credits += add_credits
+            elif count == 6:
+                add_credits = 2000
+                participant.credits += add_credits
+            else:
+                add_credits = 0
+            await ctx.send('{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username, numbers_set[0] + 1, count, add_credits))
             count = 0
         participant.lottery_choices.clear()
         serialized = schema().dumps(lottery_data, many=True)
@@ -189,7 +196,21 @@ class Fun(commands.Cog):
             await ctx.send(embed=embed)
 
         elif numbers == 'info':
-            return
+            desc = 'Welcome to the lottery hosted by Hayato!\n\n' \
+                   'To join the lottery, you need to set up an account first. You can buy your first lottery for free and set up an account. The command will be `h!lottery <numbers>` (numbers must be separated by a comma). You need to choose exactly 6 distinct numbers between 1 and 49 in order to buy a lottery ticket. After that, you will receive 100 starting credits. You can buy more than one lottery tickets, and each ticket will cost you 10 credits.\n\n' \
+                   'Moderators will start the lottery regularly. 6 numbers will be drawn from each lottery. The reward system is as follows:\n' \
+                   '0/1 numbers match: 0 credits\n' \
+                   '2 numbers match: 10 credits\n' \
+                   '3 numbers match: 20 credits\n' \
+                   '4 numbers match: 150 credits\n' \
+                   '5 numbers match: 500 credits\n' \
+                   '6 numbers match: 2000 credits\n\n' \
+                   'You can get daily credits too with the command `h!lottery daily`. Within a 24-hour period, you can receive 10 credits. If you don’t have enough credits, or you want to give some credits to your friends, you can transfer credits with them. The command is `h!lottery transfer <amount> <recipient>`. You must ping the recipient in order to finish the transaction.\n\n' \
+                   'Good luck!\n\n' \
+                   'Examples of commands:\n`h!lottery 1,2,3,4,5,6` Correct\n`h!lottery 1-2-3-4-5-6` Incorrect, numbers must be separated by comma\n`h!lottery 2,2,3,5,7,7` Incorrect, numbers cannot be repeated.'
+            embed = discord.Embed(title='Lottery', description=desc, colour=self.color)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            await ctx.send(embed=embed)
         elif numbers == 'start':
             permission: discord.Permissions = ctx.author.permissions_in(ctx.channel)
             is_administrator = permission.administrator
@@ -197,7 +218,7 @@ class Fun(commands.Cog):
                 await ctx.send('You are not an administrator, you can\'t start the lottery yourself!')
             else:
                 await ctx.send('The lottery will start in 10 seconds!')
-                time.sleep(1)
+                await asyncio.sleep(10)
                 drawn_numbers = []
                 word_list = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
                 for word in word_list:
@@ -206,7 +227,7 @@ class Fun(commands.Cog):
                         number = random.randint(1, 49)
                     drawn_numbers.append(number)
                     await ctx.send('The ' + word + ' drawn number is **' + str(number) + '**!')
-                    time.sleep(1)
+                    await asyncio.sleep(3)
                 drawn_numbers.sort()
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
                 await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
