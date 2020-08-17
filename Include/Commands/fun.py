@@ -106,7 +106,7 @@ def get_weekly(author: typing.Union[discord.User, discord.Member], lottery_data:
                 file_1.write(json.dumps(obj, indent=2))
             return 'You have received your weekly 30 credits!'
         else:
-            days = 7 - elapsed_time.seconds / 60 / 60 / 24
+            days = 7 - elapsed_time.total_seconds() / 60 / 60 / 24
             hours = (days - int(days)) * 24
             minutes = (hours - int(hours)) * 60
             seconds = (minutes - int(minutes)) * 60
