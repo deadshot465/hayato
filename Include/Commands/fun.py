@@ -135,7 +135,7 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
                 add_credits = 10
                 participant.credits += add_credits
             elif count == 3:
-                add_credits = 20
+                add_credits = 50
                 participant.credits += add_credits
             elif count == 4:
                 add_credits = 150
@@ -226,7 +226,7 @@ class Fun(commands.Cog):
                    'Moderators will start the lottery regularly. 6 numbers will be drawn from each lottery. The reward system is as follows:\n' \
                    '0/1 numbers match: 0 credits\n' \
                    '2 numbers match: 10 credits\n' \
-                   '3 numbers match: 20 credits\n' \
+                   '3 numbers match: 50 credits\n' \
                    '4 numbers match: 150 credits\n' \
                    '5 numbers match: 500 credits\n' \
                    '6 numbers match: 2000 credits\n\n' \
