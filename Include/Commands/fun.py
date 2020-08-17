@@ -12,12 +12,18 @@ from Include.Utils.utils import USER_MENTION_REGEX
 from marshmallow import Schema
 
 
-# We don't use a global dictionary anymore.
-# LOTTERY_DICT = {}
+LOTTERY_RUNNING = False
+
+
+def switch_on():
+    global LOTTERY_RUNNING
+    LOTTERY_RUNNING = True
 
 
 # Also we use an user instead of an arbitrary name.
 def add_player(author: typing.Union[discord.User, discord.Member], numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    if LOTTERY_RUNNING:
+        return 'There is a lottery running now! Please try again after the lottery is over!'
     # Separate the choices into a list
     number_list = numbers.split(',')
     # For each number remove the spaces
@@ -151,6 +157,8 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
             await ctx.send('{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username, numbers_set[0] + 1, count, add_credits))
             count = 0
         participant.lottery_choices.clear()
+        global LOTTERY_RUNNING
+        LOTTERY_RUNNING = False
         serialized = schema().dumps(lottery_data, many=True)
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -244,6 +252,7 @@ class Fun(commands.Cog):
             if not is_administrator:
                 await ctx.send('You are not an administrator, you can\'t start the lottery yourself!')
             else:
+                switch_on()
                 await ctx.send('The lottery will start in 10 seconds!')
                 await asyncio.sleep(10)
                 drawn_numbers = []
