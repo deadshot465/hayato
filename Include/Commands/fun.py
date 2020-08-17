@@ -285,9 +285,9 @@ class Fun(commands.Cog):
             embed.add_field(name='Lotteries', value='\n'.join(lotteries), inline=False)
             await ctx.send(embed=embed)
         elif numbers == '':
-            random_numbers: typing.List[str] = []
-            for x in range(0, 6):
-                random_numbers.append(str(random.randint(1, 50)))
+            random_numbers: typing.Set[str] = set()
+            while len(random_numbers) < 6:
+                random_numbers.add(str(random.randint(1, 50)))
             numbers = ','.join(random_numbers)
             result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
