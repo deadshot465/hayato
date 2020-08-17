@@ -47,7 +47,7 @@ def add_player(author: typing.Union[discord.User, discord.Member], numbers: str,
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return 'Your request is successfully processed! Deducted 10 credits from your account.'
+        return 'You have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(str(sorted(number_set)))
     else:
         participant = LotteryParticipant(author.display_name, author.id, list(), 100, datetime.datetime.now(), datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
@@ -56,7 +56,7 @@ def add_player(author: typing.Union[discord.User, discord.Member], numbers: str,
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return 'You have got your 100 starting credits! Your request is successfully processed!'
+        return 'You have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(str(sorted(number_set)))
 
 
 def get_daily(author: typing.Union[discord.User, discord.Member], lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
@@ -222,7 +222,7 @@ class Fun(commands.Cog):
 
         elif numbers == 'info':
             desc = 'Welcome to the lottery hosted by Hayato!\n\n' \
-                   'To join the lottery, you need to set up an account first. You can buy your first lottery for free and set up an account. The command will be `h!lottery <numbers>` (numbers must be separated by a comma). You need to choose exactly 6 distinct numbers between 1 and 49 in order to buy a lottery ticket. After that, you will receive 100 starting credits. You can buy more than one lottery tickets, and each ticket will cost you 10 credits.\n\n' \
+                   'To join the lottery, you need to set up an account first. You can buy your first lottery for free and set up an account. The command will be `h!lottery <numbers>` (numbers must be separated by a comma). You need to choose exactly 6 distinct numbers between 1 and 49 in order to buy a lottery ticket. Or, if you don\'t know what numbers to choose, you can use `h!lottery` to let me choose for you! After that, you will receive 100 starting credits. You can buy more than one lottery tickets, and each ticket will cost you 10 credits.\n\n' \
                    'Moderators will start the lottery regularly. 6 numbers will be drawn from each lottery. The reward system is as follows:\n' \
                    '0/1 numbers match: 0 credits\n' \
                    '2 numbers match: 10 credits\n' \
@@ -231,10 +231,12 @@ class Fun(commands.Cog):
                    '5 numbers match: 500 credits\n' \
                    '6 numbers match: 2000 credits\n\n' \
                    'You can get daily and weekly credits with the command `h!lottery daily` and `h!lottery weekly`. Within a 24-hour period, you can receive 10 credits. You can also receive 30 credits for every 7 days. If you don’t have enough credits, or you want to give some credits to your friends, you can transfer credits with them. The command is `h!lottery transfer <amount> <recipient>`. You must ping the recipient in order to finish the transaction.\n\n' \
+                   'To see the lotteries you have bought so far, type `h!lottery list`.\n\n' \
                    'Good luck!\n\n' \
                    'Examples of commands:\n`h!lottery 1,2,3,4,5,6` Correct\n`h!lottery 1-2-3-4-5-6` Incorrect, numbers must be separated by comma\n`h!lottery 2,2,3,5,7,7` Incorrect, numbers cannot be repeated.'
             embed = discord.Embed(title='Lottery', description=desc, colour=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
             await ctx.send(embed=embed)
         elif numbers == 'start':
             permission: discord.Permissions = ctx.author.permissions_in(ctx.channel)
@@ -268,8 +270,27 @@ class Fun(commands.Cog):
                 await ctx.send(result)
             else:
                 await ctx.send(embed=result)
+        elif numbers == 'list':
+            participant = list(filter(lambda a: a.user_id == ctx.author.id, Fun.lottery_data))
+            if len(participant) == 0:
+                await ctx.send('You are not in the lottery game yet!\nBuy a lottery to join in the game.')
+                return
+            participant_lotteries = participant[0].lottery_choices
+            if len(participant_lotteries) == 0:
+                await ctx.send('You currently don\'t have any lotteries!')
+                return
+            embed = discord.Embed(title='Purchased Lotteries', description='The following are your currently purchased lotteries.', color=self.color)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            lotteries = list(map(lambda b: '[{}]'.format(', '.join(list(map(lambda c: str(c), b)))), participant_lotteries))
+            embed.add_field(name='Lotteries', value='\n'.join(lotteries), inline=False)
+            await ctx.send(embed=embed)
         elif numbers == '':
-            await ctx.send("Are you trying to fool me? Give me the numbers!")
+            random_numbers: typing.List[str] = []
+            for x in range(0, 6):
+                random_numbers.append(str(random.randint(1, 50)))
+            numbers = ','.join(random_numbers)
+            result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
+            await ctx.send(result)
         else:
             result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
