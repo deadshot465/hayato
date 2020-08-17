@@ -287,7 +287,7 @@ class Fun(commands.Cog):
         elif numbers == '':
             random_numbers: typing.Set[str] = set()
             while len(random_numbers) < 6:
-                random_numbers.add(str(random.randint(1, 50)))
+                random_numbers.add(str(random.randint(1, 49)))
             numbers = ','.join(random_numbers)
             result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
