@@ -252,6 +252,10 @@ class Fun(commands.Cog):
             if not is_administrator:
                 await ctx.send('You are not an administrator, you can\'t start the lottery yourself!')
             else:
+                global LOTTERY_RUNNING
+                if LOTTERY_RUNNING:
+                    await ctx.send('There is already a lottery running now!')
+                    return
                 switch_on()
                 await ctx.send('The lottery will start in 10 seconds!')
                 await asyncio.sleep(10)
