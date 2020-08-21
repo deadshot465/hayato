@@ -14,7 +14,8 @@ class Help(commands.HelpCommand):
         for item in mapping.items():
             cmds: List[commands.Command] = await self.filter_commands(commands=item[1], sort=True)
             cmds_dedup: Set[commands.Command] = set(cmds)
-            cmd_names = map(lambda x: '`' + x.name + '`', cmds_dedup)
+            cmds_list = sorted(cmds_dedup, key=lambda x: x.name)
+            cmd_names = map(lambda x: '`' + x.name + '`', cmds_list)
             cmd_string = ' '.join(cmd_names)
             category_name: str
             if item[0] is not None:
