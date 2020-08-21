@@ -5,6 +5,7 @@ import random
 from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
+from Include.Commands.admin import Admin
 
 
 load_dotenv(verbose=True)
@@ -18,7 +19,10 @@ TRAINS = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100
 EXTENSIONS = ['Include.Commands.fun',
               'Include.Commands.info',
               'Include.Commands.rails',
-              'Include.Commands.utility']
+              'Include.Commands.utility',
+              'Include.Commands.admin']
+
+ADMIN_COMMANDS = ['enable', 'disable']
 
 # Initialize our bot and set the prefix to 'h!', also set up the description and help command.
 HELP = {
@@ -42,10 +46,19 @@ async def set_presence():
 
 @bot.event
 async def on_message(message: discord.Message):
+    command: str = message.content.strip(os.getenv('PREFIX')).lower()
+    channel_settings = Admin.channel_settings
     if message.author == bot.user:
         return
     else:
-        await bot.process_commands(message)
+        for cmd in ADMIN_COMMANDS:
+            if command.startswith(cmd):
+                await bot.process_commands(message)
+                return
+        if message.channel.id not in channel_settings['enabled_channels']:
+            return
+        else:
+            await bot.process_commands(message)
     global last_updated
     if (datetime.now() - last_updated).seconds > 3600:
         await set_presence()
