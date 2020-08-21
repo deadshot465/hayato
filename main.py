@@ -13,7 +13,7 @@ DESCRIPTION = 'A Discord bot that can do some fun stuffs.'
 # Various trains for Hayato to play.
 TRAINS = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100', 'Shinkansen H5',
                        'Shinkansen E6', 'Shinkansen E7']
-RESPONSE = ['I am a punctual and trustworthy man!', 'Hello! My name is Hayasugi Hayato!', 'Uhh...I am fear of heights...Don\'t tell me to board an airplane!', 'Change form, Shinkalion!', 'My dream is to be a Shinkansen train conductor!', 'All people who like Shinkansen are good people!', 'Shinkansen trains are so cool!', 'Shinkansen E5 Series is my favourite!']
+RESPONSE = ['I am a punctual and trustworthy man!', 'Hello! My name is Hayasugi Hayato. Nice to meet you!', 'Uhh...I am afraid of heights...Don\'t tell me to board an airplane!', 'Change form, Shinkalion!', 'My dream is to be a Shinkansen train conductor!', 'All people who like Shinkansen are good people!', 'Shinkansen trains are so cool!', 'Shinkansen E5 Series is my favourite!', 'Do you know how much it costs for a Shinkansen trip from Tokyo to Osaka?']
 
 # Available cogs. Path is separated with dots, without file extensions.
 EXTENSIONS = ['Include.Commands.fun',
