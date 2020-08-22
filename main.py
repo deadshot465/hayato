@@ -54,7 +54,7 @@ async def on_message(message: discord.Message):
                 await channel.send(random.choice(RESPONSE))
         else:
             chance = random.randint(1, 100)
-            if chance > 97:
+            if chance > 95:
                 channel = message.channel
                 await channel.send(random.choice(RESPONSE))
         await bot.process_commands(message)
