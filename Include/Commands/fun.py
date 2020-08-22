@@ -14,10 +14,12 @@ from marshmallow import Schema
 
 LOTTERY_RUNNING = False
 EIGHTBALL_RESPONSE = ['Of course', 'It is certain', 'I think so', 'Maybe', 'If you like Shinkansen, then yes',
+                      'I think this is as reliable as Shinkansen trains', 'This is as good as E5 Series'
                       'Uhh...I am not sure', 'I don\'t want to tell you now, because I am watching Shinkalion now',
                       'This question is like asking me if Shinkansen is rapid or not',
-                      'I am tired now, ask me later', 'Sorry, I don\'t know', 'Definitely no',
-                      'Of course no, don\'t ask me the same question again', 'I guess no']
+                      'I am tired now, ask me later', 'Sorry, I don\'t know', 'Think about it again and ask me later',
+                      'Definitely no', 'Of course no, don\'t ask me the same question again', 'I guess no', 'Maybe not']
+
 
 def switch_on():
     global LOTTERY_RUNNING
@@ -314,7 +316,10 @@ class Fun(commands.Cog):
 
     @commands.command(description='Get an answer from a yes/no question.',
                       help='You can ask a yes/no question to Hayato, and Hayato will give you an answer.', name='8ball')
-    async def eightball(self, ctx: commands.Context, *, args: str):
+    async def eightball(self, ctx: commands.Context, *, args: typing.Optional[str]):
+        if args is None:
+            await ctx.send('🎱 | Please give me a question first, **' + ctx.author.display_name + '**!')
+            return
         await ctx.send('🎱 | {}, **{}**!'.format(random.choice(EIGHTBALL_RESPONSE), ctx.author.display_name))
 
 
