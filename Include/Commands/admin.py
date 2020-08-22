@@ -63,7 +63,7 @@ class Admin(commands.Cog):
             return
         else:
             ConfigurationManager.update_channel('allow', int(channel_id))
-            await ctx.send('Successfully ignored the channel {}!'.format(CHANNEL_TAG_REGEX.match(args).group(0)))
+            await ctx.send('Successfully allowed the channel {}!'.format(CHANNEL_TAG_REGEX.match(args).group(0)))
 
     # Validate inputs.
     # Return true if the input is valid.
