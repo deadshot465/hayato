@@ -144,7 +144,7 @@ def cvt_units(unit1: str, unit2: str, value: float):
                 unit_source = unit1
                 unit_target = unit2
     if error:
-        return 'Are you trying to fool me? This won\'t work!'
+        return 'The correct usage is `h!cvt <source unit> <target unit> [value=0.0]`!'
     else:
         output = round(output, 2)
         return [value, output, unit_source, unit_target]
