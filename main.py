@@ -46,7 +46,8 @@ async def on_message(message: discord.Message):
     if message.author == bot.user:
         return
     else:
-        if '<@737017231522922556>' or 'hayato' or 'Hayato' in message.content:
+        lower_case = message.content.lower()
+        if '<@737017231522922556>' in lower_case or 'hayato' in lower_case:
             chance = random.randint(1, 100)
             if chance > 70:
                 channel = message.channel
