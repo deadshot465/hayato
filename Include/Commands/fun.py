@@ -13,7 +13,11 @@ from marshmallow import Schema
 
 
 LOTTERY_RUNNING = False
-
+EIGHTBALL_RESPONSE = ['Of course', 'It is certain', 'I think so', 'Maybe', 'If you like Shinkansen, then yes',
+                      'Uhh...I am not sure', 'I don\'t want to tell you now, because I am watching Shinkalion now',
+                      'This question is like asking me if Shinkansen is rapid or not',
+                      'I am tired now, ask me later', 'Sorry, I don\'t know', 'Definitely no',
+                      'Of course no, don\'t ask me the same question again', 'I guess no']
 
 def switch_on():
     global LOTTERY_RUNNING
@@ -307,6 +311,11 @@ class Fun(commands.Cog):
         else:
             result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
+
+    @commands.command(description='Get an answer from a yes/no question.',
+                      help='You can ask a yes/no question to Hayato, and Hayato will give you an answer.', name='8ball')
+    async def eightball(self, ctx: commands.Context, *, args: str):
+        await ctx.send('🎱 | {}, **{}**!'.format(random.choice(EIGHTBALL_RESPONSE), ctx.author.display_name))
 
 
 def setup(bot: commands.Bot):
