@@ -14,7 +14,7 @@ from marshmallow import Schema
 
 LOTTERY_RUNNING = False
 EIGHTBALL_RESPONSE = ['Of course', 'It is certain', 'I think so', 'Maybe', 'If you like Shinkansen, then yes',
-                      'I think this is as reliable as Shinkansen trains', 'This is as good as E5 Series'
+                      'I think this is as reliable as Shinkansen trains', 'This is as good as E5 Series',
                       'Uhh...I am not sure', 'I don\'t want to tell you now, because I am watching Shinkalion now',
                       'This question is like asking me if Shinkansen is rapid or not',
                       'I am tired now, ask me later', 'Sorry, I don\'t know', 'Think about it again and ask me later',
