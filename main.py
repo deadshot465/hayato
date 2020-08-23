@@ -5,6 +5,8 @@ import random
 from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
+from typing import List, Optional
+from Utils.credit_manager import CreditManager
 
 from Utils.configuration_manager import ConfigurationManager
 
@@ -23,7 +25,7 @@ EXTENSIONS = ['Include.Commands.admin',
               'Include.Commands.rails',
               'Include.Commands.utility']
 
-ADMIN_COMMANDS = ['enable', 'disable']
+ADMIN_COMMANDS = ['enable', 'disable', 'allow', 'ignore']
 
 # Initialize our bot and set the prefix to 'h!', also set up the description and help command.
 HELP = {
@@ -47,6 +49,24 @@ async def set_presence():
 
 @bot.event
 async def on_message(message: discord.Message):
+    if message.author.id == 565305035592957954 and len(message.embeds) > 0:
+        try:
+            embed = message.embeds[0]
+            if 'won the game' in embed.title.lower():
+                title: str = embed.title
+                index = title.index(' ')
+                username = title[0:index]
+                guild: Optional[discord.Guild] = message.guild
+                members: List[discord.Member] = guild.members
+                match_members = list(filter(lambda x: x.display_name.startswith(username), members))
+                if len(match_members) == 0:
+                    match_members = list(filter(lambda x: x.name.startswith(username), members))
+                await CreditManager.add_credits(int(match_members[0].id), 20, channel_id=716483752544698450,
+                                                channel=message.channel)
+        except AttributeError:
+            pass
+        except IndexError:
+            pass
     # Update presence every hour
     global last_updated
     if (datetime.now() - last_updated).total_seconds() > 3600:
@@ -90,6 +110,7 @@ async def on_message(message: discord.Message):
 
 @bot.event
 async def on_ready():
+    await CreditManager.initialize()
     print('Logged on as', bot.user)
     await set_presence()
 
