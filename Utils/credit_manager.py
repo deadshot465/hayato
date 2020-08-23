@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import json
 import os
@@ -59,7 +60,7 @@ class CreditManager:
                           ctx: Optional[commands.Context] = None, channel: Optional[Union[discord.abc.Messageable]] = None) -> UserCreditItem:
         if not cls.initialized:
             raise RuntimeError('The credit manager is not yet initialized.')
-        await cls.fetch()
+        await cls.fetch(True)
         users = list(filter(lambda x: x.UserId == str(user_id), cls.user_credits))
         if not insert:
             if len(users) == 0:
@@ -80,7 +81,7 @@ class CreditManager:
                              ctx: Optional[commands.Context] = None, channel: Optional[Union[discord.abc.Messageable]] = None) -> UserCreditItem:
         if not cls.initialized:
             raise RuntimeError('The credit manager is not yet initialized.')
-        await cls.fetch()
+        await cls.fetch(True)
         users = list(filter(lambda x: x.UserId == str(user_id), cls.user_credits))
         if len(users) == 0:
             user = await cls.add_user(user_id, 100, ctx)
