@@ -63,16 +63,17 @@ class CreditManager:
         users = list(filter(lambda x: x.UserId == str(user_id), cls.user_credits))
         if not insert:
             if len(users) == 0:
-                user = await cls.add_user(user_id, amount, ctx)
+                user = await cls.add_user(user_id, 100, ctx)
             else:
                 user = users[0]
-            user.Credits += amount
-            await cls.update_user(user_id, amount, 'plus', channel_id=channel_id, ctx=ctx)
-            return user
         else:
             if len(users) != 0:
-                return users[0]
-            return await cls.add_user(user_id, amount, ctx)
+                user = users[0]
+            else:
+                user = await cls.add_user(user_id, 100, ctx)
+        user.Credits += amount
+        await cls.update_user(user_id, amount, 'plus', channel_id=channel_id, ctx=ctx, channel=channel)
+        return user
 
     @classmethod
     async def remove_credits(cls, user_id: int, amount: int, *, channel_id: int = 0,
@@ -82,11 +83,11 @@ class CreditManager:
         await cls.fetch()
         users = list(filter(lambda x: x.UserId == str(user_id), cls.user_credits))
         if len(users) == 0:
-            user = await cls.add_user(user_id, amount, ctx)
+            user = await cls.add_user(user_id, 100, ctx)
         else:
             user = users[0]
         user.Credits -= amount
-        await cls.update_user(user_id, amount, 'minus', channel_id=channel_id, ctx=ctx)
+        await cls.update_user(user_id, amount, 'minus', channel_id=channel_id, ctx=ctx, channel=channel)
         return user
 
     @classmethod
@@ -176,3 +177,4 @@ class CreditManager:
                             random.choice(HAYATO_MINUS_RESPONSES).replace('{userId}', str(user_id)).replace('{credits}',
                                                                                                             str(
                                                                                                                 amount)))
+        await cls.fetch(True)
