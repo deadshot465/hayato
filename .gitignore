@@ -16,3 +16,4 @@ Include/Utils/__pycache__/
 Storage/lottery.json
 Storage/channels.json
 Storage/config.json
+Storage/credits.json

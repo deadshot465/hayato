@@ -4,3 +4,4 @@ requests~=2.24.0
 strsim~=0.0.3
 googlemaps>=4.4.2
 marshmallow-dataclass>=8.0.0
+arrow>=0.15.8

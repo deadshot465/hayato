@@ -5,11 +5,11 @@ import json
 import marshmallow_dataclass
 import typing
 import random
-import time
 from discord.ext import commands
 from Include.Commands.lottery.lottery import LotteryParticipant
 from Include.Utils.utils import USER_MENTION_REGEX
 from marshmallow import Schema
+from Utils.credit_manager import CreditManager
 
 
 LOTTERY_RUNNING = False
@@ -21,7 +21,8 @@ def switch_on():
 
 
 # Also we use an user instead of an arbitrary name.
-def add_player(author: typing.Union[discord.User, discord.Member], numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    author: typing.Union[discord.User, discord.Member] = ctx.author
     if LOTTERY_RUNNING:
         return 'There is a lottery running now! Please try again after the lottery is over!'
     # Separate the choices into a list
@@ -46,18 +47,19 @@ def add_player(author: typing.Union[discord.User, discord.Member], numbers: str,
         if participant.lottery_choices is None:
             participant.lottery_choices = list()
         participant.lottery_choices.append(sorted(number_set))
-        if participant.credits - 10 < 0:
+        if (await CreditManager.get_user_credits(ctx, participant.user_id)) - 10 < 0:
             return 'You don\'t have enough credits to buy the lottery!'
-        participant.credits = participant.credits - 10
+        await CreditManager.remove_credits(participant.user_id, 10)
         serialized = schema().dumps(lottery_data, many=True)
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
         return 'You have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(str(sorted(number_set)))
     else:
-        participant = LotteryParticipant(author.display_name, author.id, list(), 100, datetime.datetime.now(), datetime.datetime.now())
+        participant = LotteryParticipant(author.display_name, author.id, list(), datetime.datetime.now(), datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
         lottery_data.append(participant)
+        await CreditManager.add_credits(author.id, 100, insert=True)
         serialized = schema().dumps(lottery_data, many=True)
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -65,14 +67,15 @@ def add_player(author: typing.Union[discord.User, discord.Member], numbers: str,
         return 'You have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(str(sorted(number_set)))
 
 
-def get_daily(author: typing.Union[discord.User, discord.Member], lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def get_daily(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    author: typing.Union[discord.User, discord.Member] = ctx.author
     participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
         elapsed_time = datetime.datetime.now() - participant.last_daily_time
         if elapsed_time.total_seconds() > 86400:
-            participant.credits += 10
+            await CreditManager.add_credits(participant.user_id, 10, ctx=ctx)
             participant.last_daily_time = datetime.datetime.now()
             serialized = schema().dumps(lottery_data, many=True)
             with open('Storage/lottery.json', 'w') as file_1:
@@ -91,14 +94,15 @@ def get_daily(author: typing.Union[discord.User, discord.Member], lottery_data: 
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-def get_weekly(author: typing.Union[discord.User, discord.Member], lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def get_weekly(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    author: typing.Union[discord.User, discord.Member] = ctx.author
     participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
         elapsed_time = datetime.datetime.now() - participant.last_weekly_time
         if elapsed_time.total_seconds() > 604800:
-            participant.credits += 30
+            await CreditManager.add_credits(participant.user_id, 30, ctx=ctx)
             participant.last_weekly_time = datetime.datetime.now()
             serialized = schema().dumps(lottery_data, many=True)
             with open('Storage/lottery.json', 'w') as file_1:
@@ -116,14 +120,15 @@ def get_weekly(author: typing.Union[discord.User, discord.Member], lottery_data:
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-def get_balance(author: typing.Union[discord.User, discord.Member], lottery_data: typing.List[LotteryParticipant]):
+async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant]):
+    author: typing.Union[discord.User, discord.Member] = ctx.author
     participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
         embed = discord.Embed(description='Here is your account balance:', colour=discord.Colour.from_rgb(30, 99, 175))
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
-        embed.add_field(name='Credits', value=str(participant.credits), inline=True)
+        embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id)), inline=True)
         return embed
     else:
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
@@ -139,23 +144,18 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
                     count += 1
             if count == 2:
                 add_credits = 10
-                participant.credits += add_credits
             elif count == 3:
                 add_credits = 50
-                participant.credits += add_credits
             elif count == 4:
                 add_credits = 150
-                participant.credits += add_credits
             elif count == 5:
                 add_credits = 500
-                participant.credits += add_credits
             elif count == 6:
                 add_credits = 2000
-                participant.credits += add_credits
             else:
                 add_credits = 0
+            await CreditManager.add_credits(participant.user_id, add_credits)
             await ctx.send('{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username, numbers_set[0] + 1, count, add_credits))
-            count = 0
         participant.lottery_choices.clear()
         global LOTTERY_RUNNING
         LOTTERY_RUNNING = False
@@ -187,7 +187,7 @@ class Fun(commands.Cog):
 
     @commands.command(description='Wanna try your luck?',
                       help='Join the lottery every week! Maybe you can gain a lot from it!')
-    async def lottery(self,ctx: commands.Context, *, numbers: typing.Optional[str] = ''):
+    async def lottery(self, ctx: commands.Context, *, numbers: typing.Optional[str] = ''):
         if numbers.lower().startswith('transfer') or numbers.lower().startswith('trade'):
             # Split all texts following the command.
             args = list(map(lambda x: x.strip(), numbers.split(' ')))
@@ -211,21 +211,21 @@ class Fun(commands.Cog):
             if len(participants_1) == 0:
                 await ctx.send('You can\'t trade with other people when you don\'t have an account!\nCreate an account first by buying a lottery.')
                 return
-            if participants_1[0].credits - amount < 0:
+            if (await CreditManager.get_user_credits(ctx, participants_1[0].user_id)) - amount < 0:
                 await ctx.send('You cannot transfer more credits than you currently have!')
                 return
             if len(participants_2) == 0:
                 await ctx.send('Sorry! I cannot find the user you want to transfer credits to.\nEither the user does not exist, or the user has\'t joined in the lottery yet.')
                 return
-            participants_1[0].credits -= amount
-            participants_2[0].credits += amount
+            await CreditManager.remove_credits(participants_1[0].user_id, amount)
+            await CreditManager.add_credits(participants_2[0].user_id, amount)
             serialized = Fun.participant_schema().dumps(Fun.lottery_data, many=True)
             with open('Storage/lottery.json', 'w') as file_1:
                 obj = json.loads(serialized)
                 file_1.write(json.dumps(obj, indent=2))
             embed = discord.Embed(title='Transfer Credits', description='{} has transferred {} credits to {}!'.format(participants_1[0].username, amount, participants_2[0].username), color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-            embed.add_field(name='Balance', value=str(participants_1[0].credits), inline=False)
+            embed.add_field(name='Balance', value=str(await CreditManager.get_user_credits(ctx, participants_1[0].user_id)), inline=False)
             await ctx.send(embed=embed)
 
         elif numbers == 'info':
@@ -272,13 +272,13 @@ class Fun(commands.Cog):
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
                 await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
         elif numbers == 'daily':
-            result = get_daily(ctx.author, Fun.lottery_data, self.participant_schema)
+            result = await get_daily(ctx, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
         elif numbers == 'weekly':
-            result = get_weekly(ctx.author, Fun.lottery_data, self.participant_schema)
+            result = await get_weekly(ctx, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
         elif numbers == 'balance' or numbers == 'account':
-            result = get_balance(ctx.author, Fun.lottery_data)
+            result = await get_balance(ctx, Fun.lottery_data)
             if isinstance(result, str):
                 await ctx.send(result)
             else:
@@ -302,10 +302,10 @@ class Fun(commands.Cog):
             while len(random_numbers) < 6:
                 random_numbers.add(str(random.randint(1, 49)))
             numbers = ','.join(random_numbers)
-            result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
+            result = await add_player(ctx, numbers, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
         else:
-            result = add_player(ctx.author, numbers, Fun.lottery_data, self.participant_schema)
+            result = await add_player(ctx, numbers, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
 
 
