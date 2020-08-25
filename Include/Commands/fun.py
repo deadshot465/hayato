@@ -62,7 +62,7 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return 'You have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(str(sorted(number_set)))
+        return '{}, you have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(author.display_name, str(sorted(number_set)))
     else:
         participant = LotteryParticipant(author.display_name, author.id, list(), datetime.datetime.now(), datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
@@ -72,7 +72,7 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return 'You have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(str(sorted(number_set)))
+        return '{}, you have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(author.display_name, str(sorted(number_set)))
 
 
 async def get_daily(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
@@ -161,11 +161,11 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
             elif count == 3:
                 add_credits = 50
             elif count == 4:
-                add_credits = 150
-            elif count == 5:
                 add_credits = 500
+            elif count == 5:
+                add_credits = 1000
             elif count == 6:
-                add_credits = 2000
+                add_credits = 3000
             else:
                 add_credits = 0
             total_credits += add_credits
@@ -253,9 +253,9 @@ class Fun(commands.Cog):
                    '0/1 numbers match: 0 credits\n' \
                    '2 numbers match: 10 credits\n' \
                    '3 numbers match: 50 credits\n' \
-                   '4 numbers match: 150 credits\n' \
-                   '5 numbers match: 500 credits\n' \
-                   '6 numbers match: 2000 credits\n\n' \
+                   '4 numbers match: 500 credits\n' \
+                   '5 numbers match: 1000 credits\n' \
+                   '6 numbers match: 3000 credits\n\n' \
                    'You can get daily and weekly credits with the command `h!lottery daily` and `h!lottery weekly`. Within a 24-hour period, you can receive 10 credits. You can also receive 30 credits for every 7 days. If you don’t have enough credits, or you want to give some credits to your friends, you can transfer credits with them. The command is `h!lottery transfer <amount> <recipient>`. You must ping the recipient in order to finish the transaction.\n\n' \
                    'To see the lotteries you have bought so far, type `h!lottery list`.\n\n' \
                    'Good luck!\n\n' \
