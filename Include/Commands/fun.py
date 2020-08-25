@@ -56,6 +56,8 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
         if (await CreditManager.get_user_credits(ctx, participant.user_id)) - 10 < 0:
             return 'You don\'t have enough credits to buy the lottery!'
         await CreditManager.remove_credits(participant.user_id, 10)
+        if participant.username != author.display_name:
+            participant.username = author.display_name
         serialized = schema().dumps(lottery_data, many=True)
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -141,8 +143,14 @@ async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryPa
 
 
 async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    result_text: typing.List[str] = list()
+    embed = discord.Embed(title='Lottery Result', description='',
+                          color=discord.Colour.from_rgb(30, 99, 175))
+    embed.set_thumbnail(
+        url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
     for participant in lottery_data:
         player_numbers_list = participant.lottery_choices
+        total_credits = 0
         for numbers_set in enumerate(player_numbers_list):
             count = 0
             for number in numbers_set[1]:
@@ -160,15 +168,19 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
                 add_credits = 2000
             else:
                 add_credits = 0
-            await CreditManager.add_credits(participant.user_id, add_credits)
-            await ctx.send('{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username, numbers_set[0] + 1, count, add_credits))
+            total_credits += add_credits
+            result_text.append('{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username, numbers_set[0] + 1, count, add_credits))
+        await CreditManager.add_credits(participant.user_id, total_credits)
+        embed.add_field(name=participant.username, value=str(total_credits), inline=True)
         participant.lottery_choices.clear()
-        global LOTTERY_RUNNING
-        LOTTERY_RUNNING = False
-        serialized = schema().dumps(lottery_data, many=True)
-        with open('Storage/lottery.json', 'w') as file_1:
-            obj = json.loads(serialized)
-            file_1.write(json.dumps(obj, indent=2))
+    embed.description = '\n'.join(result_text)
+    await ctx.send(embed=embed)
+    global LOTTERY_RUNNING
+    LOTTERY_RUNNING = False
+    serialized = schema().dumps(lottery_data, many=True)
+    with open('Storage/lottery.json', 'w') as file_1:
+        obj = json.loads(serialized)
+        file_1.write(json.dumps(obj, indent=2))
 
 
 class Fun(commands.Cog):
