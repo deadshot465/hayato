@@ -134,7 +134,7 @@ async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryPa
         participant = participant_data[0]
         embed = discord.Embed(description='Here is your account balance:', colour=discord.Colour.from_rgb(30, 99, 175))
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
-        embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id)), inline=True)
+        embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id, True)), inline=True)
         return embed
     else:
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'

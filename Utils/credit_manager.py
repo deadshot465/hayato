@@ -44,10 +44,10 @@ class CreditManager:
         cls.initialized = True
 
     @classmethod
-    async def get_user_credits(cls, ctx: commands.Context, user_id: int) -> int:
+    async def get_user_credits(cls, ctx: commands.Context, user_id: int, force: bool = False) -> int:
         if not cls.initialized:
             raise RuntimeError('The credit manager is not yet initialized.')
-        await cls.fetch()
+        await cls.fetch(force)
         items = list(filter(lambda x: x.UserId == str(user_id), cls.user_credits))
         if len(items) != 0:
             return items[0].Credits
