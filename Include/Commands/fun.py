@@ -205,10 +205,10 @@ class Fun(commands.Cog):
 
     @commands.command(description='Wanna try your luck?',
                       help='Join the lottery every week! Maybe you can gain a lot from it!')
-    async def lottery(self, ctx: commands.Context, *, numbers: typing.Optional[str] = ''):
-        if numbers.lower().startswith('transfer') or numbers.lower().startswith('trade'):
+    async def lottery(self, ctx: commands.Context, *, args: typing.Optional[str] = ''):
+        if args.lower().startswith('transfer') or args.lower().startswith('trade'):
             # Split all texts following the command.
-            args = list(map(lambda x: x.strip(), numbers.split(' ')))
+            args = list(map(lambda x: x.strip(), args.split(' ')))
             # Pop out the first argument, which in this case might be 'transfer' or 'trade.'
             args.pop(0)
             # Get the amount to trade.
@@ -246,7 +246,7 @@ class Fun(commands.Cog):
             embed.add_field(name='Balance', value=str(await CreditManager.get_user_credits(ctx, participants_1[0].user_id)), inline=False)
             await ctx.send(embed=embed)
 
-        elif numbers == 'info':
+        elif args == 'info':
             desc = 'Welcome to the lottery hosted by Hayato!\n\n' \
                    'To join the lottery, you need to set up an account first. You can buy your first lottery for free and set up an account. The command will be `h!lottery <numbers>` (numbers must be separated by a comma). You need to choose exactly 6 distinct numbers between 1 and 49 in order to buy a lottery ticket. Or, if you don\'t know what numbers to choose, you can use `h!lottery` to let me choose for you! After that, you will receive 100 starting credits. You can buy more than one lottery tickets, and each ticket will cost you 10 credits.\n\n' \
                    'Moderators will start the lottery regularly. 6 numbers will be drawn from each lottery. The reward system is as follows:\n' \
@@ -264,7 +264,7 @@ class Fun(commands.Cog):
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
             await ctx.send(embed=embed)
-        elif numbers == 'start':
+        elif args == 'start':
             permission: discord.Permissions = ctx.author.permissions_in(ctx.channel)
             is_administrator = permission.administrator
             if not is_administrator:
@@ -289,19 +289,19 @@ class Fun(commands.Cog):
                 drawn_numbers.sort()
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
                 await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
-        elif numbers == 'daily':
+        elif args == 'daily':
             result = await get_daily(ctx, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
-        elif numbers == 'weekly':
+        elif args == 'weekly':
             result = await get_weekly(ctx, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
-        elif numbers == 'balance' or numbers == 'account':
+        elif args == 'balance' or args == 'account':
             result = await get_balance(ctx, Fun.lottery_data)
             if isinstance(result, str):
                 await ctx.send(result)
             else:
                 await ctx.send(embed=result)
-        elif numbers == 'list':
+        elif args == 'list':
             participant = list(filter(lambda a: a.user_id == ctx.author.id, Fun.lottery_data))
             if len(participant) == 0:
                 await ctx.send('You are not in the lottery game yet!\nBuy a lottery to join in the game.')
@@ -315,7 +315,7 @@ class Fun(commands.Cog):
             lotteries = list(map(lambda b: '[{}]'.format(', '.join(list(map(lambda c: str(c), b)))), participant_lotteries))
             embed.add_field(name='Lotteries', value='\n'.join(lotteries), inline=False)
             await ctx.send(embed=embed)
-        elif numbers == 'help':
+        elif args == 'help':
             desc = 'Here is a list of commands available for the lottery.\n\n Create an account / buy a lottery with random numbers: `h!lottery`\n' \
                    'Buy a lottery with desired numbers: `h!lottery <numbers>` (6 distinct numbers, separated by commas)\n' \
                    'Get daily/weekly credits: `h!lottery daily` / `h!lottery weekly`\n' \
@@ -325,15 +325,15 @@ class Fun(commands.Cog):
             embed = discord.Embed(title='Lottery Commands', description=desc, color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
-        elif numbers == '':
+        elif args == '':
             random_numbers: typing.Set[str] = set()
             while len(random_numbers) < 6:
                 random_numbers.add(str(random.randint(1, 49)))
-            numbers = ','.join(random_numbers)
-            result = await add_player(ctx, numbers, Fun.lottery_data, self.participant_schema)
+            args = ','.join(random_numbers)
+            result = await add_player(ctx, args, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
         else:
-            result = await add_player(ctx, numbers, Fun.lottery_data, self.participant_schema)
+            result = await add_player(ctx, args, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
 
     @commands.command(description='Get an answer from a yes/no question.',
