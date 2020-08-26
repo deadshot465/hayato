@@ -134,7 +134,7 @@ async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryPa
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
-        embed = discord.Embed(description='Here is your account balance:', colour=discord.Colour.from_rgb(30, 99, 175))
+        embed = discord.Embed(title='Account Balance', description='Here is your account balance:', colour=discord.Colour.from_rgb(30, 99, 175))
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
         embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id, True)), inline=True)
         return embed
@@ -314,6 +314,16 @@ class Fun(commands.Cog):
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             lotteries = list(map(lambda b: '[{}]'.format(', '.join(list(map(lambda c: str(c), b)))), participant_lotteries))
             embed.add_field(name='Lotteries', value='\n'.join(lotteries), inline=False)
+            await ctx.send(embed=embed)
+        elif numbers == 'help':
+            desc = 'Here is a list of commands available for the lottery.\n\n Create an account / buy a lottery with random numbers: `h!lottery`\n' \
+                   'Buy a lottery with desired numbers: `h!lottery <numbers>` (6 distinct numbers, separated by commas)\n' \
+                   'Get daily/weekly credits: `h!lottery daily` / `h!lottery weekly`\n' \
+                   'Check balance: `h!lottery balance`\n' \
+                   'Check bought lotteries: `h!lottery list`\n' \
+                   'Transfer credits to another person: `h!lottery transfer <amount> <recipient>`'
+            embed = discord.Embed(title='Lottery Commands', description=desc, color=self.color)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
         elif numbers == '':
             random_numbers: typing.Set[str] = set()
