@@ -144,7 +144,7 @@ async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryPa
 
 async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
     result_text: typing.List[typing.List[str]] = list()
-    result_text += list()
+    result_text.append(list())
     current_index = 0
     embed = discord.Embed(title='Lottery Result', description='',
                           color=discord.Colour.from_rgb(30, 99, 175))
