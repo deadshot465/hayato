@@ -182,6 +182,12 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
         await CreditManager.add_credits(participant.user_id, total_credits)
         embed.add_field(name=participant.username, value=str(total_credits), inline=True)
         participant.lottery_choices.clear()
+    message_count = len(result_text) // 2000
+    remaining = message_count % 2000
+    for x in range(0, message_count):
+        message = result_text[(x * 2000):((x + 1) * 2000)]
+        await ctx.send(message)
+    await ctx.send(result_text[(message_count * 2000):])
     await ctx.send(embed=embed)
     global LOTTERY_RUNNING
     LOTTERY_RUNNING = False
