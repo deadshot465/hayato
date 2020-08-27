@@ -344,6 +344,31 @@ class Fun(commands.Cog):
             return
         await ctx.send('🎱 | {}, **{}**!'.format(random.choice(EIGHTBALL_RESPONSE), ctx.author.display_name))
 
+    @commands.command(description='Play a coinflip game with Hayato.',
+                      help='Guess whether the coinflip result is head or tail, and earn credits from it.', aliases=['cf'])
+    async def coinflip(self, ctx: commands.Context, arg1: typing.Optional[str], arg2: typing.Optional[str]):
+        author: typing.Union[discord.User, discord.Member] = ctx.author
+        await CreditManager.get_user_credits(ctx, author.id, True)
+        coin = ['h', 't']
+        words = {'h': 'head', 't': 'tail'}
+        if arg1 is None or arg1.lower() not in coin:
+            await ctx.send('You need to guess if it is head or tail. The correct input is `h!coinflip <h/t> <amount>`!')
+            return
+        if arg2 is None:
+            await ctx.send('You need to specify the amount for this round. The correct input is `h!coinflip <h/t> <amount>`!')
+        try:
+            amount = int(arg2)
+            answer = random.choice(coin)
+            if arg1 == answer:
+                await CreditManager.add_credits(author.id, amount, ctx=ctx)
+                await ctx.send('It is {}! You gained {} credits!'.format(words.get(answer), amount))
+            else:
+                await CreditManager.remove_credits(author.id, amount, ctx=ctx)
+                await ctx.send('It is {}! You lost {} credits!'.format(words.get(answer), amount))
+        except ValueError as e:
+            await ctx.send('The amount that you input is invalid!')
+        return
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(Fun(bot))
