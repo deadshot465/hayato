@@ -356,15 +356,19 @@ class Fun(commands.Cog):
             return
         if arg2 is None:
             await ctx.send('You need to specify the amount for this round. The correct input is `h!coinflip <h/t> <amount>`!')
+            return
         try:
             amount = int(arg2)
+            if amount < 1:
+                await ctx.send('You cannot input non-positive values of credits!')
+                return
             answer = random.choice(coin)
-            if arg1 == answer:
+            if arg1.lower() == answer:
                 await CreditManager.add_credits(author.id, amount, ctx=ctx)
-                await ctx.send('It is {}! You gained {} credits!'.format(words.get(answer), amount))
+                await ctx.send('It is **{}**! You gained {} credits!'.format(words.get(answer), amount))
             else:
                 await CreditManager.remove_credits(author.id, amount, ctx=ctx)
-                await ctx.send('It is {}! You lost {} credits!'.format(words.get(answer), amount))
+                await ctx.send('It is **{}**! You lost {} credits!'.format(words.get(answer), amount))
         except ValueError as e:
             await ctx.send('The amount that you input is invalid!')
         return
