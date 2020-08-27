@@ -1,15 +1,51 @@
 from discord.ext import commands
+from Include.Commands.warnban.warnban import WarnBanData
+from marshmallow import Schema
 from typing import Optional, Union
 from Utils.configuration_manager import ConfigurationManager
+import datetime
 import discord
+import json
+import marshmallow_dataclass
 import re
+import typing
 
 
 # This regular expression is used to capture a channel tag/ping.
 CHANNEL_TAG_REGEX = re.compile(r'<#(\d+)>')
 
 
+async def add_warn(ctx: commands.Context, member: Union[discord.User, discord.Member], reason: str, warnban_data: typing.List[WarnBanData], schema: typing.Type[Schema]):
+    author: Union[discord.User, discord.Member] = ctx.author
+    user_data = list(filter(lambda x: x.user_id == member.id, warnban_data))
+    user: WarnBanData
+    if len(user_data) > 0:
+        user = user_data[0]
+        if user.username != member.display_name:
+            user.username = member.display_name
+        user.warns += 1
+        user.reasons.append(reason)
+        serialized = schema().dumps(warnban_data, many=True)
+        with open('Storage/warnban.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return '{} is warned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
+    else:
+        user = WarnBanData(member.display_name, member.id, 1, False, datetime.datetime.now(), datetime.datetime.now(), list())
+        user.reasons.append(reason)
+        warnban_data.append(user)
+        serialized = schema().dumps(warnban_data, many=True)
+        with open('Storage/warnban.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return '{} is warned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
+
+
 class Admin(commands.Cog):
+    warnban_schema = marshmallow_dataclass.class_schema(WarnBanData)
+    with open('Storage/warnban.json') as file_1:
+        warnban_data: typing.List[WarnBanData] = warnban_schema().loads(json_data=file_1.read(), many=True)
+
     def __init__(self, bot: commands.Bot):
         super().__init__()
 
@@ -68,14 +104,15 @@ class Admin(commands.Cog):
     @commands.command(
         description='Warns a member. This command can can only be used by administrators.',
         help='Warns a member if he/she violated the rules. This command can only be used by administrators.')
-    async def warn(self, ctx: commands.Context, member, reason: Optional[str] = 'None'):
+    async def warn(self, ctx: commands.Context, member: discord.Member, *, reason: Optional[str] = 'None'):
         author: Union[discord.User, discord.Member] = ctx.author
         permission: discord.Permissions = author.permissions_in(ctx.channel)
         is_administrator = permission.administrator
         if not is_administrator:
             await ctx.send('Don\'t try to bypass admin rights. This is not a command for you to use.')
             return
-        await ctx.send('This command is not implemented yet.')
+        result = await add_warn(ctx, member, reason, Admin.warnban_data, self.warnban_schema)
+        await ctx.send(result)
 
     # Validate inputs.
     # Return true if the input is valid.
