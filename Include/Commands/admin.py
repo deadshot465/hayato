@@ -65,6 +65,18 @@ class Admin(commands.Cog):
             ConfigurationManager.update_channel('allow', int(channel_id))
             await ctx.send('Successfully allowed the channel {}!'.format(CHANNEL_TAG_REGEX.match(args).group(0)))
 
+    @commands.command(
+        description='Warns a member. This command can can only be used by administrators.',
+        help='Warns a member if he/she violated the rules. This command can only be used by administrators.')
+    async def warn(self, ctx: commands.Context, member, reason: Optional[str] = 'None'):
+        author: Union[discord.User, discord.Member] = ctx.author
+        permission: discord.Permissions = author.permissions_in(ctx.channel)
+        is_administrator = permission.administrator
+        if not is_administrator:
+            await ctx.send('Don\'t try to bypass admin rights. This is not a command for you to use.')
+            return
+        await ctx.send('This command is not implemented yet.')
+
     # Validate inputs.
     # Return true if the input is valid.
     @staticmethod
@@ -75,7 +87,7 @@ class Admin(commands.Cog):
         if not is_administrator:
             return False
         if args is None:
-            await ctx.send('You need to provide a channel for me to disable!')
+            await ctx.send('You need to provide a channel for me to enable/disable!')
             return False
         if CHANNEL_TAG_REGEX.match(args) is None:
             await ctx.send('The channel tag you provided is invalid!')
