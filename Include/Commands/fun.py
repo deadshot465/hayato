@@ -11,7 +11,6 @@ from Include.Utils.utils import USER_MENTION_REGEX
 from marshmallow import Schema
 from Utils.credit_manager import CreditManager
 
-
 LOTTERY_RUNNING = False
 EIGHTBALL_RESPONSE = ['Of course', 'It is certain', 'I think so', 'Maybe', 'If you like Shinkansen, then yes',
                       'I think this is as reliable as Shinkansen trains', 'This is as good as E5 Series',
@@ -27,7 +26,8 @@ def switch_on():
 
 
 # Also we use an user instead of an arbitrary name.
-async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant],
+                     schema: typing.Type[Schema]):
     author: typing.Union[discord.User, discord.Member] = ctx.author
     if LOTTERY_RUNNING:
         return 'There is a lottery running now! Please try again after the lottery is over!'
@@ -62,9 +62,11 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return '{}, you have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(author.display_name, str(sorted(number_set)))
+        return '{}, you have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(
+            author.display_name, str(sorted(number_set)))
     else:
-        participant = LotteryParticipant(author.display_name, author.id, list(), datetime.datetime.now(), datetime.datetime.now())
+        participant = LotteryParticipant(author.display_name, author.id, list(), datetime.datetime.now(),
+                                         datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
         lottery_data.append(participant)
         await CreditManager.add_credits(author.id, 100, insert=True)
@@ -72,7 +74,8 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
         with open('Storage/lottery.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return '{}, you have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(author.display_name, str(sorted(number_set)))
+        return '{}, you have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(
+            author.display_name, str(sorted(number_set)))
 
 
 async def get_daily(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
@@ -134,21 +137,25 @@ async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryPa
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
-        embed = discord.Embed(title='Account Balance', description='Here is your account balance:', colour=discord.Colour.from_rgb(30, 99, 175))
+        embed = discord.Embed(title='Account Balance', description='Here is your account balance:',
+                              colour=discord.Colour.from_rgb(30, 99, 175))
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
-        embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id, True)), inline=True)
+        embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id, True)),
+                        inline=True)
         return embed
     else:
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant],
+                          schema: typing.Type[Schema]):
     result_text: typing.List[typing.List[str]] = list()
     result_text.append(list())
+    embeds: typing.List[discord.Embed] = list()
+    embeds.append(discord.Embed(title='Lottery Result', description='',
+                                color=discord.Colour.from_rgb(30, 99, 175)))
     current_index = 0
-    embed = discord.Embed(title='Lottery Result', description='',
-                          color=discord.Colour.from_rgb(30, 99, 175))
-    embed.set_thumbnail(
+    embeds[current_index].set_thumbnail(
         url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
     for participant in lottery_data:
         player_numbers_list = participant.lottery_choices
@@ -173,14 +180,21 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
             total_credits += add_credits
             if len('\n'.join(result_text[current_index])) >= 2000:
                 result_text.append(list())
+                embeds.append(discord.Embed(title='Lottery Result', description='',
+                                            color=discord.Colour.from_rgb(30, 99, 175)))
                 current_index += 1
-            result_text[current_index].append('{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username, numbers_set[0] + 1, count, add_credits))
+                embeds[current_index].set_thumbnail(
+                    url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
+            result_text[current_index].append(
+                '{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username,
+                                                                                           numbers_set[0] + 1, count,
+                                                                                           add_credits))
         await CreditManager.add_credits(participant.user_id, total_credits)
-        embed.add_field(name=participant.username, value=str(total_credits), inline=True)
+        embeds[current_index].add_field(name=participant.username, value=str(total_credits), inline=True)
         participant.lottery_choices.clear()
-    for text in result_text:
-        embed.description = '\n'.join(text)
-        await ctx.send(embed=embed)
+    for text in enumerate(result_text):
+        embeds[text[0]].description = '\n'.join(text[1])
+        await ctx.send(embed=embeds[text[0]])
     global LOTTERY_RUNNING
     LOTTERY_RUNNING = False
     serialized = schema().dumps(lottery_data, many=True)
@@ -199,7 +213,9 @@ class Fun(commands.Cog):
         self.bot = bot
         self.color = discord.Colour.from_rgb(30, 99, 175)
 
-    @commands.command(description='Sends a certain number KouFascinated emote.', help='Send a single KouFascinated emote, or arbitrary number of KouFascinated emotes if specified. Max allowed emotes in a single message is subject to Discord\'s limitation.', aliases=['koufascinated'])
+    @commands.command(description='Sends a certain number KouFascinated emote.',
+                      help='Send a single KouFascinated emote, or arbitrary number of KouFascinated emotes if specified. Max allowed emotes in a single message is subject to Discord\'s limitation.',
+                      aliases=['koufascinated'])
     async def fascinated(self, ctx: commands.Context, count: typing.Optional[int] = 0):
         result = ''
         if str(count) == '' or count == 0:
@@ -233,13 +249,15 @@ class Fun(commands.Cog):
             target_id = USER_MENTION_REGEX.match(args[0]).group(1)
             participants_2 = list(filter(lambda x: x.user_id == int(target_id), self.lottery_data))
             if len(participants_1) == 0:
-                await ctx.send('You can\'t trade with other people when you don\'t have an account!\nCreate an account first by buying a lottery.')
+                await ctx.send(
+                    'You can\'t trade with other people when you don\'t have an account!\nCreate an account first by buying a lottery.')
                 return
             if (await CreditManager.get_user_credits(ctx, participants_1[0].user_id)) - amount < 0:
                 await ctx.send('You cannot transfer more credits than you currently have!')
                 return
             if len(participants_2) == 0:
-                await ctx.send('Sorry! I cannot find the user you want to transfer credits to.\nEither the user does not exist, or the user has\'t joined in the lottery yet.')
+                await ctx.send(
+                    'Sorry! I cannot find the user you want to transfer credits to.\nEither the user does not exist, or the user has\'t joined in the lottery yet.')
                 return
             await CreditManager.remove_credits(participants_1[0].user_id, amount)
             await CreditManager.add_credits(participants_2[0].user_id, amount)
@@ -247,9 +265,15 @@ class Fun(commands.Cog):
             with open('Storage/lottery.json', 'w') as file_1:
                 obj = json.loads(serialized)
                 file_1.write(json.dumps(obj, indent=2))
-            embed = discord.Embed(title='Transfer Credits', description='{} has transferred {} credits to {}!'.format(participants_1[0].username, amount, participants_2[0].username), color=self.color)
+            embed = discord.Embed(title='Transfer Credits',
+                                  description='{} has transferred {} credits to {}!'.format(participants_1[0].username,
+                                                                                            amount,
+                                                                                            participants_2[0].username),
+                                  color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-            embed.add_field(name='Balance', value=str(await CreditManager.get_user_credits(ctx, participants_1[0].user_id)), inline=False)
+            embed.add_field(name='Balance',
+                            value=str(await CreditManager.get_user_credits(ctx, participants_1[0].user_id)),
+                            inline=False)
             await ctx.send(embed=embed)
 
         elif args == 'info':
@@ -268,7 +292,8 @@ class Fun(commands.Cog):
                    'Examples of commands:\n`h!lottery 1,2,3,4,5,6` Correct\n`h!lottery 1-2-3-4-5-6` Incorrect, numbers must be separated by comma\n`h!lottery 2,2,3,5,7,7` Incorrect, numbers cannot be repeated.'
             embed = discord.Embed(title='Lottery', description=desc, colour=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-            embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
+            embed.set_thumbnail(
+                url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
             await ctx.send(embed=embed)
         elif args == 'start':
             permission: discord.Permissions = ctx.author.permissions_in(ctx.channel)
@@ -316,9 +341,11 @@ class Fun(commands.Cog):
             if len(participant_lotteries) == 0:
                 await ctx.send('You currently don\'t have any lotteries!')
                 return
-            embed = discord.Embed(title='Purchased Lotteries', description='The following are your currently purchased lotteries.', color=self.color)
+            embed = discord.Embed(title='Purchased Lotteries',
+                                  description='The following are your currently purchased lotteries.', color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
-            lotteries = list(map(lambda b: '[{}]'.format(', '.join(list(map(lambda c: str(c), b)))), participant_lotteries))
+            lotteries = list(
+                map(lambda b: '[{}]'.format(', '.join(list(map(lambda c: str(c), b)))), participant_lotteries))
             embed.add_field(name='Lotteries', value='\n'.join(lotteries), inline=False)
             await ctx.send(embed=embed)
         elif args == 'help':
@@ -351,7 +378,8 @@ class Fun(commands.Cog):
         await ctx.send('🎱 | {}, **{}**!'.format(random.choice(EIGHTBALL_RESPONSE), ctx.author.display_name))
 
     @commands.command(description='Play a coinflip game with Hayato.',
-                      help='Guess whether the coinflip result is head or tail, and earn credits from it.', aliases=['cf'])
+                      help='Guess whether the coinflip result is head or tail, and earn credits from it.',
+                      aliases=['cf'])
     async def coinflip(self, ctx: commands.Context, arg1: typing.Optional[str], arg2: typing.Optional[str]):
         author: typing.Union[discord.User, discord.Member] = ctx.author
         await CreditManager.get_user_credits(ctx, author.id, True)
@@ -361,7 +389,8 @@ class Fun(commands.Cog):
             await ctx.send('You need to guess if it is head or tail. The correct input is `h!coinflip <h/t> <amount>`!')
             return
         if arg2 is None:
-            await ctx.send('You need to specify the amount for this round. The correct input is `h!coinflip <h/t> <amount>`!')
+            await ctx.send(
+                'You need to specify the amount for this round. The correct input is `h!coinflip <h/t> <amount>`!')
             return
         try:
             amount = int(arg2)
