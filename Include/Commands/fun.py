@@ -149,14 +149,11 @@ async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryPa
 
 async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant],
                           schema: typing.Type[Schema]):
-    result_text: typing.List[typing.List[str]] = list()
-    result_text.append(list())
-    embeds: typing.List[discord.Embed] = list()
-    embeds.append(discord.Embed(title='Lottery Result', description='',
-                                color=discord.Colour.from_rgb(30, 99, 175)))
-    current_index = 0
-    embeds[current_index].set_thumbnail(
+    embed = discord.Embed(title='Lottery Result', description='',
+                          color=discord.Colour.from_rgb(30, 99, 175))
+    embed.set_thumbnail(
         url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
+    result_text = ''
     for participant in lottery_data:
         player_numbers_list = participant.lottery_choices
         total_credits = 0
@@ -178,23 +175,14 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
             else:
                 add_credits = 0
             total_credits += add_credits
-            if len('\n'.join(result_text[current_index])) >= 2000:
-                result_text.append(list())
-                embeds.append(discord.Embed(title='Lottery Result', description='',
-                                            color=discord.Colour.from_rgb(30, 99, 175)))
-                current_index += 1
-                embeds[current_index].set_thumbnail(
-                    url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
-            result_text[current_index].append(
-                '{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!'.format(participant.username,
-                                                                                           numbers_set[0] + 1, count,
-                                                                                           add_credits))
+            result_text += '{}\'s lottery #{} hits **{}** numbers! You gained **{}** credits!\n'.format(
+                participant.username,
+                numbers_set[0] + 1, count,
+                add_credits)
         await CreditManager.add_credits(participant.user_id, total_credits)
-        embeds[current_index].add_field(name=participant.username, value=str(total_credits), inline=True)
+        embed.add_field(name=participant.username, value=str(total_credits), inline=True)
         participant.lottery_choices.clear()
-    for text in enumerate(result_text):
-        embeds[text[0]].description = '\n'.join(text[1])
-        await ctx.send(embed=embeds[text[0]])
+    await ctx.send(embed=embed)
     global LOTTERY_RUNNING
     LOTTERY_RUNNING = False
     serialized = schema().dumps(lottery_data, many=True)
