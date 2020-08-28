@@ -25,7 +25,7 @@ EXTENSIONS = ['Include.Commands.admin',
               'Include.Commands.rails',
               'Include.Commands.utility']
 
-ADMIN_COMMANDS = ['enable', 'disable', 'allow', 'ignore', 'warn']
+ADMIN_COMMANDS = ['enable', 'disable', 'allow', 'ignore', 'warn', 'ban']
 
 # Initialize our bot and set the prefix to 'h!', also set up the description and help command.
 HELP = {

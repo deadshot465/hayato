@@ -41,6 +41,37 @@ async def add_warn(ctx: commands.Context, member: Union[discord.User, discord.Me
         return '{} is warned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
 
 
+async def add_ban(ctx: commands.Context, member: Union[discord.User, discord.Member], time: int, reason: str, warnban_data: typing.List[WarnBanData], schema: typing.Type[Schema]):
+    author: Union[discord.User, discord.Member] = ctx.author
+    user_data = list(filter(lambda x: x.user_id == member.id, warnban_data))
+    user: WarnBanData
+    if len(user_data) > 0:
+        user = user_data[0]
+        if user.username != member.display_name:
+            user.username = member.display_name
+        user.is_banned = True
+        user.warns = 0
+        user.ban_time = datetime.datetime.now()
+        user.reasons.append(reason)
+        # await member.ban(reason=reason)
+        serialized = schema().dumps(warnban_data, many=True)
+        with open('Storage/warnban.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return '{} is banned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
+    else:
+        user = WarnBanData(member.display_name, member.id, 0, True, datetime.datetime.now(), datetime.datetime.now(),
+                           list())
+        user.reasons.append(reason)
+        warnban_data.append(user)
+        # await member.ban(reason=reason)
+        serialized = schema().dumps(warnban_data, many=True)
+        with open('Storage/warnban.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return '{} is banned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
+
+
 class Admin(commands.Cog):
     warnban_schema = marshmallow_dataclass.class_schema(WarnBanData)
     with open('Storage/warnban.json') as file_1:
@@ -112,6 +143,16 @@ class Admin(commands.Cog):
             await ctx.send('Don\'t try to bypass admin rights. This is not a command for you to use.')
             return
         result = await add_warn(ctx, member, reason, Admin.warnban_data, self.warnban_schema)
+        await ctx.send(result)
+
+    async def ban(self, ctx: commands.Context, member: discord.Member, time: Optional[int] = 0, *, reason: Optional[str] = 'None'):
+        author: Union[discord.User, discord.Member] = ctx.author
+        permission: discord.Permissions = author.permissions_in(ctx.channel)
+        is_administrator = permission.administrator
+        if not is_administrator:
+            await ctx.send('Don\'t try to bypass admin rights. This is not a command for you to use.')
+            return
+        result = await add_ban(ctx, member, time, reason, Admin.warnban_data, self.warnban_schema)
         await ctx.send(result)
 
     # Validate inputs.
