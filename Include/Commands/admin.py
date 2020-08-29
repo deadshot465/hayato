@@ -1,6 +1,7 @@
 from discord.ext import commands
 from Include.Commands.warnban.warnban import WarnBanData
 from marshmallow import Schema
+from dateutil.relativedelta import relativedelta
 from typing import Optional, Union
 from Utils.configuration_manager import ConfigurationManager
 import datetime
@@ -25,6 +26,10 @@ async def add_warn(ctx: commands.Context, member: Union[discord.User, discord.Me
             user.username = member.display_name
         user.warns += 1
         user.reasons.append(reason)
+        if user.warns >= 3:
+            message = await add_ban(ctx, member, 30, 'Accumulated 3 warnings', warnban_data, schema)
+            await ctx.send(message)
+            return
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -52,19 +57,34 @@ async def add_ban(ctx: commands.Context, member: Union[discord.User, discord.Mem
         user.is_banned = True
         user.warns = 0
         user.ban_time = datetime.datetime.now()
+        if time == -1:
+            expiry = datetime.datetime.now() + relativedelta(years=1000)
+        elif time == 0:
+            await ctx.send('Please provide a valid time of banning in days.')
+            return
+        else:
+            expiry = datetime.datetime.now() + relativedelta(days=time)
+        user.ban_expiry = expiry
         user.reasons.append(reason)
-        # await member.ban(reason=reason)
+        await member.ban(reason=reason)
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
         return '{} is banned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
     else:
-        user = WarnBanData(member.display_name, member.id, 0, True, datetime.datetime.now(), datetime.datetime.now(),
-                           list())
+        now = datetime.datetime.now()
+        if time == -1:
+            expiry = datetime.datetime.now() + relativedelta(years=1000)
+        elif time == 0:
+            await ctx.send('Please provide a valid time of banning in days.')
+            return
+        else:
+            expiry = datetime.datetime.now() + relativedelta(days=time)
+        user = WarnBanData(member.display_name, member.id, 0, True, now, expiry, list())
         user.reasons.append(reason)
         warnban_data.append(user)
-        # await member.ban(reason=reason)
+        await member.ban(reason=reason)
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -145,6 +165,9 @@ class Admin(commands.Cog):
         result = await add_warn(ctx, member, reason, Admin.warnban_data, self.warnban_schema)
         await ctx.send(result)
 
+    @commands.command(
+        description='Bans a member. This command can can only be used by administrators.',
+        help='Bans a member if he/she violated the rules seriously. This command can only be used by administrators.')
     async def ban(self, ctx: commands.Context, member: discord.Member, time: Optional[int] = 0, *, reason: Optional[str] = 'None'):
         author: Union[discord.User, discord.Member] = ctx.author
         permission: discord.Permissions = author.permissions_in(ctx.channel)
