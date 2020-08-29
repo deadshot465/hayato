@@ -4,6 +4,7 @@ from marshmallow import Schema
 from dateutil.relativedelta import relativedelta
 from typing import Optional, Union
 from Utils.configuration_manager import ConfigurationManager
+import asyncio
 import datetime
 import discord
 import json
@@ -18,6 +19,35 @@ CHANNEL_TAG_REGEX = re.compile(r'<#(\d+)>')
 
 async def add_warn(ctx: commands.Context, member: Union[discord.User, discord.Member], reason: str, warnban_data: typing.List[WarnBanData], schema: typing.Type[Schema]):
     author: Union[discord.User, discord.Member] = ctx.author
+    embed = discord.Embed(title='Warn user', description='Are you sure you want to warn {}?'.format(member.display_name), colour=discord.Colour.from_rgb(30, 99, 175))
+    embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+    embed.add_field(name='Reason', value=str(reason), inline=True)
+    embed.set_footer(text="React ✅ to confirm the warn, react ❌ to cancel")
+    sentembed: discord.Message = await ctx.send(embed=embed)
+    await sentembed.add_reaction('✅')
+    await sentembed.add_reaction('❌')
+
+    def check(reaction: discord.Reaction, user):
+        return user == ctx.author and reaction.message.id == sentembed.id and (
+                    str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌')
+
+    async def cancel():
+        await ctx.message.delete()
+        await sentembed.delete()
+        await ctx.send('❌ Cancelled')
+
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=10.0, check=check)
+    except asyncio.TimeoutError:
+        # Timeout
+        await cancel()
+        return
+    else:
+        if reaction.emoji == '❌':
+            await cancel()
+            return
+        else:
+            await ctx.send(embed=status_embed('Submitted! Thank you for helping this community project!'))
     user_data = list(filter(lambda x: x.user_id == member.id, warnban_data))
     user: WarnBanData
     if len(user_data) > 0:
@@ -25,11 +55,14 @@ async def add_warn(ctx: commands.Context, member: Union[discord.User, discord.Me
         if user.username != member.display_name:
             user.username = member.display_name
         user.warns += 1
+        user.is_banned = False
         user.reasons.append(reason)
         if user.warns >= 3:
             message = await add_ban(ctx, member, 30, 'Accumulated 3 warnings', warnban_data, schema)
             await ctx.send(message)
             return
+        dm_channel: discord.DMChannel = await member.create_dm()
+        await dm_channel.send('You are warned by {}. Reason: {}'.format(author.display_name, reason))
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -39,6 +72,8 @@ async def add_warn(ctx: commands.Context, member: Union[discord.User, discord.Me
         user = WarnBanData(member.display_name, member.id, 1, False, datetime.datetime.now(), datetime.datetime.now(), list())
         user.reasons.append(reason)
         warnban_data.append(user)
+        dm_channel: discord.DMChannel = await member.create_dm()
+        await dm_channel.send('You are warned by {}. Reason: {}'.format(author.display_name, reason))
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
@@ -67,11 +102,13 @@ async def add_ban(ctx: commands.Context, member: Union[discord.User, discord.Mem
         user.ban_expiry = expiry
         user.reasons.append(reason)
         await member.ban(reason=reason)
+        dm_channel: discord.DMChannel = await member.create_dm()
+        await dm_channel.send('You are banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(author.display_name, time, reason, expiry.year, expiry.month, expiry.day))
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return '{} is banned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
+        return '{} is banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(member.display_name, author.display_name, time, reason, expiry.year, expiry.month, expiry.day)
     else:
         now = datetime.datetime.now()
         if time == -1:
@@ -85,11 +122,13 @@ async def add_ban(ctx: commands.Context, member: Union[discord.User, discord.Mem
         user.reasons.append(reason)
         warnban_data.append(user)
         await member.ban(reason=reason)
+        dm_channel: discord.DMChannel = await member.create_dm()
+        await dm_channel.send('You are banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(author.display_name, time, reason, expiry.year, expiry.month, expiry.day))
         serialized = schema().dumps(warnban_data, many=True)
         with open('Storage/warnban.json', 'w') as file_1:
             obj = json.loads(serialized)
             file_1.write(json.dumps(obj, indent=2))
-        return '{} is banned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
+        return '{} is banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(member.display_name, author.display_name, time, reason, expiry.year, expiry.month, expiry.day)
 
 
 class Admin(commands.Cog):
