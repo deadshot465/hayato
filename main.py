@@ -98,12 +98,12 @@ async def on_message(message: discord.Message):
     lower_case = message.content.lower()
     if '<@737017231522922556>' in lower_case or 'hayato' in lower_case:
         chance = random.randint(1, 100)
-        if chance > 70:
+        if chance > 85:
             channel = message.channel
             await channel.send(random.choice(RESPONSE))
     else:
         chance = random.randint(1, 100)
-        if chance > 95:
+        if chance > 97:
             channel = message.channel
             await channel.send(random.choice(RESPONSE))
 
