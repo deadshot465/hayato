@@ -25,12 +25,80 @@ def switch_on():
     LOTTERY_RUNNING = True
 
 
+async def bulk_purchase(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    author: typing.Union[discord.User, discord.Member] = ctx.author
+    participant = get_participant(ctx, lottery_data)
+    if not isinstance(participant, LotteryParticipant):
+        return 'You have to join the game first! Use `h!lottery` to buy your first lottery to get started.'
+    user_credits = await CreditManager.get_user_credits(ctx, participant.user_id, True)
+    numbers = numbers.strip()
+    available_amount: int
+    balance: int
+
+    if numbers == 'all':
+        available_amount = user_credits // 10
+    else:
+        available_amount = int(numbers)
+
+    balance = user_credits - available_amount * 10
+    if balance < 0:
+        max_limit = user_credits // 10
+        return 'You don\'t have enough credits. You can only purchase {} lotteries at maximum!'.format(max_limit)
+    description = '{}, you are going to purchase {} lotteries at once. After this action, you will have {} credits in your account. Do you want to continue?'.format(
+        author.display_name, available_amount, balance)
+    embed = discord.Embed(title='Bulk Purchase', description=description, colour=discord.Colour.from_rgb(30, 99, 175))
+    embed.set_author(name=author.display_name, icon_url=author.avatar_url)
+    embed.set_footer(text="React with ✅ to confirm, react with ❌ to cancel.")
+    sent_embed = await ctx.send(embed=embed)
+    await sent_embed.add_reaction('✅')
+    await sent_embed.add_reaction('❌')
+    bot: discord.ext.commands.Bot = ctx.bot
+
+    def check(reaction: discord.Reaction, user):
+        return user == ctx.author and reaction.message.id == sent_embed.id and (
+                str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌')
+
+    async def cancel():
+        await sent_embed.delete()
+        return '❌ The action is cancelled.'
+
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
+    except asyncio.TimeoutError:
+        return await cancel()
+    else:
+        if reaction.emoji == '❌':
+            return await cancel()
+        number_set_list = list()
+        for x in range(0, available_amount):
+            random_numbers = set()
+            while len(random_numbers) < 6:
+                random_numbers.add(random.randint(1, 49))
+            number_set_list.append(random_numbers)
+        if participant.lottery_choices is None:
+            participant.lottery_choices = list()
+        for number_set in number_set_list:
+            participant.lottery_choices.append(sorted(number_set))
+        await CreditManager.remove_credits(participant.user_id, available_amount * 10)
+        if participant.username != author.display_name:
+            participant.username = author.display_name
+        serialized = schema().dumps(lottery_data, many=True)
+        with open('Storage/lottery.json', 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))
+        return '{}, you have successfully bulk purchased {} lotteries! Deducted {} credits from your account.'.format(
+            author.display_name, available_amount, available_amount * 10)
+
+
 # Also we use an user instead of an arbitrary name.
 async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant],
                      schema: typing.Type[Schema]):
     author: typing.Union[discord.User, discord.Member] = ctx.author
     if LOTTERY_RUNNING:
         return 'There is a lottery running now! Please try again after the lottery is over!'
+    numbers = numbers.strip()
+    if numbers == 'all' or numbers.isdigit():
+        return await bulk_purchase(ctx, numbers, lottery_data, schema)
     # Separate the choices into a list
     number_list = numbers.split(',')
     # For each number remove the spaces
@@ -46,10 +114,8 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
             return 'You need numbers between 1 and 49!'
     if not len(number_set) == 6:
         return 'You need exactly 6 numbers!'
-    participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
-    participant: LotteryParticipant
-    if len(participant_data) > 0:
-        participant = participant_data[0]
+    participant = get_participant(ctx, lottery_data)
+    if isinstance(participant, LotteryParticipant):
         if participant.lottery_choices is None:
             participant.lottery_choices = list()
         participant.lottery_choices.append(sorted(number_set))
@@ -131,12 +197,20 @@ async def get_weekly(ctx: commands.Context, lottery_data: typing.List[LotteryPar
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-async def get_balance(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant]):
+def get_participant(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant]):
     author: typing.Union[discord.User, discord.Member] = ctx.author
     participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
-        participant = participant_data[0]
+        return participant_data[0]
+    else:
+        return False
+
+
+async def get_balance_embed(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant]):
+    author: typing.Union[discord.User, discord.Member] = ctx.author
+    participant = get_participant(ctx, lottery_data)
+    if isinstance(participant, LotteryParticipant):
         embed = discord.Embed(title='Account Balance', description='Here is your account balance:',
                               colour=discord.Colour.from_rgb(30, 99, 175))
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
@@ -321,7 +395,7 @@ class Fun(commands.Cog):
             result = await get_weekly(ctx, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
         elif args == 'balance' or args == 'account':
-            result = await get_balance(ctx, Fun.lottery_data)
+            result = await get_balance_embed(ctx, Fun.lottery_data)
             if isinstance(result, str):
                 await ctx.send(result)
             else:
