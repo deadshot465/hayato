@@ -1,3 +1,4 @@
+import datetime
 import json
 import marshmallow_dataclass
 
@@ -36,3 +37,18 @@ class ConfigurationManager(object):
     @classmethod
     def get_ignored_channels(cls) -> List[int]:
         return cls.config.ignored_channels
+
+    @classmethod
+    def get_next_lottery_time(cls) -> datetime.datetime:
+        return cls.config.lottery_info.lottery_scheduled
+
+    @classmethod
+    def set_next_lottery_time(cls):
+        if datetime.datetime.today().weekday() == 3:
+            cls.config.lottery_info.lottery_scheduled += datetime.timedelta(days=3)
+        elif datetime.datetime.today().weekday() == 6:
+            cls.config.lottery_info.lottery_scheduled += datetime.timedelta(days=4)
+        serialized = cls.configuration_schema.dumps(cls.config)
+        with open(cls.config_path, 'w') as file_1:
+            obj = json.loads(serialized)
+            file_1.write(json.dumps(obj, indent=2))

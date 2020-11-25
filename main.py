@@ -1,11 +1,17 @@
+import asyncio
 import discord
 import help
+import marshmallow_dataclass
 import os
 import random
 from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
-from typing import List, Optional
+
+from Include.Commands.fun import auto_lottery
+from Include.Commands.lottery.lottery import LotteryParticipant
+from marshmallow import Schema
+from typing import List, Optional, Union
 from Utils.credit_manager import CreditManager
 
 from Utils.configuration_manager import ConfigurationManager
@@ -113,6 +119,7 @@ async def on_ready():
     await CreditManager.initialize()
     print('Logged on as', bot.user)
     await set_presence()
+    asyncio.create_task(schedule_lottery())
 
 
 if __name__ == '__main__':
@@ -123,5 +130,18 @@ if __name__ == '__main__':
 bot.run(os.getenv('TOKEN'), bot=True, reconnect=True)
 
 
-def test_bot():
-    return
+async def schedule_lottery():
+    next_lottery_time = ConfigurationManager.get_next_lottery_time()
+    seconds = (next_lottery_time - datetime.now()).total_seconds()
+    try:
+        await asyncio.sleep(seconds)
+        channel: Optional[Union[discord.abc.GuildChannel, discord.abc.PrivateChannel]] = bot.get_channel(744550089908813945)
+        participant_schema = marshmallow_dataclass.class_schema(LotteryParticipant)
+        with open('Storage/lottery.json') as file_1:
+            lottery_data: List[LotteryParticipant] = participant_schema().loads(json_data=file_1.read(), many=True)
+            if isinstance(channel, discord.TextChannel):
+                await auto_lottery(channel, lottery_data, participant_schema)
+                ConfigurationManager.set_next_lottery_time()
+                asyncio.create_task(schedule_lottery())
+    except Exception as e:
+        print(e)

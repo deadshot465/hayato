@@ -221,7 +221,7 @@ async def get_balance_embed(ctx: commands.Context, lottery_data: typing.List[Lot
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant],
+async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant],
                           schema: typing.Type[Schema]):
     embed = discord.Embed(title='Lottery Result', description='',
                           color=discord.Colour.from_rgb(30, 99, 175))
@@ -269,6 +269,28 @@ async def compare_numbers(ctx: commands.Context, drawn_numbers: list, lottery_da
     with open('Storage/lottery.json', 'w') as file_1:
         obj = json.loads(serialized)
         file_1.write(json.dumps(obj, indent=2))
+
+
+async def auto_lottery(ctx: discord.TextChannel, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+    global LOTTERY_RUNNING
+    if LOTTERY_RUNNING:
+        await ctx.send('There is already a lottery running now!')
+        return
+    switch_on()
+    await ctx.send('The lottery will start in 10 seconds!')
+    await asyncio.sleep(10)
+    drawn_numbers = []
+    word_list = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
+    for word in word_list:
+        number = random.randint(1, 49)
+        while number in drawn_numbers:
+            number = random.randint(1, 49)
+        drawn_numbers.append(number)
+        await ctx.send('The ' + word + ' drawn number is **' + str(number) + '**!')
+        await asyncio.sleep(3)
+    drawn_numbers.sort()
+    await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
+    await compare_numbers(ctx, drawn_numbers, lottery_data, schema)
 
 
 class Fun(commands.Cog):
@@ -387,7 +409,7 @@ class Fun(commands.Cog):
                     await asyncio.sleep(3)
                 drawn_numbers.sort()
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
-                await compare_numbers(ctx, drawn_numbers, Fun.lottery_data, self.participant_schema)
+                await compare_numbers(ctx.channel, drawn_numbers, Fun.lottery_data, self.participant_schema)
         elif args == 'daily':
             result = await get_daily(ctx, Fun.lottery_data, self.participant_schema)
             await ctx.send(result)
