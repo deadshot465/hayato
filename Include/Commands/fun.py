@@ -291,6 +291,8 @@ async def auto_lottery(ctx: discord.TextChannel, lottery_data: typing.List[Lotte
     drawn_numbers.sort()
     await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
     await compare_numbers(ctx, drawn_numbers, lottery_data, schema)
+    with open('Storage/lottery.json') as file_1:
+        Fun.lottery_data = schema().loads(json_data=file_1.read(), many=True)
 
 
 class Fun(commands.Cog):
