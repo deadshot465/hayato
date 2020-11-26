@@ -263,6 +263,7 @@ async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list, lottery
         await ctx.send(message)
     await ctx.send(result_text[(message_count * 2000):])
     await ctx.send(embed=embed)
+    await CreditManager.replenish(ctx.id, ctx)
     global LOTTERY_RUNNING
     LOTTERY_RUNNING = False
     serialized = schema().dumps(lottery_data, many=True)

@@ -114,22 +114,6 @@ async def on_message(message: discord.Message):
             await channel.send(random.choice(RESPONSE))
 
 
-@bot.event
-async def on_ready():
-    await CreditManager.initialize()
-    print('Logged on as', bot.user)
-    await set_presence()
-    asyncio.create_task(schedule_lottery())
-
-
-if __name__ == '__main__':
-    for extension in EXTENSIONS:
-        bot.load_extension(extension)
-    print('Extensions successfully loaded.')
-
-bot.run(os.getenv('TOKEN'), bot=True, reconnect=True)
-
-
 async def schedule_lottery():
     next_lottery_time = ConfigurationManager.get_next_lottery_time()
     seconds = (next_lottery_time - datetime.now()).total_seconds()
@@ -145,3 +129,19 @@ async def schedule_lottery():
                 asyncio.create_task(schedule_lottery())
     except Exception as e:
         print(e)
+
+
+@bot.event
+async def on_ready():
+    await CreditManager.initialize()
+    print('Logged on as', bot.user)
+    await set_presence()
+    asyncio.create_task(schedule_lottery())
+
+
+if __name__ == '__main__':
+    for extension in EXTENSIONS:
+        bot.load_extension(extension)
+    print('Extensions successfully loaded.')
+
+bot.run(os.getenv('TOKEN'), bot=True, reconnect=True)

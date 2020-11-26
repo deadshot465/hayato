@@ -179,3 +179,10 @@ class CreditManager:
                                                                                                             str(
                                                                                                                 amount)))
         await cls.fetch(True)
+
+    @classmethod
+    async def replenish(cls, channel_id: int, channel: discord.abc.Messageable):
+        users_to_replenish = list(filter(lambda x: x.Credits <= 200, cls.user_credits))
+        for user in users_to_replenish:
+            user.Credits += 200
+            await cls.update_user(int(user.UserId), 200, 'plus', channel_id=channel_id, channel=channel)
