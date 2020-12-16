@@ -1,14 +1,12 @@
 import asyncio
 import datetime
 import discord
-import json
-import marshmallow_dataclass
 import typing
 import random
 from discord.ext import commands
 from Include.Commands.lottery.lottery import LotteryParticipant
 from Include.Utils.utils import USER_MENTION_REGEX
-from marshmallow import Schema
+from Utils.configuration_manager import ConfigurationManager
 from Utils.credit_manager import CreditManager
 
 LOTTERY_RUNNING = False
@@ -25,9 +23,9 @@ def switch_on():
     LOTTERY_RUNNING = True
 
 
-async def bulk_purchase(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def bulk_purchase(ctx: commands.Context, numbers: str):
     author: typing.Union[discord.User, discord.Member] = ctx.author
-    participant = get_participant(ctx, lottery_data)
+    participant = get_participant(ctx)
     if not isinstance(participant, LotteryParticipant):
         return 'You have to join the game first! Use `h!lottery` to buy your first lottery to get started.'
     user_credits = await CreditManager.get_user_credits(ctx, participant.user_id, True)
@@ -82,23 +80,19 @@ async def bulk_purchase(ctx: commands.Context, numbers: str, lottery_data: typin
         await CreditManager.remove_credits(participant.user_id, available_amount * 10)
         if participant.username != author.display_name:
             participant.username = author.display_name
-        serialized = schema().dumps(lottery_data, many=True)
-        with open('Storage/lottery.json', 'w') as file_1:
-            obj = json.loads(serialized)
-            file_1.write(json.dumps(obj, indent=2))
+        ConfigurationManager.write_lottery_data()
         return '{}, you have successfully bulk purchased {} lotteries! Deducted {} credits from your account.'.format(
             author.display_name, available_amount, available_amount * 10)
 
 
 # Also we use an user instead of an arbitrary name.
-async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.List[LotteryParticipant],
-                     schema: typing.Type[Schema]):
+async def add_player(ctx: commands.Context, numbers: str):
     author: typing.Union[discord.User, discord.Member] = ctx.author
     if LOTTERY_RUNNING:
         return 'There is a lottery running now! Please try again after the lottery is over!'
     numbers = numbers.strip()
     if numbers == 'all' or numbers.isdigit():
-        return await bulk_purchase(ctx, numbers, lottery_data, schema)
+        return await bulk_purchase(ctx, numbers)
     # Separate the choices into a list
     number_list = numbers.split(',')
     # For each number remove the spaces
@@ -114,7 +108,7 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
             return 'You need numbers between 1 and 49!'
     if not len(number_set) == 6:
         return 'You need exactly 6 numbers!'
-    participant = get_participant(ctx, lottery_data)
+    participant = get_participant(ctx)
     if isinstance(participant, LotteryParticipant):
         if participant.lottery_choices is None:
             participant.lottery_choices = list()
@@ -124,29 +118,23 @@ async def add_player(ctx: commands.Context, numbers: str, lottery_data: typing.L
         await CreditManager.remove_credits(participant.user_id, 10)
         if participant.username != author.display_name:
             participant.username = author.display_name
-        serialized = schema().dumps(lottery_data, many=True)
-        with open('Storage/lottery.json', 'w') as file_1:
-            obj = json.loads(serialized)
-            file_1.write(json.dumps(obj, indent=2))
+        ConfigurationManager.write_lottery_data()
         return '{}, you have successfully bought a lottery of `{}`! Deducted 10 credits from your account.'.format(
             author.display_name, str(sorted(number_set)))
     else:
         participant = LotteryParticipant(author.display_name, author.id, list(), datetime.datetime.now(),
                                          datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
-        lottery_data.append(participant)
+        ConfigurationManager.lottery_data.append(participant)
         await CreditManager.add_credits(author.id, 100, insert=True)
-        serialized = schema().dumps(lottery_data, many=True)
-        with open('Storage/lottery.json', 'w') as file_1:
-            obj = json.loads(serialized)
-            file_1.write(json.dumps(obj, indent=2))
+        ConfigurationManager.write_lottery_data()
         return '{}, you have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(
             author.display_name, str(sorted(number_set)))
 
 
-async def get_daily(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def get_daily(ctx: commands.Context):
     author: typing.Union[discord.User, discord.Member] = ctx.author
-    participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
+    participant_data = list(filter(lambda x: x.user_id == author.id, ConfigurationManager.lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
@@ -154,10 +142,7 @@ async def get_daily(ctx: commands.Context, lottery_data: typing.List[LotteryPart
         if elapsed_time.total_seconds() > 86400:
             await CreditManager.add_credits(participant.user_id, 10, ctx=ctx)
             participant.last_daily_time = datetime.datetime.now()
-            serialized = schema().dumps(lottery_data, many=True)
-            with open('Storage/lottery.json', 'w') as file_1:
-                obj = json.loads(serialized)
-                file_1.write(json.dumps(obj, indent=2))
+            ConfigurationManager.write_lottery_data()
             return 'You have received your daily 10 credits!'
         else:
             seconds_left = 86400 - elapsed_time.seconds
@@ -171,9 +156,9 @@ async def get_daily(ctx: commands.Context, lottery_data: typing.List[LotteryPart
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-async def get_weekly(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def get_weekly(ctx: commands.Context):
     author: typing.Union[discord.User, discord.Member] = ctx.author
-    participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
+    participant_data = list(filter(lambda x: x.user_id == author.id, ConfigurationManager.lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
         participant = participant_data[0]
@@ -181,10 +166,7 @@ async def get_weekly(ctx: commands.Context, lottery_data: typing.List[LotteryPar
         if elapsed_time.total_seconds() > 604800:
             await CreditManager.add_credits(participant.user_id, 30, ctx=ctx)
             participant.last_weekly_time = datetime.datetime.now()
-            serialized = schema().dumps(lottery_data, many=True)
-            with open('Storage/lottery.json', 'w') as file_1:
-                obj = json.loads(serialized)
-                file_1.write(json.dumps(obj, indent=2))
+            ConfigurationManager.write_lottery_data()
             return 'You have received your weekly 30 credits!'
         else:
             days = 7 - elapsed_time.total_seconds() / 60 / 60 / 24
@@ -197,9 +179,9 @@ async def get_weekly(ctx: commands.Context, lottery_data: typing.List[LotteryPar
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-def get_participant(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant]):
+def get_participant(ctx: commands.Context):
     author: typing.Union[discord.User, discord.Member] = ctx.author
-    participant_data = list(filter(lambda x: x.user_id == author.id, lottery_data))
+    participant_data = list(filter(lambda x: x.user_id == author.id, ConfigurationManager.lottery_data))
     participant: LotteryParticipant
     if len(participant_data) > 0:
         return participant_data[0]
@@ -207,9 +189,9 @@ def get_participant(ctx: commands.Context, lottery_data: typing.List[LotteryPart
         return False
 
 
-async def get_balance_embed(ctx: commands.Context, lottery_data: typing.List[LotteryParticipant]):
+async def get_balance_embed(ctx: commands.Context):
     author: typing.Union[discord.User, discord.Member] = ctx.author
-    participant = get_participant(ctx, lottery_data)
+    participant = get_participant(ctx)
     if isinstance(participant, LotteryParticipant):
         embed = discord.Embed(title='Account Balance', description='Here is your account balance:',
                               colour=discord.Colour.from_rgb(30, 99, 175))
@@ -221,14 +203,13 @@ async def get_balance_embed(ctx: commands.Context, lottery_data: typing.List[Lot
         return 'You need to create an account by buying a lottery first! The first lottery that you buy is free.'
 
 
-async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list, lottery_data: typing.List[LotteryParticipant],
-                          schema: typing.Type[Schema]):
+async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list):
     embed = discord.Embed(title='Lottery Result', description='',
                           color=discord.Colour.from_rgb(30, 99, 175))
     embed.set_thumbnail(
         url='https://cdn.discordapp.com/attachments/734604988717858846/744736053264515133/IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png')
     result_text = ''
-    for participant in lottery_data:
+    for participant in ConfigurationManager.lottery_data:
         player_numbers_list = participant.lottery_choices
         total_credits = 0
         for numbers_set in enumerate(player_numbers_list):
@@ -266,13 +247,10 @@ async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list, lottery
     await CreditManager.replenish(ctx.id, ctx)
     global LOTTERY_RUNNING
     LOTTERY_RUNNING = False
-    serialized = schema().dumps(lottery_data, many=True)
-    with open('Storage/lottery.json', 'w') as file_1:
-        obj = json.loads(serialized)
-        file_1.write(json.dumps(obj, indent=2))
+    ConfigurationManager.write_lottery_data()
 
 
-async def auto_lottery(ctx: discord.TextChannel, lottery_data: typing.List[LotteryParticipant], schema: typing.Type[Schema]):
+async def auto_lottery(ctx: discord.TextChannel):
     global LOTTERY_RUNNING
     if LOTTERY_RUNNING:
         await ctx.send('There is already a lottery running now!')
@@ -291,16 +269,11 @@ async def auto_lottery(ctx: discord.TextChannel, lottery_data: typing.List[Lotte
         await asyncio.sleep(3)
     drawn_numbers.sort()
     await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
-    await compare_numbers(ctx, drawn_numbers, lottery_data, schema)
-    with open('Storage/lottery.json') as file_1:
-        Fun.lottery_data = schema().loads(json_data=file_1.read(), many=True)
+    await compare_numbers(ctx, drawn_numbers)
+    ConfigurationManager.reload_lottery_data()
 
 
 class Fun(commands.Cog):
-    participant_schema = marshmallow_dataclass.class_schema(LotteryParticipant)
-    with open('Storage/lottery.json') as file_1:
-        lottery_data: typing.List[LotteryParticipant] = participant_schema().loads(json_data=file_1.read(), many=True)
-
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
@@ -338,9 +311,9 @@ class Fun(commands.Cog):
             elif amount < 0:
                 await ctx.send('You can\'t trade with negative amounts!')
                 return
-            participants_1 = list(filter(lambda x: x.user_id == ctx.author.id, self.lottery_data))
+            participants_1 = list(filter(lambda x: x.user_id == ctx.author.id, ConfigurationManager.lottery_data))
             target_id = USER_MENTION_REGEX.match(args[0]).group(1)
-            participants_2 = list(filter(lambda x: x.user_id == int(target_id), self.lottery_data))
+            participants_2 = list(filter(lambda x: x.user_id == int(target_id), ConfigurationManager.lottery_data))
             if len(participants_1) == 0:
                 await ctx.send(
                     'You can\'t trade with other people when you don\'t have an account!\nCreate an account first by buying a lottery.')
@@ -354,10 +327,7 @@ class Fun(commands.Cog):
                 return
             await CreditManager.remove_credits(participants_1[0].user_id, amount)
             await CreditManager.add_credits(participants_2[0].user_id, amount)
-            serialized = Fun.participant_schema().dumps(Fun.lottery_data, many=True)
-            with open('Storage/lottery.json', 'w') as file_1:
-                obj = json.loads(serialized)
-                file_1.write(json.dumps(obj, indent=2))
+            ConfigurationManager.write_lottery_data()
             embed = discord.Embed(title='Transfer Credits',
                                   description='{} has transferred {} credits to {}!'.format(participants_1[0].username,
                                                                                             amount,
@@ -412,21 +382,21 @@ class Fun(commands.Cog):
                     await asyncio.sleep(3)
                 drawn_numbers.sort()
                 await ctx.send('The drawn numbers are: ' + ''.join(str(drawn_numbers)))
-                await compare_numbers(ctx.channel, drawn_numbers, Fun.lottery_data, self.participant_schema)
+                await compare_numbers(ctx.channel, drawn_numbers)
         elif args == 'daily':
-            result = await get_daily(ctx, Fun.lottery_data, self.participant_schema)
+            result = await get_daily(ctx)
             await ctx.send(result)
         elif args == 'weekly':
-            result = await get_weekly(ctx, Fun.lottery_data, self.participant_schema)
+            result = await get_weekly(ctx)
             await ctx.send(result)
         elif args == 'balance' or args == 'account':
-            result = await get_balance_embed(ctx, Fun.lottery_data)
+            result = await get_balance_embed(ctx)
             if isinstance(result, str):
                 await ctx.send(result)
             else:
                 await ctx.send(embed=result)
         elif args == 'list':
-            participant = list(filter(lambda a: a.user_id == ctx.author.id, Fun.lottery_data))
+            participant = list(filter(lambda a: a.user_id == ctx.author.id, ConfigurationManager.lottery_data))
             if len(participant) == 0:
                 await ctx.send('You are not in the lottery game yet!\nBuy a lottery to join in the game.')
                 return
@@ -456,10 +426,10 @@ class Fun(commands.Cog):
             while len(random_numbers) < 6:
                 random_numbers.add(str(random.randint(1, 49)))
             args = ','.join(random_numbers)
-            result = await add_player(ctx, args, Fun.lottery_data, self.participant_schema)
+            result = await add_player(ctx, args)
             await ctx.send(result)
         else:
-            result = await add_player(ctx, args, Fun.lottery_data, self.participant_schema)
+            result = await add_player(ctx, args)
             await ctx.send(result)
 
     @commands.command(description='Get an answer from a yes/no question.',
@@ -497,7 +467,7 @@ class Fun(commands.Cog):
             else:
                 await CreditManager.remove_credits(author.id, amount, ctx=ctx)
                 await ctx.send('It is **{}**! You lost {} credits!'.format(words.get(answer), amount))
-        except ValueError as e:
+        except ValueError:
             await ctx.send('The amount that you input is invalid!')
         return
 
