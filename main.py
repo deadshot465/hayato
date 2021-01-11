@@ -37,9 +37,13 @@ HELP = {
     'aliases': ['manual']
 }
 
+# Setup intents.
+intents = discord.Intents.default()
+intents.members = True
+intents.presences = True
 # Load prefix from .env file, or use a default prefix.
 PREFIX = os.getenv('PREFIX') or 'h!'
-bot = commands.Bot(command_prefix=PREFIX, description=DESCRIPTION, help_command=help.Help(command_attrs=HELP))
+bot = commands.Bot(command_prefix=PREFIX, description=DESCRIPTION, help_command=help.Help(command_attrs=HELP), intents=intents)
 # Record the initial update time for switching presences every hour.
 last_updated = datetime.now()
 
