@@ -32,7 +32,7 @@ class Info(commands.Cog):
                                           'under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
             text='Hayato Bot: Release 2.3 | 2020-08-16').set_author(name='Hayasugi Hayato from Shinkalion',
                                                                     icon_url=avatar_url).set_thumbnail(
-            url='https://pbs.twimg.com/profile_images/1245939758695510016/UOG9MGdU_400x400.png')
+            url='https://cdn.discordapp.com/attachments/746200551007584337/810741576946941972/768px-Python-logo-notext.svg.png')
         await ctx.send(embed=embed)
 
     @commands.command(description='Play a ping-pong message with Hayato and check if Hayato is fine.', help='Send a simple ping command to Hayato and get response.', aliases=['pong'])

@@ -18,3 +18,5 @@ Storage/channels.json
 Storage/config.json
 Storage/credits.json
 Storage/warnban.json
+**/*/.DS_Store
+.DS_Store
