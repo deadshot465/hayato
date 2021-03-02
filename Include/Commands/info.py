@@ -41,9 +41,9 @@ class Info(commands.Cog):
         bot: discord.ext.commands.Bot = ctx.bot
         message = await ctx.send('🏓 Pinging...')
         end_time = datetime.datetime.now()
-        elapsed = (end_time - start_time).total_seconds() * 1000
+        elapsed = round((end_time - start_time).total_seconds() * 1000, 3)
         heartbeat_latency: float = bot.latency
-        await message.edit(content='🏓 {}!\nLatency is: {}ms. Heartbeat latency is: {}ms.'.format(random.choice(self.pings), elapsed, heartbeat_latency * 1000))
+        await message.edit(content='🏓 {}!\nLatency is: {}ms. Heartbeat latency is: {}ms.'.format(random.choice(self.pings), elapsed, round(heartbeat_latency * 1000, 3)))
 
     @commands.command(description='Get the current time of an arbitrary timezone.', help='Get the current time in an arbitrary timezone. The queried timezone has to be a valid timezone officially registered.', aliases=['watch'])
     async def time(self, ctx: commands.Context, *, args: typing.Optional[str] = ''):
