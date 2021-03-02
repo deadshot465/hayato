@@ -404,8 +404,9 @@ class Fun(commands.Cog):
             if len(participant_lotteries) == 0:
                 await ctx.send('You currently don\'t have any lotteries!')
                 return
+            lottery_count = len(participant_lotteries)
             embed = discord.Embed(title='Purchased Lotteries',
-                                  description='The following are your currently purchased lotteries.', color=self.color)
+                                  description='You currently have {} lotteries. The following are your currently purchased lotteries.'.format(lottery_count), color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             lotteries = list(
                 map(lambda b: '[{}]'.format(', '.join(list(map(lambda c: str(c), b)))), participant_lotteries))
