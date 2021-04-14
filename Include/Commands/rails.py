@@ -1,9 +1,11 @@
-from discord.ext import commands
-from similarity.damerau import Damerau
 import json
 import random
 import discord
 import typing
+
+from discord.ext import commands
+from similarity.damerau import Damerau
+from Utils.utils import HAYATO_COLOR
 
 
 # Convert colour in hex to dec
@@ -30,7 +32,7 @@ def get_train(ctx: commands.Context, trains: typing.List[object], specific: typi
         train_list_str = ''
         for item in train_list:
             train_list_str = train_list_str + item + '\n'
-        embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
+        embed = discord.Embed(color=HAYATO_COLOR,
                               title='Shinkansen Trains',
                               description='Here is a list of trains in Shinkansen:\n \n' + train_list_str)
         embed.set_author(name=str(author.display_name), icon_url=str(author.avatar_url))
@@ -122,8 +124,8 @@ def fuzzy_search(ctx: commands.Context, query: str, lines: typing.List[object]) 
         return None
     else:
         embed = discord.Embed(title='Search Result', description='Sorry, I cannot find any results. Did you mean...',
-                              color=discord.Color.from_rgb(30, 99, 175)).set_author(name=author.display_name,
-                                                                                    icon_url=author.avatar_url)
+                              color=HAYATO_COLOR).set_author(name=author.display_name,
+                                                             icon_url=author.avatar_url)
         joined = '\n'.join(list(map(lambda x: '`{}`'.format(x), line_names)))
         embed.add_field(name='Results', value=joined, inline=False)
         return embed
@@ -131,14 +133,17 @@ def fuzzy_search(ctx: commands.Context, query: str, lines: typing.List[object]) 
 
 def get_multiple_result_embed(ctx: commands.Context, lines: typing.List[object]) -> discord.Embed:
     author: discord.User = ctx.author
-    embed = discord.Embed(title='Search Result', description='The following are possible search results.', color=discord.Color.from_rgb(30, 99, 175)).set_author(name=author.display_name, icon_url=author.avatar_url)
+    embed = discord.Embed(title='Search Result', description='The following are possible search results.',
+                          color=HAYATO_COLOR).set_author(name=author.display_name,
+                                                         icon_url=author.avatar_url)
     line_names = list(map(lambda x: '`{}`'.format(x['name']), lines))
     joined = '\n'.join(line_names)
     embed.add_field(name='Results', value=joined, inline=False)
     return embed
 
 
-async def search_line(ctx: commands.Context, specific: str, lines: typing.List[dict], railway_name: str) -> typing.Union[typing.Optional[discord.Embed], dict]:
+async def search_line(ctx: commands.Context, specific: str, lines: typing.List[dict], railway_name: str) -> \
+        typing.Union[typing.Optional[discord.Embed], dict]:
     found = False
     found_lines = []
     line = dict()
@@ -226,7 +231,8 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = get_embed(ctx, 'Tokyo Metro', discord.Color.from_rgb(20, 157, 211), 'Here is a list of lines in the Tokyo Metro:\n \n' + line_list_str,
+            embed = get_embed(ctx, 'Tokyo Metro', discord.Color.from_rgb(20, 157, 211),
+                              'Here is a list of lines in the Tokyo Metro:\n \n' + line_list_str,
                               thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034'
                                         '/Tokyo_Metro.png',
                               footer_name='the Tokyo Metro')
@@ -244,7 +250,8 @@ class Rails(commands.Cog):
                 return
 
         colour = parse_hex_colour(line['colour'])
-        embed = get_embed(ctx, title='Tokyo Metro ' + line['name'] + ' Line', color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
+        embed = get_embed(ctx, title='Tokyo Metro ' + line['name'] + ' Line',
+                          color=discord.Color.from_rgb(colour[0], colour[1], colour[2]), description=line['overview'],
                           route=line['route'], stations=line['stations'], track_gauge=line['gauge (mm)'],
                           length=line['length (km)'], formation=line['train_formation'], opened=line['opened'],
                           ridership=str(line['daily_ridership']), thumbnail=line['logo'], footer_name='the Tokyo Metro',
@@ -360,8 +367,15 @@ class Rails(commands.Cog):
         if arg_1 == '':
             line = random.choice(self.shinkansen)
         elif arg_1 == 'info':
-            embed = get_embed(ctx, 'Shinkansen', discord.Color.from_rgb(30, 99, 175),
-                              'The Shinkansen (Japanese: 新幹線), colloquially known in English as the bullet train, is a network of high-speed railway lines in Japan. Initially, it was built to connect distant Japanese regions with Tokyo, the capital, in order to aid economic growth and development. Beyond long-distance travel, some sections around the largest metropolitan areas are used as a commuter rail network. It is operated by five Japan Railways Group companies. Over the Shinkansen\'s 50-plus year history, carrying over 10 billion passengers, there has been not a single passenger fatality or injury due to train accidents.',
+            embed = get_embed(ctx, 'Shinkansen', HAYATO_COLOR,
+                              'The Shinkansen (Japanese: 新幹線), colloquially known in English as the bullet train, '
+                              'is a network of high-speed railway lines in Japan. Initially, it was built to connect '
+                              'distant Japanese regions with Tokyo, the capital, in order to aid economic growth and '
+                              'development. Beyond long-distance travel, some sections around the largest '
+                              'metropolitan areas are used as a commuter rail network. It is operated by five Japan '
+                              'Railways Group companies. Over the Shinkansen\'s 50-plus year history, carrying over '
+                              '10 billion passengers, there has been not a single passenger fatality or injury due to '
+                              'train accidents.',
                               footer_name='the Shinkansen')
             await ctx.send(embed=embed)
             return
@@ -380,7 +394,7 @@ class Rails(commands.Cog):
             line_list_str = ''
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
-            embed = get_embed(ctx, 'Shinkansen', discord.Color.from_rgb(30, 99, 175),
+            embed = get_embed(ctx, 'Shinkansen', HAYATO_COLOR,
                               'Here is a list of lines in Shinkansen:\n \n' + line_list_str,
                               footer_name='the Shinkansen')
             await ctx.send(embed=embed)
@@ -434,7 +448,8 @@ class Rails(commands.Cog):
         elif specific == 'info':
             embed = get_embed(ctx, 'West Japan Railway Company', discord.Color.from_rgb(4, 115, 189),
                               'West Japan Railway Company (西日本旅客鉄道株式会社, Nishi-Nihon Ryokaku Tetsudō Kabushiki-gaisha), also referred to as JR-West (JR西日本, Jeiāru Nishi-Nihon), is one of the Japan Railways Group (JR Group) companies and operates in western Honshu. It has its headquarters in Kita-ku, Osaka.',
-                              footer_name='JR West', thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
+                              footer_name='JR West',
+                              thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
             await ctx.send(embed=embed)
             return
         elif specific == 'list':

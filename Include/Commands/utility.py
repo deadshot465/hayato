@@ -1,16 +1,10 @@
 import asyncio
-import base64
-import json
 import random
 import re
-import requests
-import typing
+from typing import Optional
 
-from discord.ext import commands
-from typing import Optional, Tuple
-from Utils.utils import search_user
 from Utils.rapid_api import *
-
+from Utils.utils import search_user
 
 # Available domains.
 DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}

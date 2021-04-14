@@ -1,16 +1,17 @@
+import discord
+
 from discord.ext import commands
 from typing import List, Mapping, Optional, Set
-import discord
+from Utils.utils import HAYATO_COLOR
 
 
 class Help(commands.HelpCommand):
     def __init__(self, command_attrs: dict):
         super().__init__(command_attrs=command_attrs)
-        self.color = discord.Color.from_rgb(30, 99, 175)
 
     async def send_bot_help(self, mapping: Mapping[Optional[commands.Cog], List[commands.Command]]):
         author: discord.User = self.context.author
-        embed = discord.Embed(description='Here is a list of commands for Hayato.', color=self.color)
+        embed = discord.Embed(description='Here is a list of commands for Hayato.', color=HAYATO_COLOR)
         for item in mapping.items():
             cmds: List[commands.Command] = await self.filter_commands(commands=item[1], sort=True)
             cmds_dedup: Set[commands.Command] = set(cmds)
@@ -30,7 +31,8 @@ class Help(commands.HelpCommand):
     async def send_cog_help(self, cog: commands.Cog):
         cmds: List[commands.Command] = await self.filter_commands(commands=cog.get_commands(), sort=True)
         author: discord.User = self.context.author
-        embed = discord.Embed(description='Here is a list of commands for `{}`.'.format(cog.qualified_name), color=self.color, title=cog.qualified_name)
+        embed = discord.Embed(description='Here is a list of commands for `{}`.'.format(cog.qualified_name),
+                              color=HAYATO_COLOR, title=cog.qualified_name)
         embed.set_author(name=author.name, icon_url=author.avatar_url)
         embed.set_footer(text='Type h!help <command> for more info on a command.')
         for cmd in cmds:
@@ -40,7 +42,7 @@ class Help(commands.HelpCommand):
     async def send_command_help(self, command: commands.Command):
         author: discord.User = self.context.author
         embed = discord.Embed(description=command.help,
-                              color=self.color, title=command.name)
+                              color=HAYATO_COLOR, title=command.name)
         embed.set_author(name=author.name, icon_url=author.avatar_url)
         if command.aliases is not None and len(command.aliases) > 0:
             aliases = map(lambda x: '`{}`'.format(x), command.aliases)

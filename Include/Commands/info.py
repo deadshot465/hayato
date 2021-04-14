@@ -9,7 +9,7 @@ import time as _time
 import typing
 
 from discord.ext import commands
-from Utils.utils import PYTHON_LOGO
+from Utils.utils import PYTHON_LOGO, HAYATO_COLOR
 
 
 GOOGLE_ENDPOINT = 'https://maps.googleapis.com/maps/api/timezone/{}?{}'
@@ -21,20 +21,19 @@ class Info(commands.Cog):
         super().__init__()
         self.bot = bot
         self.pings = ['Pong', 'Pang', 'Peng', 'Pung']
-        self.color = discord.Color.from_rgb(30, 99, 175)
 
     @commands.command(description='See the information about Hayato.', help='The information about Hayato, e.g. authors, version number, etc.', aliases=['credits'])
     async def about(self, ctx: commands.Context):
         avatar_url = str(self.bot.user.avatar_url)
-        embed = discord.Embed(color=discord.Color.from_rgb(30, 99, 175),
+        embed = discord.Embed(color=HAYATO_COLOR,
                               description='Hayato the best boi is inspired by the anime Shinkalion. It is meant for '
                                           'practising making a Discord bot in [Python](https://www.python.org/) with the awesome [discord.py](https://github.com/Rapptz/discord.py), but new features will be '
-                                          'added from time to time.\n\nHayato version 2.3 was made and developed '
+                                          'added from time to time.\n\nHayato version 2.4 was made and developed '
                                           'by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed '
                                           'under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
-            text='Hayato Bot: Release 2.3 | 2020-08-16').set_author(name='Hayasugi Hayato from Shinkalion',
+            text='Hayato Bot: Release 2.4 | 2021-04-14').set_author(name='Hayasugi Hayato from Shinkalion',
                                                                     icon_url=avatar_url).set_thumbnail(
-            url='https://cdn.discordapp.com/attachments/746200551007584337/810741576946941972/768px-Python-logo-notext.svg.png')
+            url=PYTHON_LOGO)
         await ctx.send(embed=embed)
 
     @commands.command(description='Play a ping-pong message with Hayato and check if Hayato is fine.', help='Send a simple ping command to Hayato and get response.', aliases=['pong'])
@@ -82,7 +81,7 @@ class Info(commands.Cog):
     async def guild(self, ctx: commands.Context):
         guild: discord.Guild = ctx.guild
         author: typing.Union[discord.User, discord.Member] = ctx.author
-        embed = discord.Embed(title='Server Information', description=f'Here is the detailed information of {guild.name}.', color=self.color)
+        embed = discord.Embed(title='Server Information', description=f'Here is the detailed information of {guild.name}.', color=HAYATO_COLOR)
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
         embed.set_thumbnail(url=guild.icon_url)
         if guild.banner is not None:
