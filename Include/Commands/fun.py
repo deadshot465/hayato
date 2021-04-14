@@ -5,7 +5,7 @@ import typing
 import random
 from discord.ext import commands
 from Include.Commands.lottery.lottery import LotteryParticipant
-from Include.Utils.utils import USER_MENTION_REGEX
+from Utils.utils import USER_MENTION_REGEX
 from Utils.configuration_manager import ConfigurationManager
 from Utils.credit_manager import CreditManager
 

@@ -1,15 +1,19 @@
-from discord.ext import commands
-from typing import Optional, Tuple
-from Utils.utils import search_user
+import asyncio
+import base64
 import json
 import random
 import re
+import requests
 import typing
+
+from discord.ext import commands
+from typing import Optional, Tuple
+from Utils.utils import search_user
+from Utils.rapid_api import *
 
 
 # Available domains.
 DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}
-
 
 with open('Storage/convert.json', 'r', encoding='utf-8') as file:
     raw_convert_table = file.read()
@@ -60,7 +64,7 @@ def cvt_units(unit1: str, unit2: str, value: float):
             output = value + 273.15
             unit_target = 'K'
         elif unit2 == 'f':
-            output = value * 9/5 + 32
+            output = value * 9 / 5 + 32
             unit_target = '\u2109'
         else:
             error = True
@@ -88,7 +92,7 @@ def cvt_units(unit1: str, unit2: str, value: float):
             if unit2 == 'c':
                 unit_target = '\u2103'
             elif unit2 == 'f':
-                output = value * 9/5 + 32
+                output = value * 9 / 5 + 32
                 unit_target = '\u2109'
             else:
                 error = True
@@ -133,11 +137,11 @@ def cvt_units(unit1: str, unit2: str, value: float):
             error = True
     else:
         cvt_factor = convert_table['length'].get(unit2)
-        if cvt_factor == None:
+        if cvt_factor is None:
             error = True
         else:
             cvt_factor = cvt_factor.get(unit1)
-            if cvt_factor == None:
+            if cvt_factor is None:
                 error = True
             else:
                 output = value * cvt_factor
@@ -256,19 +260,24 @@ class Utility(commands.Cog):
         self.emote_is_animated_regex = re.compile(r'(<a)')
         self.emote_base_link = 'https://cdn.discordapp.com/emojis/'
 
-    @commands.command(description='Count the number of vowels in the input.', help='Count the total number of vowels in a word or a sentence.', aliases=['vowel'])
+    @commands.command(description='Count the number of vowels in the input.',
+                      help='Count the total number of vowels in a word or a sentence.', aliases=['vowel'])
     async def vowels(self, ctx: commands.Context, *, args: str):
         answer = count_vowels(args)
         await ctx.send('There are {} vowels in the input!'.format(answer))
 
-    @commands.command(description='Separate every letter of your input with a dash.', help='Type in a word or sentence, and let Hayato separate each letter with a dash.', aliases=['separate'])
+    @commands.command(description='Separate every letter of your input with a dash.',
+                      help='Type in a word or sentence, and let Hayato separate each letter with a dash.',
+                      aliases=['separate'])
     async def dashsep(self, ctx: commands.Context, *, args: str):
         # async def dashsep(self, ctx: commands.Context, args: str):
         # h!dashsep Hello, World, Marco is cute. -> Hello,
         answer = dash_separator(args)
         await ctx.send(answer)
 
-    @commands.command(description='Convert units.', help='This command will help you convert between units of temperature, length and weight.', aliases=['convert'])
+    @commands.command(description='Convert units.',
+                      help='This command will help you convert between units of temperature, length and weight.',
+                      aliases=['convert'])
     async def cvt(self, ctx: commands.Context, unit1: str, unit2: str, value: typing.Optional[float] = 0.0):
         answer = cvt_units(unit1, unit2, value)
         if isinstance(answer, str):
@@ -276,17 +285,23 @@ class Utility(commands.Cog):
         elif isinstance(answer, list):
             await ctx.send('{}{} is equal to {}{}!'.format(answer[0], answer[2], answer[1], answer[3]))
 
-    @commands.command(description='Hayato will help you pick one choice randomly.', help='Send multiple options to Hayato and let Hayato pick one from those options for you.', aliases=['choose'])
+    @commands.command(description='Hayato will help you pick one choice randomly.',
+                      help='Send multiple options to Hayato and let Hayato pick one from those options for you.',
+                      aliases=['choose'])
     async def pick(self, ctx: commands.Context, *, args: str):
         answer = pick(args)
         await ctx.send(answer)
 
-    @commands.command(description='Check if the email is plausible.', help='Check if the email address inputted is a plausibly valid email address or not.', aliases=['email'])
+    @commands.command(description='Check if the email is plausible.',
+                      help='Check if the email address inputted is a plausibly valid email address or not.',
+                      aliases=['email'])
     async def verifyemail(self, ctx: commands.Context, *, args: str):
         answer = verifyemail(args)
         await ctx.send(answer)
 
-    @commands.command(description='Enlarge one to multiple emotes.', help='Enlarge one or multiple emotes by getting permanent links of the emotes, to see emotes more clearly or download emotes.', aliases=['emoji'])
+    @commands.command(description='Enlarge one to multiple emotes.',
+                      help='Enlarge one or multiple emotes by getting permanent links of the emotes, to see emotes more clearly or download emotes.',
+                      aliases=['emoji'])
     async def enlarge(self, ctx: commands.Context, *, args: typing.Optional[str]):
         if args is None or len(args) == 0:
             await ctx.send("Sorry, but you need to provide me an emote or avatar to use this command~!")
@@ -319,7 +334,36 @@ class Utility(commands.Cog):
         for link in emote_links:
             await ctx.send(link)
 
-    @commands.command(description='Get the avatar of yourself or another member in the guild.', help='Get the avatar of yourself or another member in the guild. Supported search patterns include searching by pinging, user tag, user id, and partial user names.', aliases=['pfp'])
+    @commands.command(description='Let Hayato evaluate your Python code.',
+                      help='Ask for help from Hayato in evaluating your Pytho code.')
+    async def eval(self, ctx: commands.Context, *, content: str):
+        header = generate_auth_header('judge0-ce.p.rapidapi.com')
+        code = content.split('\n')
+        split = code[1:len(code) - 1]
+        actual_code = '\n'.join(split)
+        request_data = {
+            'language_id': PYTHON_LANG_ID,
+            'source_code': str(base64.b64encode(actual_code.encode('utf8'))).lstrip('b\'')
+        }
+        query_string = {
+            'base64_encoded': 'true',
+            'fields': '*'
+        }
+        request = requests.request('POST', SUBMISSION_URL, headers=header, data=json.dumps(request_data),
+                                   params=query_string)
+        print(f'{request.status_code}')
+        token: str = json.loads(request.text)['token']
+
+        async def loop():
+            while (await get_eval_result(header, token, ctx)) is not True:
+                continue
+
+        await asyncio.create_task(loop())
+
+    @commands.command(description='Get the avatar of yourself or another member in the guild.',
+                      help='Get the avatar of yourself or another member in the guild. Supported search patterns '
+                           'include searching by pinging, user tag, user id, and partial user names.',
+                      aliases=['pfp'])
     async def avatar(self, ctx: commands.Context, user: Optional[str] = ''):
         if user is None or len(user) == 0:
             await ctx.send('{}, here is your personal avatar!'.format(ctx.author.mention))

@@ -6,6 +6,9 @@ import re
 USER_MENTION_REGEX = re.compile(r'<@!?(\d{17,20})>')
 USER_TAG = re.compile(r'(\S.{0,30}\S)\s*#(\d{4})')
 DISCORD_ID = re.compile(r'\d{17,20}')
+PYTHON_LOGO = 'https://cdn.discordapp.com/attachments/746200551007584337/810741576946941972/768px-Python-logo-notext' \
+              '.svg.png '
+HAYATO_COLOR = discord.Color.from_rgb(30, 99, 175)
 
 
 def ignore_case(str1: str, str2: str) -> bool:
