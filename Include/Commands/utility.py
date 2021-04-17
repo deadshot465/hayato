@@ -329,7 +329,7 @@ class Utility(commands.Cog):
             await ctx.send(link)
 
     @commands.command(description='Let Hayato evaluate your Python code.',
-                      help='Ask for help from Hayato in evaluating your Pytho code.')
+                      help='Ask for help from Hayato in evaluating your Python code.')
     async def eval(self, ctx: commands.Context, *, content: str):
         header = generate_auth_header('judge0-ce.p.rapidapi.com')
         code = content.split('\n')
