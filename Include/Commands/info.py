@@ -30,10 +30,10 @@ class Info(commands.Cog):
                                           'practising making a Discord bot in [Python](https://www.python.org/) with '
                                           'the awesome [discord.py](https://github.com/Rapptz/discord.py), '
                                           'but new features will be '
-                                          'added from time to time.\n\nHayato version 2.4.1 was made and developed '
+                                          'added from time to time.\n\nHayato version 2.4.2 was made and developed '
                                           'by:\n**Kirito#9286** and **Tetsuki Syu#1250**\nHayato Bot is licensed '
                                           'under GNU GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html').set_footer(
-            text='Hayato Bot: Release 2.4.1 | 2021-04-17').set_author(name='Hayasugi Hayato from Shinkalion',
+            text='Hayato Bot: Release 2.4.2 | 2021-04-25').set_author(name='Hayasugi Hayato from Shinkalion',
                                                                       icon_url=avatar_url).set_thumbnail(
             url=PYTHON_LOGO)
         await ctx.send(embed=embed)

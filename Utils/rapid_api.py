@@ -46,7 +46,7 @@ async def get_eval_result(header: dict, token: str, ctx: commands.Context):
     author: typing.Union[discord.Member, discord.User] = ctx.author
     description = f'This is the evaluation result of {author.display_name}\'s Python code!\n'
     description += '```bash\n'
-    description += str(base64.b64decode(response_body['stdout'])).lstrip('b\'') \
+    description += str(base64.b64decode(response_body['stdout']).decode('utf-8')).lstrip('b\'') \
                        .replace('\\n', '\n').rstrip('\n\'') + '\n'
     description += '```'
     if len(description) > 2047:
