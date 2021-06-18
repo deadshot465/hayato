@@ -1,8 +1,8 @@
-discord.py>=1.6.0
-python-dotenv~=0.15.0
+discord.py>=1.7.3
+python-dotenv~=0.17.0
 requests~=2.25.0
 strsim~=0.0.3
-googlemaps>=4.4.2
-marshmallow-dataclass>=8.3.0
-arrow>=0.17.0
+googlemaps>=4.4.5
+marshmallow-dataclass>=8.4.1
+arrow>=1.1.0
 python-dateutil>=2.8.1
