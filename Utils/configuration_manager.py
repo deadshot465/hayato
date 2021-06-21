@@ -51,9 +51,11 @@ class ConfigurationManager(object):
             cls.config.lottery_info.lottery_scheduled += datetime.timedelta(days=3)
         elif datetime.datetime.today().weekday() == 6:
             cls.config.lottery_info.lottery_scheduled += datetime.timedelta(days=4)
+        print("Next lottery date: ", cls.config.lottery_info.lottery_scheduled)
         serialized = cls.configuration_schema.dumps(cls.config)
+        print("Serialized: ", serialized)
         with open(cls.config_path, 'w') as file_1:
-            obj = json.loads(serialized)
+            obj = dict(json.loads(serialized))
             file_1.write(json.dumps(obj, indent=2))
 
     @classmethod
