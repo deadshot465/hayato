@@ -37,6 +37,8 @@ async def get_eval_result(header: dict, token: str, ctx: commands.Context):
         if response_body['message'] is not None and response_body['message'] != '':
             message = str(base64.b64decode(response_body['message'])).lstrip('b\'')
             error_message += f'\nHere is an extra message for the error: **{message}**'
+        if len(error_message) > 2000:
+            error_message = error_message[:2000]
         await ctx.send(error_message)
         return True
 
@@ -49,9 +51,8 @@ async def get_eval_result(header: dict, token: str, ctx: commands.Context):
     description += str(base64.b64decode(response_body['stdout']).decode('utf-8')).lstrip('b\'') \
                        .replace('\\n', '\n').rstrip('\n\'') + '\n'
     description += '```'
-    if len(description) > 2047:
-        await ctx.send('Sorry! The length of the result is too long and Discord doesn\'t allow it!')
-        return True
+    if len(description) > 2000:
+        description = description[:2000]
     embed = discord.Embed(description=description, colour=HAYATO_COLOR)
     embed.set_author(name=author.display_name, icon_url=author.avatar_url)
     embed.set_thumbnail(url=PYTHON_LOGO)

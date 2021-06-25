@@ -350,6 +350,7 @@ class Utility(commands.Cog):
 
         async def loop():
             while (await get_eval_result(header, token, ctx)) is not True:
+                await asyncio.sleep(2.0)
                 continue
 
         await asyncio.create_task(loop())
