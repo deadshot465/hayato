@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import random
 
@@ -5,9 +7,9 @@ from lightbulb import slash_commands
 
 
 class Ping(slash_commands.SlashCommand):
-    description = 'Play a ping-pong message with Hayato and check if Hayato is fine.'
+    description: str = 'Play a ping-pong message with Hayato and check if Hayato is fine.'
     ping_msgs = ['Pong', 'Pang', 'Peng', 'Pung']
-    enabled_guilds = [705036924330704968]
+    enabled_guilds: list[int] = [705036924330704968]
 
     async def callback(self, context) -> None:
         ping_msg = self.ping_msgs[random.randrange(0, len(self.ping_msgs))]
