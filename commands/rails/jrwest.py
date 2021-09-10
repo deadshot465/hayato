@@ -55,6 +55,7 @@ class JrWest(slash_commands.SlashSubCommand):
             embed = self.__get_info_embed(author_name, author_avatar_url)
         elif context.option_values.line_name == 'list':
             line_list = list(map(lambda l: l['name'] + ' Line', self.lines))
+            line_list.sort()
             embed = self.__get_list_embed(author_name, author_avatar_url, '\n'.join(line_list))
         elif context.option_values.line_name is None:
             line = Rails.get_random_line(self.lines)

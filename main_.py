@@ -11,7 +11,9 @@ from commands.info.about import About
 from commands.info.guild import Guild
 from commands.info.ping import Ping
 from commands.rails.jrwest import JrWest
+from commands.rails.mtr import Mtr
 from commands.rails.rails import Rails
+
 from services.configuration_service import configuration_service
 
 
@@ -23,6 +25,7 @@ bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level, intents=hikari.I
 cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
     [About, EightBall, Guild, Ping, Rails]
 _ = JrWest(bot)
+_ = Mtr(bot)
 for cmd in cmds:
     bot.add_slash_command(cmd)
 

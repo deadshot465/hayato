@@ -9,8 +9,8 @@
     "route": "Tokyo to Kobe",
     "stations": 173,
     "maximum_speed": "130 km/h",
-    "length (km)": 589.5,
-    "gauge (mm)": 1067,
+    "length": 589.5,
+    "gauge": 1067,
     "opened": "14 October, 1872"
   },
   {
@@ -23,8 +23,8 @@
     "route": "Yamashina to Ōmi-Shiotsu",
     "stations": 21,
     "maximum_speed": "130 km/h",
-    "length (km)": 74.1,
-    "gauge (mm)": 1067,
+    "length": 74.1,
+    "gauge": 1067,
     "opened": "20 July, 1974"
   },
   {
@@ -37,8 +37,8 @@
     "route": "Kizu to Kyōto",
     "stations": 19,
     "maximum_speed": "110 km/h",
-    "length (km)": 34.7,
-    "gauge (mm)": 1067,
+    "length": 34.7,
+    "gauge": 1067,
     "opened": "18 August, 1879"
   },
   {
@@ -51,8 +51,8 @@
     "route": "Passes through Ōsaka, Shin-Imamiya, Tennōji",
     "stations": 19,
     "maximum_speed": "100 km/h",
-    "length (km)": 21.7,
-    "gauge (mm)": 1067,
+    "length": 21.7,
+    "gauge": 1067,
     "opened": "28 May, 1895"
   },
   {
@@ -65,8 +65,8 @@
     "route": "Nishikujō to Sakurajima",
     "stations": 4,
     "maximum_speed": "95 km/h",
-    "length (km)": 4.1,
-    "gauge (mm)": 1067,
+    "length": 4.1,
+    "gauge": 1067,
     "opened": "5 April, 1898"
   },
   {
@@ -79,8 +79,8 @@
     "route": "Nagoya to JR Namba",
     "stations": 52,
     "maximum_speed": "120 km/h",
-    "length (km)": 174.9,
-    "gauge (mm)": 1067,
+    "length": 174.9,
+    "gauge": 1067,
     "opened": "14 May, 1889"
   },
   {
@@ -93,8 +93,8 @@
     "route": "Kyobashi to Amagasak",
     "stations": 9,
     "maximum_speed": "90 km/h",
-    "length (km)": 12.5,
-    "gauge (mm)": 1067,
+    "length": 12.5,
+    "gauge": 1067,
     "opened": "8 March, 1997"
   },
   {
@@ -107,8 +107,8 @@
     "route": "Hineno to Kansai Airport",
     "stations": 3,
     "maximum_speed": "130 km/h",
-    "length (km)": 11.1,
-    "gauge (mm)": 1067,
+    "length": 11.1,
+    "gauge": 1067,
     "opened": "15 June, 1994"
   },
   {
@@ -121,8 +121,8 @@
     "route": "Tennōji to Wakayama, Ōtori to Higashi-Hagoromo",
     "stations": 36,
     "maximum_speed": "120 km/h",
-    "length (km)": 63.0,
-    "gauge (mm)": 1067,
+    "length": 63.0,
+    "gauge": 1067,
     "opened": "18 July, 1929"
   },
   {
@@ -135,8 +135,8 @@
     "route": "Kyoto to Hatabu",
     "stations": 161,
     "maximum_speed": "130 km/h",
-    "length (km)": 676.0,
-    "gauge (mm)": 1067,
+    "length": 676.0,
+    "gauge": 1067,
     "opened": "15 February, 1897"
   }
 ]

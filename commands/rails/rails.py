@@ -22,8 +22,8 @@ class Rails(slash_commands.SlashCommandGroup):
         return RailsEmbed(author_name=author_name,
                           author_avatar_url=author_avatar_url,
                           title=title,
-                          color=color,
-                          description=description,
+                          colour=color,
+                          overview=description,
                           footer_name=footer_name,
                           thumbnail=thumbnail).build_embed()
 
@@ -32,20 +32,14 @@ class Rails(slash_commands.SlashCommandGroup):
                                   author_avatar_url: str,
                                   line: dict,
                                   footer_name: str) -> hikari.Embed:
-        return RailsEmbed(author_name=author_name,
-                          author_avatar_url=author_avatar_url,
-                          title=line['name'] + ' Line',
-                          color=hikari.Color.of(line['colour']),
-                          description=line['overview'],
-                          route=line['route'],
-                          stations=line['stations'],
-                          track_gauge=line['gauge (mm)'],
-                          length=line['length (km)'],
-                          opened=line['opened'],
-                          maximum_speed=line['maximum_speed'],
-                          thumbnail=line['logo'],
-                          footer_name=footer_name,
-                          image=line['image']).build_embed()
+        embed = RailsEmbed(author_name=author_name,
+                           author_avatar_url=author_avatar_url,
+                           title=line['name'] + ' Line',
+                           colour=hikari.Color.of(line['colour']), footer_name=footer_name,
+                           overview=line['overview'])
+        for (k, v) in line.items():
+            embed[k] = v
+        return embed.build_embed()
 
     @staticmethod
     def search_line(author_name: str,
