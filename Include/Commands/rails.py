@@ -181,22 +181,22 @@ class Rails(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
-        with open('Storage/trains.json', 'r', encoding='utf-8') as file:
+        with open('assets/trains.json', 'r', encoding='utf-8') as file:
             raw_trains = file.read()
             self.trains: typing.List[dict] = json.loads(raw_trains)
-        with open('Storage/tokyo_metro.json', 'r', encoding='utf-8') as file_2:
+        with open('assets/tokyo_metro.json', 'r', encoding='utf-8') as file_2:
             raw_metrolines = file_2.read()
             self.metrolines: typing.List[dict] = json.loads(raw_metrolines)
-        with open('Storage/toei_subway.json', 'r', encoding='utf-8') as file_3:
+        with open('assets/toei_subway.json', 'r', encoding='utf-8') as file_3:
             raw_toeilines = file_3.read()
             self.toeilines: typing.List[dict] = json.loads(raw_toeilines)
-        with open('Storage/mtr.json', 'r', encoding='utf-8') as file_4:
+        with open('assets/mtr.json', 'r', encoding='utf-8') as file_4:
             raw_mtrlines = file_4.read()
             self.mtrlines: typing.List[dict] = json.loads(raw_mtrlines)
-        with open('Storage/shinkansen.json', 'r', encoding='utf-8') as file_5:
+        with open('assets/shinkansen.json', 'r', encoding='utf-8') as file_5:
             raw_shinkansen = file_5.read()
             self.shinkansen: typing.List[dict] = json.loads(raw_shinkansen)
-        with open('Storage/jrwest.json', 'r', encoding='utf-8') as file_6:
+        with open('assets/jrwest.json', 'r', encoding='utf-8') as file_6:
             raw_jrwestlines = file_6.read()
             self.jrwestlines: typing.List[dict] = json.loads(raw_jrwestlines)
 
@@ -461,7 +461,7 @@ class Rails(commands.Cog):
             for item in line_list:
                 line_list_str = line_list_str + item + '\n'
             embed = get_embed(ctx, 'JR West', discord.Color.from_rgb(4, 115, 189),
-                              'Here is a list of lines in JR West:\n \n' + line_list_str,
+                              'Here is a list of lines in JR West:\n\n' + line_list_str,
                               footer_name='JR West',
                               thumbnail='https://cdn.discordapp.com/attachments/734604988717858846/741817325732233268/JR_West.png')
             await ctx.send(embed=embed)

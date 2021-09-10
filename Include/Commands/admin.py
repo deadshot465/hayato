@@ -63,7 +63,7 @@ async def add_warn(ctx: commands.Context, bot: commands.Bot, member: Union[disco
                 dm_channel: discord.DMChannel = await member.create_dm()
                 await dm_channel.send('You are warned by {}. Reason: {}'.format(author.display_name, reason))
                 serialized = schema().dumps(warnban_data, many=True)
-                with open('Storage/warnban.json', 'w') as file_1:
+                with open('assets/warnban.json', 'w') as file_1:
                     obj = json.loads(serialized)
                     file_1.write(json.dumps(obj, indent=2))
                 return '{} is warned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
@@ -75,7 +75,7 @@ async def add_warn(ctx: commands.Context, bot: commands.Bot, member: Union[disco
                 dm_channel: discord.DMChannel = await member.create_dm()
                 await dm_channel.send('You are warned by {}. Reason: {}'.format(author.display_name, reason))
                 serialized = schema().dumps(warnban_data, many=True)
-                with open('Storage/warnban.json', 'w') as file_1:
+                with open('assets/warnban.json', 'w') as file_1:
                     obj = json.loads(serialized)
                     file_1.write(json.dumps(obj, indent=2))
                 return '{} is warned by {}. Reason: {}'.format(member.display_name, author.display_name, reason)
@@ -136,7 +136,7 @@ async def add_ban(ctx: commands.Context, bot: commands.Bot, member: Union[discor
                 await dm_channel.send('You are banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(
                     author.display_name, time, reason, expiry.year, expiry.month, expiry.day))
                 serialized = schema().dumps(warnban_data, many=True)
-                with open('Storage/warnban.json', 'w') as file_1:
+                with open('assets/warnban.json', 'w') as file_1:
                     obj = json.loads(serialized)
                     file_1.write(json.dumps(obj, indent=2))
                 return '{} is banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(
@@ -151,7 +151,7 @@ async def add_ban(ctx: commands.Context, bot: commands.Bot, member: Union[discor
                 await dm_channel.send('You are banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(
                     author.display_name, time, reason, expiry.year, expiry.month, expiry.day))
                 serialized = schema().dumps(warnban_data, many=True)
-                with open('Storage/warnban.json', 'w') as file_1:
+                with open('assets/warnban.json', 'w') as file_1:
                     obj = json.loads(serialized)
                     file_1.write(json.dumps(obj, indent=2))
                 return '{} is banned by {} for {} days. Reason: {}\nBan expiry date: {}-{}-{}'.format(
@@ -161,7 +161,7 @@ async def add_ban(ctx: commands.Context, bot: commands.Bot, member: Union[discor
 
 class Admin(commands.Cog):
     warnban_schema = marshmallow_dataclass.class_schema(WarnBanData)
-    with open('Storage/warnban.json') as file_1:
+    with open('assets/warnban.json') as file_1:
         warnban_data: typing.List[WarnBanData] = warnban_schema().loads(json_data=file_1.read(), many=True)
 
     def __init__(self, bot: commands.Bot):

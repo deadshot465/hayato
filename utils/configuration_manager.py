@@ -9,8 +9,8 @@ from utils.configuration import Configuration, ConfigurationSchema
 
 class ConfigurationManager(object):
     participant_schema = marshmallow_dataclass.class_schema(LotteryParticipant)
-    config_path = 'Storage/config.json'
-    lottery_path = 'Storage/lottery.json'
+    config_path = 'assets/config.json'
+    lottery_path = 'assets/lottery.json'
     configuration_schema = ConfigurationSchema()
     with open(config_path) as file_1:
         config: Configuration = configuration_schema.loads(json_data=file_1.read())

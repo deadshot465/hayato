@@ -1,14 +1,21 @@
+import re
+import typing
+
 from discord.ext import commands
 import discord
-import typing
-import re
+import hikari
+
 
 USER_MENTION_REGEX = re.compile(r'<@!?(\d{17,20})>')
 USER_TAG = re.compile(r'(\S.{0,30}\S)\s*#(\d{4})')
 DISCORD_ID = re.compile(r'\d{17,20}')
-PYTHON_LOGO = 'https://cdn.discordapp.com/attachments/746200551007584337/810741576946941972/768px-Python-logo-notext' \
-              '.svg.png '
-HAYATO_COLOR = discord.Color.from_rgb(30, 99, 175)
+
+
+def get_author_name(user: hikari.User, member: typing.Optional[hikari.Member]) -> str:
+    if member is None:
+        return user.username
+    else:
+        return member.display_name
 
 
 def ignore_case(str1: str, str2: str) -> bool:

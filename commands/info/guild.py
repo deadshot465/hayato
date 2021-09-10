@@ -2,6 +2,7 @@ import hikari
 from lightbulb import slash_commands
 from services.configuration_service import configuration_service
 from utils.constants import HAYATO_COLOR
+from utils.utils import get_author_name
 
 
 class Guild(slash_commands.SlashCommand):
@@ -10,14 +11,14 @@ class Guild(slash_commands.SlashCommand):
 
     async def callback(self, context) -> None:
         author = context.author
+        member = context.member
         guild = context.guild
-        member = guild.get_member(author)
         bot_user = configuration_service.bot.get_me()
         avatar_url = author.avatar_url or author.default_avatar_url
         embed = hikari.Embed(color=HAYATO_COLOR,
                              title='Server Information',
                              description=f'Here is the detailed information of {guild.name}.')
-        embed.set_author(name=member.display_name, icon=avatar_url)
+        embed.set_author(name=get_author_name(author, member), icon=avatar_url)
         embed.set_thumbnail(guild.icon_url)
 
         if guild.banner_url is not None:

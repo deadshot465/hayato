@@ -13,11 +13,11 @@ lib64/
 Include/Commands/__pycache__/
 Include/Commands/lottery/__pycache__/
 Include/Utils/__pycache__/
-Storage/lottery.json
-Storage/channels.json
-Storage/config.json
-Storage/credits.json
-Storage/warnban.json
+assets/lottery.json
+assets/channels.json
+assets/config.json
+assets/credits.json
+assets/warnban.json
 **/*/.DS_Store
 .DS_Store
 .vscode/

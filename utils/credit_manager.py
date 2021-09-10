@@ -31,7 +31,7 @@ HAYATO_MINUS_RESPONSES = [
 class CreditManager:
     initialized = False
     fetch_from_server = False
-    credits_path = 'Storage/credits.json'
+    credits_path = 'assets/credits.json'
     user_credits: List[UserCreditItem] = list()
     user_credit_item_schema = class_schema(UserCreditItem)
     last_fetch_time: datetime = datetime.now()

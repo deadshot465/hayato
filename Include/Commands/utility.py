@@ -9,7 +9,7 @@ from utils.utils import search_user
 # Available domains.
 DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}
 
-with open('Storage/convert.json', 'r', encoding='utf-8') as file:
+with open('assets/convert.json', 'r', encoding='utf-8') as file:
     raw_convert_table = file.read()
     convert_table: typing.Dict[object, object] = json.loads(raw_convert_table)
 
