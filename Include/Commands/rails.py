@@ -5,7 +5,7 @@ import typing
 
 from discord.ext import commands
 from similarity.damerau import Damerau
-from Utils.utils import HAYATO_COLOR
+from utils.utils import HAYATO_COLOR
 
 
 # Convert colour in hex to dec

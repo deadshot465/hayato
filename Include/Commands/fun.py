@@ -5,9 +5,9 @@ import typing
 import random
 from discord.ext import commands
 from Include.Commands.lottery.lottery import LotteryParticipant
-from Utils.utils import USER_MENTION_REGEX
-from Utils.configuration_manager import ConfigurationManager
-from Utils.credit_manager import CreditManager
+from utils.utils import USER_MENTION_REGEX
+from utils.configuration_manager import ConfigurationManager
+from utils.credit_manager import CreditManager
 
 LOTTERY_RUNNING = False
 EIGHTBALL_RESPONSE = ['Of course', 'It is certain', 'I think so', 'Maybe', 'If you like Shinkansen, then yes',

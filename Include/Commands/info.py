@@ -9,7 +9,7 @@ import time as _time
 import typing
 
 from discord.ext import commands
-from Utils.utils import PYTHON_LOGO, HAYATO_COLOR
+from utils.utils import PYTHON_LOGO, HAYATO_COLOR
 
 GOOGLE_ENDPOINT = 'https://maps.googleapis.com/maps/api/timezone/{}?{}'
 gmaps = googlemaps.Client(key=os.getenv('GOOGLE_API_KEY'))

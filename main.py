@@ -9,8 +9,8 @@ from typing import List, Optional, Union
 from discord.ext import commands
 from dotenv import load_dotenv
 from Include.Commands.fun import auto_lottery
-from Utils.credit_manager import CreditManager
-from Utils.configuration_manager import ConfigurationManager
+from utils.credit_manager import CreditManager
+from utils.configuration_manager import ConfigurationManager
 
 load_dotenv(verbose=True)
 # A simple description of our bot.

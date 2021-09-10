@@ -3,8 +3,8 @@ import random
 import re
 from typing import Optional
 
-from Utils.rapid_api import *
-from Utils.utils import search_user
+from utils.rapid_api import *
+from utils.utils import search_user
 
 # Available domains.
 DOMAINS = {'com', 'net', 'hk', 'org', 'ca', 'info'}

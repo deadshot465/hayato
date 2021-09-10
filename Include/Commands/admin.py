@@ -3,7 +3,7 @@ from Include.Commands.warnban.warnban import WarnBanData
 from marshmallow import Schema
 from dateutil.relativedelta import relativedelta
 from typing import Optional, Union
-from Utils.configuration_manager import ConfigurationManager
+from utils.configuration_manager import ConfigurationManager
 import asyncio
 import datetime
 import discord

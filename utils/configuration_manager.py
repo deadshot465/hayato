@@ -4,7 +4,7 @@ import marshmallow_dataclass
 
 from Include.Commands.lottery.lottery import LotteryParticipant
 from typing import List
-from Utils.configuration import Configuration, ConfigurationSchema
+from utils.configuration import Configuration, ConfigurationSchema
 
 
 class ConfigurationManager(object):

@@ -8,8 +8,8 @@ from discord.ext import commands
 from distutils.util import strtobool
 from marshmallow_dataclass import class_schema
 from typing import List, Optional, Union
-from Utils.authentication_manager import AuthenticationManager
-from Utils.Structures.user_credit_item import UserCreditItem
+from utils.authentication_manager import AuthenticationManager
+from utils.Structures.user_credit_item import UserCreditItem
 
 HAYATO_PLUS_RESPONSES = [
     "Alright, <@{userId}>! You've successfully got {credits} credits!",

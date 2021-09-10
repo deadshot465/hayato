@@ -6,7 +6,7 @@ import os
 import requests
 
 from discord.ext import commands
-from Utils.utils import PYTHON_LOGO, HAYATO_COLOR
+from utils.utils import PYTHON_LOGO, HAYATO_COLOR
 
 SUBMISSION_URL = 'https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&fields=*'
 PYTHON_LANG_ID = 71
