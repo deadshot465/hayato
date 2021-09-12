@@ -23,8 +23,12 @@ class RailsEmbed:
     daily_ridership: str = attr.ib(default='')
     operator: str = attr.ib(default='')
     image: str = attr.ib(default='')
-    thumbnail: str = attr.ib(default='')
+    logo: str = attr.ib(default='')
     footer_name: str = attr.ib(default='')
+    constructed: str = attr.ib(default='')
+    capacity: str = attr.ib(default='')
+    acceleration: str = attr.ib(default='')
+    lines_served: str = attr.ib(default='')
 
     def __setitem__(self, key: str, value):
         setattr(self, key, value)
@@ -49,15 +53,19 @@ class RailsEmbed:
         self.__add_field(embed, 'Maximum Speed', self.maximum_speed, True)
         self.__add_field(embed, 'Length (km)', self.length, True)
         self.__add_field(embed, 'Track Gauge (mm)', self.gauge, True)
-        self.__add_field(embed, 'Track Formation', self.formation, True)
+        self.__add_field(embed, 'Formation', self.formation, True)
         self.__add_field(embed, 'Running Time (minutes)', self.running_time, True)
         self.__add_field(embed, 'Opened', self.opened, True)
         self.__add_field(embed, 'Daily Ridership', self.daily_ridership, True)
         self.__add_field(embed, 'Rolling Stock', self.rolling_stock, False)
         self.__add_field(embed, 'Operator', self.operator, False)
+        self.__add_field(embed, 'Constructed', self.constructed, True)
+        self.__add_field(embed, 'Acceleration', self.acceleration, True)
+        self.__add_field(embed, 'Capacity', self.capacity, False)
+        self.__add_field(embed, 'Lines Served', self.lines_served, False)
 
-        if len(self.thumbnail) > 0:
-            embed.set_thumbnail(self.thumbnail)
+        if len(self.logo) > 0:
+            embed.set_thumbnail(self.logo)
         if len(self.image) > 0:
             embed.set_image(self.image)
 

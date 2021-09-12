@@ -17,7 +17,7 @@ class Rails(slash_commands.SlashCommandGroup):
     @staticmethod
     def build_general_embed(*, author_name: str,
                             author_avatar_url: str,
-                            title: str, color: hikari.Color, description: str, footer_name: str, thumbnail: str) \
+                            title: str, color: hikari.Color, description: str, footer_name: str, thumbnail: str = '') \
             -> hikari.Embed:
         return RailsEmbed(author_name=author_name,
                           author_avatar_url=author_avatar_url,
@@ -25,16 +25,17 @@ class Rails(slash_commands.SlashCommandGroup):
                           colour=color,
                           overview=description,
                           footer_name=footer_name,
-                          thumbnail=thumbnail).build_embed()
+                          logo=thumbnail).build_embed()
 
     @staticmethod
     def build_single_result_embed(author_name: str,
                                   author_avatar_url: str,
                                   line: dict,
-                                  footer_name: str) -> hikari.Embed:
+                                  footer_name: str,
+                                  title: str) -> hikari.Embed:
         embed = RailsEmbed(author_name=author_name,
                            author_avatar_url=author_avatar_url,
-                           title=line['name'] + ' Line',
+                           title=title,
                            colour=hikari.Color.of(line['colour']), footer_name=footer_name,
                            overview=line['overview'])
         for (k, v) in line.items():
@@ -47,14 +48,18 @@ class Rails(slash_commands.SlashCommandGroup):
                     color: hikari.Color,
                     keyword: str, lines: list[dict],
                     railway_name: str,
-                    footer_name: str) -> typing.Union[str, hikari.Embed]:
-        if len(keyword) < 3:
-            return 'The keyword has to be at least 3 characters long!'
+                    footer_name: str, name_format: str, *, keyword_limit=3) -> typing.Union[str, hikari.Embed]:
+        if len(keyword) < keyword_limit:
+            return f'The keyword has to be at least {keyword_limit} characters long!'
 
         lowercase_keyword = keyword.lower()
 
         def filter_lines(item: dict) -> bool:
-            lowercase_abbrev = item['abbrev'].lower()
+            abbrev: typing.Optional[str] = item.get('abbrev')
+            if abbrev is None:
+                lowercase_abbrev = ''
+            else:
+                lowercase_abbrev = abbrev.lower()
             lowercase_name = item['name'].lower()
             if (lowercase_keyword == lowercase_abbrev) or \
                     (lowercase_keyword == lowercase_name) or \
@@ -69,7 +74,8 @@ class Rails(slash_commands.SlashCommandGroup):
             return Rails.__fuzzy_search(author_name, author_avatar_url, color, keyword, lines, railway_name)
         else:
             line = found_lines.pop()
-            return Rails.build_single_result_embed(author_name, author_avatar_url, line, footer_name)
+            return Rails.build_single_result_embed(author_name, author_avatar_url, line,
+                                                   footer_name, name_format % line['name'])
 
     @staticmethod
     def __build_multiple_result_embed(author_name: str,

@@ -13,8 +13,21 @@ from commands.info.ping import Ping
 from commands.rails.jrwest import JrWest
 from commands.rails.mtr import Mtr
 from commands.rails.rails import Rails
+from commands.rails.shinkansen import Line, Shinkansen, Train
+from commands.rails.toei import Toei
+from commands.rails.tokyo_metro import TokyoMetro
 
 from services.configuration_service import configuration_service
+
+
+def initialize_railway_lines():
+    _ = JrWest(bot)
+    _ = Mtr(bot)
+    _ = TokyoMetro(bot)
+    _ = Toei(bot)
+    _ = Shinkansen(bot)
+    _ = Line(bot)
+    _ = Train(bot)
 
 
 token = configuration_service.token
@@ -24,8 +37,7 @@ log_level = configuration_service.log_level
 bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level, intents=hikari.Intents.ALL)
 cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
     [About, EightBall, Guild, Ping, Rails]
-_ = JrWest(bot)
-_ = Mtr(bot)
+initialize_railway_lines()
 for cmd in cmds:
     bot.add_slash_command(cmd)
 

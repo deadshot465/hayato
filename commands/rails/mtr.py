@@ -14,8 +14,10 @@ class Mtr(slash_commands.SlashSubCommand):
     line_name: typing.Optional[str] = \
         slash_commands.Option('The MTR line name you want to ask about. Type "info" or "list" to see more.')
 
-    path = 'assets/mtr.json'
+    path = 'assets/rails/mtr.json'
     thumbnail = 'https://cdn.discordapp.com/attachments/734604988717858846/739961151005130882/MTR.png'
+    formal_name = 'MTR'
+    short_name = 'MTR'
     footer_name = 'the MTR'
     color = hikari.Color.of(0x9d2133)
 
@@ -28,7 +30,7 @@ class Mtr(slash_commands.SlashSubCommand):
         return Rails \
             .build_general_embed(author_name=author_name,
                                  author_avatar_url=author_avatar_url,
-                                 title='MTR',
+                                 title=self.formal_name,
                                  color=self.color,
                                  description='The Mass Transit Railway (MTR; Chinese: 港鐵) is a major public transport'
                                              ' network serving Hong Kong. Operated by the MTR Corporation Limited'
@@ -52,15 +54,17 @@ class Mtr(slash_commands.SlashSubCommand):
             -> hikari.Embed:
         return Rails.build_general_embed(author_name=author_name,
                                          author_avatar_url=author_avatar_url,
-                                         title='MTR',
+                                         title=self.short_name,
                                          color=self.color,
-                                         description='Here is a list of lines in the MTR:\n\n' + line_list,
+                                         description='Here is a list of lines in the %s:\n\n%s' %
+                                                     (self.short_name, line_list),
                                          footer_name=self.footer_name,
                                          thumbnail=self.thumbnail)
 
     async def callback(self, context) -> None:
         author_name = get_author_name(context.author, context.member)
         author_avatar_url = str(context.author.avatar_url) or str(context.author.default_avatar_url)
+
         if context.option_values.line_name == 'info':
             embed = self.__get_info_embed(author_name, author_avatar_url)
         elif context.option_values.line_name == 'list':
@@ -69,8 +73,10 @@ class Mtr(slash_commands.SlashSubCommand):
             embed = self.__get_list_embed(author_name, author_avatar_url, '\n'.join(line_list))
         elif context.option_values.line_name is None:
             line = Rails.get_random_line(self.lines)
-            embed = Rails.build_single_result_embed(author_name, author_avatar_url, line, self.footer_name)
+            embed = Rails.build_single_result_embed(author_name, author_avatar_url, line,
+                                                    self.footer_name, line['name'] + ' Line')
         else:
             embed = Rails.search_line(author_name, author_avatar_url, self.color,
-                                      context.option_values.line_name, self.lines, 'MTR', self.footer_name)
+                                      context.option_values.line_name, self.lines, self.short_name,
+                                      self.footer_name, '%s Line')
         await context.respond(embed)

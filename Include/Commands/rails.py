@@ -181,7 +181,7 @@ class Rails(commands.Cog):
     def __init__(self, bot: commands.Bot):
         super().__init__()
         self.bot = bot
-        with open('assets/trains.json', 'r', encoding='utf-8') as file:
+        with open('assets/shinkansen_vehicles.json', 'r', encoding='utf-8') as file:
             raw_trains = file.read()
             self.trains: typing.List[dict] = json.loads(raw_trains)
         with open('assets/tokyo_metro.json', 'r', encoding='utf-8') as file_2:
@@ -374,7 +374,7 @@ class Rails(commands.Cog):
                               'development. Beyond long-distance travel, some sections around the largest '
                               'metropolitan areas are used as a commuter rail network. It is operated by five Japan '
                               'Railways Group companies. Over the Shinkansen\'s 50-plus year history, carrying over '
-                              '10 billion passengers, there has been not a single passenger fatality or injury due to '
+                              '10 billion passengers, there has not been a single passenger fatality or injury due to '
                               'train accidents.',
                               footer_name='the Shinkansen')
             await ctx.send(embed=embed)
