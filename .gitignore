@@ -22,4 +22,4 @@ assets/warnban.json
 .DS_Store
 .vscode/
 config/
-lottery/
+/lottery/
