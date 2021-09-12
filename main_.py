@@ -7,7 +7,8 @@ import hikari
 import lightbulb
 
 from commands.fun.eight_ball import EightBall
-from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_info, lottery_list, lottery_help
+from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_help, lottery_info,\
+    lottery_list, lottery_weekly
 from commands.info.about import About
 from commands.info.guild import Guild
 from commands.info.ping import Ping
@@ -32,6 +33,8 @@ def initialize_lottery_commands():
     _ = lottery_list.List(bot)
     _ = lottery_help.Help(bot)
     _ = lottery_balance.Balance(bot)
+    _ = lottery_daily.Daily(bot)
+    _ = lottery_weekly.Weekly(bot)
 
 
 token = configuration_service.token

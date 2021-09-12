@@ -27,12 +27,7 @@ class LotteryService:
                 self._lottery: Lottery = yaml.load(s, Loader=yaml.SafeLoader)
         else:
             self._lottery = Lottery()
-            self.__write_lottery()
-
-    def __write_lottery(self):
-        with open(self._file_path, 'w') as file:
-            s = yaml.dump(self._lottery, Dumper=yaml.SafeDumper)
-            file.write(s)
+            self.write_lottery()
 
     @property
     def lottery_channel_id(self) -> int:
@@ -80,7 +75,7 @@ class LotteryService:
                 participant.user_name = user_name
             response = '%s, you have successfully bought a lottery of `%s`! Deducted 10 credits from your account.'\
                        % (user_name, str(sorted_numbers))
-        self.__write_lottery()
+        self.write_lottery()
         return response
 
     def get_participant(self, user_id: int) -> typing.Optional[LotteryParticipant]:
@@ -96,7 +91,12 @@ class LotteryService:
         elif datetime.datetime.today().weekday() == 6:
             self.lottery_scheduled += datetime.timedelta(days=4)
         logging.info('Next lottery date: ' + str(self.lottery_scheduled))
-        self.__write_lottery()
+        self.write_lottery()
+
+    def write_lottery(self):
+        with open(self._file_path, 'w') as file:
+            s = yaml.dump(self._lottery, Dumper=yaml.SafeDumper)
+            file.write(s)
 
 
 lottery_service = LotteryService()
