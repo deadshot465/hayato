@@ -7,35 +7,31 @@ import hikari
 import lightbulb
 
 from commands.fun.eight_ball import EightBall
-from commands.fun.lottery.lottery import Lottery
-from commands.fun.lottery.lottery_buy import Buy
-from commands.fun.lottery.lottery_info import Info
+from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_info, lottery_list, lottery_help
 from commands.info.about import About
 from commands.info.guild import Guild
 from commands.info.ping import Ping
-from commands.rails.jrwest import JrWest
-from commands.rails.mtr import Mtr
-from commands.rails.rails import Rails
-from commands.rails.shinkansen import Line, Shinkansen, Train
-from commands.rails.toei import Toei
-from commands.rails.tokyo_metro import TokyoMetro
+from commands.rails import jrwest, mtr, rails, shinkansen, toei, tokyo_metro
 
 from services.configuration_service import configuration_service
 
 
 def initialize_railway_lines():
-    _ = JrWest(bot)
-    _ = Mtr(bot)
-    _ = TokyoMetro(bot)
-    _ = Toei(bot)
-    _ = Shinkansen(bot)
-    _ = Line(bot)
-    _ = Train(bot)
+    _ = jrwest.JrWest(bot)
+    _ = mtr.Mtr(bot)
+    _ = tokyo_metro.TokyoMetro(bot)
+    _ = toei.Toei(bot)
+    _ = shinkansen.Shinkansen(bot)
+    _ = shinkansen.Line(bot)
+    _ = shinkansen.Train(bot)
 
 
 def initialize_lottery_commands():
-    _ = Buy(bot)
-    _ = Info(bot)
+    _ = lottery_buy.Buy(bot)
+    _ = lottery_info.Info(bot)
+    _ = lottery_list.List(bot)
+    _ = lottery_help.Help(bot)
+    _ = lottery_balance.Balance(bot)
 
 
 token = configuration_service.token
@@ -44,7 +40,7 @@ log_level = configuration_service.log_level
 
 bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level, intents=hikari.Intents.ALL)
 cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
-    [About, EightBall, Guild, Lottery, Ping, Rails]
+    [About, EightBall, Guild, lottery.Lottery, Ping, rails.Rails]
 initialize_railway_lines()
 initialize_lottery_commands()
 for cmd in cmds:

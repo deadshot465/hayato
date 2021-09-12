@@ -49,8 +49,8 @@ class CreditService:
         await self.__update_user(user_id=user_id, amount=amount, action='plus')
         return user
 
-    async def get_user_credits(self, user_id: int, user_name: str) -> int:
-        await self.__fetch(not self._initialized)
+    async def get_user_credits(self, user_id: int, user_name: str, force: bool = False) -> int:
+        await self.__fetch(not self._initialized or force)
         items = list(filter(lambda x: x.UserId == str(user_id), self._user_credits))
         if len(items) != 0:
             return items.pop(0).Credits

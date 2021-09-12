@@ -66,7 +66,7 @@ class LotteryService:
             return 'You don\'t have enough credits to buy the lottery!'
 
         await credit_service.remove_credits(user_id=user_id, user_name=user_name, amount=10)
-        participant = self.__get_participant(user_id)
+        participant = self.get_participant(user_id)
         sorted_numbers = sorted(numbers)
         if participant is None:
             participant = LotteryParticipant(user_id=user_id, user_name=user_name)
@@ -83,6 +83,13 @@ class LotteryService:
         self.__write_lottery()
         return response
 
+    def get_participant(self, user_id: int) -> typing.Optional[LotteryParticipant]:
+        participant = list(filter(lambda p: p.user_id == user_id, self._lottery.lottery_participants))
+        if len(participant) == 0:
+            return None
+        else:
+            return participant.pop(0)
+
     def set_next_lottery_time(self):
         if datetime.datetime.today().weekday() == 3:
             self.lottery_scheduled += datetime.timedelta(days=3)
@@ -90,13 +97,6 @@ class LotteryService:
             self.lottery_scheduled += datetime.timedelta(days=4)
         logging.info('Next lottery date: ' + str(self.lottery_scheduled))
         self.__write_lottery()
-
-    def __get_participant(self, user_id: int) -> typing.Optional[LotteryParticipant]:
-        participant = list(filter(lambda p: p.user_id == user_id, self._lottery.lottery_participants))
-        if len(participant) == 0:
-            return None
-        else:
-            return participant.pop(0)
 
 
 lottery_service = LotteryService()
