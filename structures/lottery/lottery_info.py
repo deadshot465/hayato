@@ -1,3 +1,5 @@
+import datetime
+
 import attr
 import yaml
 
@@ -9,4 +11,4 @@ class LotteryInfo(yaml.YAMLObject):
     yaml_tag = u'!LotteryInfo'
 
     channel_id: int = attr.ib(default=737025196237520996)
-    lottery_scheduled: str = attr.ib(default='')
+    lottery_scheduled: datetime.datetime = attr.ib(default=datetime.datetime.now())

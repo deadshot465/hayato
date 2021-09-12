@@ -9,6 +9,7 @@ from structures.rails.rails_embed import RailsEmbed
 
 class Rails(slash_commands.SlashCommandGroup):
     description: str = 'Ask Hayato for information on trains and rails.'
+    enabled_guilds: list[int] = [705036924330704968]
 
     @staticmethod
     def get_random_line(lines: list[dict]) -> dict:

@@ -1,8 +1,6 @@
 import attr
 import yaml
 
-from structures.lottery_info import LotteryInfo
-
 
 @attr.s(kw_only=True)
 class Configuration(yaml.YAMLObject):
@@ -27,7 +25,6 @@ class Configuration(yaml.YAMLObject):
     log_level: str = attr.ib(default='DEBUG')
     enabled_channels: list[int] = attr.ib(default=[])
     ignored_channels: list[int] = attr.ib(default=[])
-    lottery_info: LotteryInfo = attr.ib(default=LotteryInfo())
     trains: list[str] = attr.ib(default=_default_trains)
     responses: list[str] = attr.ib(default=_default_responses)
     google_api_ley: str = attr.ib(default='')

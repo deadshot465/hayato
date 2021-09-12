@@ -1,6 +1,6 @@
+import marshmallow
 from marshmallow_dataclass import dataclass
 from typing import ClassVar, Type
-import marshmallow
 
 
 @dataclass

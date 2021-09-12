@@ -7,7 +7,7 @@ from discord.ext import commands
 from Include.Commands.lottery.lottery import LotteryParticipant
 from utils.utils import USER_MENTION_REGEX
 from utils.configuration_manager import ConfigurationManager
-from utils.credit_manager import CreditManager
+from services.credit_service import CreditService
 
 LOTTERY_RUNNING = False
 EIGHTBALL_RESPONSE = ['Of course', 'It is certain', 'I think so', 'Maybe', 'If you like Shinkansen, then yes',
@@ -28,7 +28,7 @@ async def bulk_purchase(ctx: commands.Context, numbers: str):
     participant = get_participant(ctx)
     if not isinstance(participant, LotteryParticipant):
         return 'You have to join the game first! Use `h!lottery` to buy your first lottery to get started.'
-    user_credits = await CreditManager.get_user_credits(ctx, participant.user_id, True)
+    user_credits = await CreditService.get_user_credits(ctx, participant.user_id, True)
     numbers = numbers.strip()
     available_amount: int
     balance: int
@@ -77,7 +77,7 @@ async def bulk_purchase(ctx: commands.Context, numbers: str):
             participant.lottery_choices = list()
         for number_set in number_set_list:
             participant.lottery_choices.append(sorted(number_set))
-        await CreditManager.remove_credits(participant.user_id, available_amount * 10)
+        await CreditService.remove_credits(participant.user_id, available_amount * 10)
         if participant.username != author.display_name:
             participant.username = author.display_name
         ConfigurationManager.write_lottery_data()
@@ -113,9 +113,9 @@ async def add_player(ctx: commands.Context, numbers: str):
         if participant.lottery_choices is None:
             participant.lottery_choices = list()
         participant.lottery_choices.append(sorted(number_set))
-        if (await CreditManager.get_user_credits(ctx, participant.user_id)) - 10 < 0:
+        if (await CreditService.get_user_credits(ctx, participant.user_id)) - 10 < 0:
             return 'You don\'t have enough credits to buy the lottery!'
-        await CreditManager.remove_credits(participant.user_id, 10)
+        await CreditService.remove_credits(participant.user_id, 10)
         if participant.username != author.display_name:
             participant.username = author.display_name
         ConfigurationManager.write_lottery_data()
@@ -126,7 +126,7 @@ async def add_player(ctx: commands.Context, numbers: str):
                                          datetime.datetime.now())
         participant.lottery_choices.append(sorted(number_set))
         ConfigurationManager.lottery_data.append(participant)
-        await CreditManager.add_credits(author.id, 100, insert=True)
+        await CreditService.add_credits(author.id, 100, insert=True)
         ConfigurationManager.write_lottery_data()
         return '{}, you have got your 100 starting credits! You have successfully bought a lottery of `{}`!'.format(
             author.display_name, str(sorted(number_set)))
@@ -140,7 +140,7 @@ async def get_daily(ctx: commands.Context):
         participant = participant_data[0]
         elapsed_time = datetime.datetime.now() - participant.last_daily_time
         if elapsed_time.total_seconds() > 86400:
-            await CreditManager.add_credits(participant.user_id, 10, ctx=ctx)
+            await CreditService.add_credits(participant.user_id, 10, ctx=ctx)
             participant.last_daily_time = datetime.datetime.now()
             ConfigurationManager.write_lottery_data()
             return 'You have received your daily 10 credits!'
@@ -164,7 +164,7 @@ async def get_weekly(ctx: commands.Context):
         participant = participant_data[0]
         elapsed_time = datetime.datetime.now() - participant.last_weekly_time
         if elapsed_time.total_seconds() > 604800:
-            await CreditManager.add_credits(participant.user_id, 30, ctx=ctx)
+            await CreditService.add_credits(participant.user_id, 30, ctx=ctx)
             participant.last_weekly_time = datetime.datetime.now()
             ConfigurationManager.write_lottery_data()
             return 'You have received your weekly 30 credits!'
@@ -196,7 +196,7 @@ async def get_balance_embed(ctx: commands.Context):
         embed = discord.Embed(title='Account Balance', description='Here is your account balance:',
                               colour=discord.Colour.from_rgb(30, 99, 175))
         embed.set_author(name=author.display_name, icon_url=author.avatar_url)
-        embed.add_field(name='Credits', value=str(await CreditManager.get_user_credits(ctx, participant.user_id, True)),
+        embed.add_field(name='Credits', value=str(await CreditService.get_user_credits(ctx, participant.user_id, True)),
                         inline=True)
         return embed
     else:
@@ -234,7 +234,7 @@ async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list):
                 participant.username,
                 numbers_set[0] + 1, count,
                 add_credits)
-        await CreditManager.add_credits(participant.user_id, total_credits)
+        await CreditService.add_credits(participant.user_id, total_credits)
         embed.add_field(name=participant.username, value=str(total_credits), inline=True)
         participant.lottery_choices.clear()
     message_count = len(result_text) // 2000
@@ -244,7 +244,7 @@ async def compare_numbers(ctx: discord.TextChannel, drawn_numbers: list):
         await ctx.send(message)
     await ctx.send(result_text[(message_count * 2000):])
     await ctx.send(embed=embed)
-    await CreditManager.replenish(ctx.id, ctx)
+    await CreditService.replenish(ctx.id, ctx)
     global LOTTERY_RUNNING
     LOTTERY_RUNNING = False
     ConfigurationManager.write_lottery_data()
@@ -318,15 +318,15 @@ class Fun(commands.Cog):
                 await ctx.send(
                     'You can\'t trade with other people when you don\'t have an account!\nCreate an account first by buying a lottery.')
                 return
-            if (await CreditManager.get_user_credits(ctx, participants_1[0].user_id)) - amount < 0:
+            if (await CreditService.get_user_credits(ctx, participants_1[0].user_id)) - amount < 0:
                 await ctx.send('You cannot transfer more credits than you currently have!')
                 return
             if len(participants_2) == 0:
                 await ctx.send(
                     'Sorry! I cannot find the user you want to transfer credits to.\nEither the user does not exist, or the user has\'t joined in the lottery yet.')
                 return
-            await CreditManager.remove_credits(participants_1[0].user_id, amount)
-            await CreditManager.add_credits(participants_2[0].user_id, amount)
+            await CreditService.remove_credits(participants_1[0].user_id, amount)
+            await CreditService.add_credits(participants_2[0].user_id, amount)
             ConfigurationManager.write_lottery_data()
             embed = discord.Embed(title='Transfer Credits',
                                   description='{} has transferred {} credits to {}!'.format(participants_1[0].username,
@@ -335,7 +335,7 @@ class Fun(commands.Cog):
                                   color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             embed.add_field(name='Balance',
-                            value=str(await CreditManager.get_user_credits(ctx, participants_1[0].user_id)),
+                            value=str(await CreditService.get_user_credits(ctx, participants_1[0].user_id)),
                             inline=False)
             await ctx.send(embed=embed)
 
@@ -446,7 +446,7 @@ class Fun(commands.Cog):
                       aliases=['cf'])
     async def coinflip(self, ctx: commands.Context, arg1: typing.Optional[str], arg2: typing.Optional[str]):
         author: typing.Union[discord.User, discord.Member] = ctx.author
-        await CreditManager.get_user_credits(ctx, author.id, True)
+        await CreditService.get_user_credits(ctx, author.id, True)
         coin = ['h', 't']
         words = {'h': 'head', 't': 'tail'}
         if arg1 is None or arg1.lower() not in coin:
@@ -463,10 +463,10 @@ class Fun(commands.Cog):
                 return
             answer = random.choice(coin)
             if arg1.lower() == answer:
-                await CreditManager.add_credits(author.id, amount, ctx=ctx)
+                await CreditService.add_credits(author.id, amount, ctx=ctx)
                 await ctx.send('It is **{}**! You gained {} credits!'.format(words.get(answer), amount))
             else:
-                await CreditManager.remove_credits(author.id, amount, ctx=ctx)
+                await CreditService.remove_credits(author.id, amount, ctx=ctx)
                 await ctx.send('It is **{}**! You lost {} credits!'.format(words.get(answer), amount))
         except ValueError:
             await ctx.send('The amount that you input is invalid!')

@@ -7,6 +7,9 @@ import hikari
 import lightbulb
 
 from commands.fun.eight_ball import EightBall
+from commands.fun.lottery.lottery import Lottery
+from commands.fun.lottery.lottery_buy import Buy
+from commands.fun.lottery.lottery_info import Info
 from commands.info.about import About
 from commands.info.guild import Guild
 from commands.info.ping import Ping
@@ -30,14 +33,20 @@ def initialize_railway_lines():
     _ = Train(bot)
 
 
+def initialize_lottery_commands():
+    _ = Buy(bot)
+    _ = Info(bot)
+
+
 token = configuration_service.token
 prefix = configuration_service.prefix
 log_level = configuration_service.log_level
 
 bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level, intents=hikari.Intents.ALL)
 cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
-    [About, EightBall, Guild, Ping, Rails]
+    [About, EightBall, Guild, Lottery, Ping, Rails]
 initialize_railway_lines()
+initialize_lottery_commands()
 for cmd in cmds:
     bot.add_slash_command(cmd)
 

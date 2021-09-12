@@ -9,7 +9,7 @@ from typing import List, Optional, Union
 from discord.ext import commands
 from dotenv import load_dotenv
 from Include.Commands.fun import auto_lottery
-from utils.credit_manager import CreditManager
+from services.credit_service import CreditService
 from utils.configuration_manager import ConfigurationManager
 
 load_dotenv(verbose=True)
@@ -77,7 +77,7 @@ async def on_message(message: discord.Message):
                 match_members = list(filter(lambda x: x.display_name.startswith(username), members))
                 if len(match_members) == 0:
                     match_members = list(filter(lambda x: x.name.startswith(username), members))
-                await CreditManager.add_credits(int(match_members[0].id), 20, channel_id=716483752544698450,
+                await CreditService.add_credits(int(match_members[0].id), 20, channel_id=716483752544698450,
                                                 channel=message.channel)
         except AttributeError:
             pass
@@ -135,7 +135,7 @@ async def schedule_lottery():
 
 @bot.event
 async def on_ready():
-    await CreditManager.initialize()
+    await CreditService.initialize()
     print('Logged on as', bot.user)
     await set_presence()
     asyncio.create_task(schedule_lottery())

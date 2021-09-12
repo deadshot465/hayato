@@ -58,6 +58,18 @@ class ConfigurationService:
         return self._config.responses
 
     @property
+    def fetch_from_server(self) -> bool:
+        return self._config.fetch_from_server
+
+    @property
+    def login_name(self) -> str:
+        return self._config.login_name
+
+    @property
+    def login_pass(self) -> str:
+        return self._config.login_pass
+
+    @property
     def bot(self):
         return self._bot
 

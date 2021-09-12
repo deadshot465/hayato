@@ -1,11 +1,13 @@
-import arrow
 import json
-import os
-import requests
+import logging
 from datetime import datetime
 
+import arrow
+import requests
+from services.configuration_service import configuration_service
 
-class AuthenticationManager:
+
+class AuthenticationService:
     token: str = ''
     expiry: datetime = arrow.utcnow().datetime
 
@@ -14,8 +16,8 @@ class AuthenticationManager:
         if arrow.utcnow().datetime < cls.expiry:
             return
         data = {
-            'UserName': os.getenv('LOGIN_NAME'),
-            'Password': os.getenv('LOGIN_PASS')
+            'UserName': configuration_service.login_name,
+            'Password': configuration_service.login_pass
         }
         try:
             response = requests.post('https://tetsukizone.com/api/login', json=json.dumps(data))
@@ -24,4 +26,4 @@ class AuthenticationManager:
             cls.token = str(res_data['token'])
             cls.expiry = arrow.get(str(res_data['expiry'])).datetime
         except requests.exceptions.HTTPError as ex:
-            print('An error occurred when getting the login token: {}'.format(ex.response))
+            logging.error('An error occurred when getting the login token: %s' % ex.response)
