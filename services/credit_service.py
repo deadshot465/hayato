@@ -78,7 +78,9 @@ class CreditService:
             user.Credits += 200
             await self.__update_user(user_id=int(user.UserId), amount=200,
                                      action='plus', channel_id=channel_id)
-            yield random.choice(HAYATO_PLUS_RESPONSES)
+            yield random.choice(HAYATO_PLUS_RESPONSES)\
+                .replace('{userId}', user.UserId)\
+                .replace('{credits}', str(200))
 
     async def __add_user(self, user_id: int, user_name: str, amount: int) -> UserCreditItem:
         if len(self._user_credits) == 0:

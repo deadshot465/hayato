@@ -59,10 +59,7 @@ class Start(slash_commands.SlashSubCommand):
                 if isinstance(res, hikari.Embed):
                     await msg_channel.send(embed=res)
                 else:
-                    res_text: str = res
-                    await msg_channel.send(res_text
-                                           .replace('{userId}', str(context.author.id))
-                                           .replace('{credits}', str(200)))
+                    await msg_channel.send(res)
                 await asyncio.sleep(1.0)
         except StopAsyncIteration:
             return

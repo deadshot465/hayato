@@ -66,7 +66,38 @@ class LotteryService:
     def lottery_running(self) -> bool:
         return self._lottery_running
 
-    async def build_lottery_result(self, drawn_numbers: list[int]) -> typing.Union[str, hikari.Embed]:
+    async def auto_lottery(self, bot: lightbulb.Bot, channel: hikari.TextableGuildChannel):
+        running_message = ''
+        drawn_numbers: list[int] = []
+        msg_generator = self.start_lottery()
+        initial_message = await channel.send('The lottery will start in 10 seconds!')
+
+        try:
+            while True:
+                s, i = await msg_generator.__anext__()
+                running_message += s + '\n'
+                drawn_numbers.append(i)
+                await initial_message.edit(running_message)
+                await asyncio.sleep(3.0)
+        except StopAsyncIteration:
+            pass
+
+        running_message += 'The drawn numbers are: ' + ''.join(str(drawn_numbers))
+        await initial_message.edit(running_message)
+
+        result_generator = self.build_lottery_result(drawn_numbers)
+        try:
+            while True:
+                res = await result_generator.__anext__()
+                if isinstance(res, hikari.Embed):
+                    await channel.send(embed=res)
+                else:
+                    await channel.send(res)
+                await asyncio.sleep(1.0)
+        except StopAsyncIteration:
+            return
+
+    async def build_lottery_result(self, drawn_numbers: list[int]):
         embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR)\
             .set_thumbnail(LOTTERY_ICON)
         result_text = ''
@@ -172,6 +203,8 @@ class LotteryService:
             self.lottery_scheduled += datetime.timedelta(days=3)
         elif datetime.datetime.today().weekday() == 6:
             self.lottery_scheduled += datetime.timedelta(days=4)
+        else:
+            self.lottery_scheduled += datetime.timedelta(days=7)
         logging.info('Next lottery date: ' + str(self.lottery_scheduled))
         self.write_lottery()
 
