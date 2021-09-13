@@ -28,7 +28,7 @@ class CoinFlip(slash_commands.SlashCommand):
 
         if (user_choice not in self._heads) and (user_choice not in self._tails):
             await context.respond('You need to guess if it is head or tail. The correct input is: '
-                                  '`/coinflip <h/t> <amount>`')
+                                  '`/coinflip <amount> <h/t>`')
             return
 
         if amount < 0:

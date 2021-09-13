@@ -32,3 +32,5 @@ class Configuration(yaml.YAMLObject):
     login_name: str = attr.ib(default='')
     login_pass: str = attr.ib(default='')
     rapid_api_key: str = attr.ib(default='')
+    mention_reply_chance: int = attr.ib(default=90)
+    random_reply_chance: int = attr.ib(default=97)

@@ -14,4 +14,5 @@ class Ping(slash_commands.SlashCommand):
         await context.respond('🚅 Pinging...')
         end_time = datetime.datetime.now()
         elapsed = round((end_time - start_time).total_seconds() * 1000, 3)
-        await context.edit_response(content=f'🚅 {ping_msg}!\nLatency is: {elapsed}ms.')
+        await context.edit_response(content=f'🚅 {ping_msg}!\nLatency is: {elapsed}ms. Heartbeat latency is: '
+                                            f'{self.bot.heartbeat_latency}ms')

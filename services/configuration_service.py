@@ -24,6 +24,15 @@ class ConfigurationService:
             self._config = Configuration()
             self.__write_config()
 
+    def allow_channel(self, channel_id: int):
+        self._config.ignored_channels = [channel for channel in self._config.ignored_channels if channel != channel_id]
+        self.__write_config()
+
+    def ignore_channel(self, channel_id: int):
+        self._config.ignored_channels.append(channel_id)
+        self._config.ignored_channels = list(set(self._config.ignored_channels))
+        self.__write_config()
+
     def __write_config(self):
         with open(self._config_file_path, 'w') as file:
             s = yaml.dump(self._config, Dumper=yaml.SafeDumper)
@@ -68,6 +77,14 @@ class ConfigurationService:
     @property
     def login_pass(self) -> str:
         return self._config.login_pass
+
+    @property
+    def mention_reply_chance(self) -> int:
+        return self._config.mention_reply_chance
+
+    @property
+    def random_reply_chance(self) -> int:
+        return self._config.random_reply_chance
 
     @property
     def bot(self):
