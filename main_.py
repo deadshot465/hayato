@@ -6,6 +6,7 @@ import typing
 import hikari
 import lightbulb
 
+from commands.fun.coinflip import CoinFlip
 from commands.fun.eight_ball import EightBall
 from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_help, lottery_info,\
     lottery_list, lottery_start, lottery_transfer, lottery_weekly
@@ -45,7 +46,7 @@ log_level = configuration_service.log_level
 
 bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level, intents=hikari.Intents.ALL)
 cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
-    [About, EightBall, Guild, lottery.Lottery, Ping, rails.Rails]
+    [About, CoinFlip, EightBall, Guild, lottery.Lottery, Ping, rails.Rails]
 initialize_railway_lines()
 initialize_lottery_commands()
 for cmd in cmds:

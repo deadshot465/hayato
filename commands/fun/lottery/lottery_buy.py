@@ -31,25 +31,29 @@ class Buy(slash_commands.SlashSubCommand):
         user_icon_url = context.author.avatar_url or context.author.default_avatar_url
         user_credits = await credit_service.get_user_credits(int(user_id), user_name)
 
-
-        if context.option_values.numbers is None:
+        numbers: typing.Optional[str] = context.option_values.numbers
+        if numbers is None:
             result = await lottery_service.buy_lottery(int(user_id), user_name, next(self.__random_lottery()))
-        elif context.option_values.numbers.isdigit():
-            result = await self.__bulk_purchase(amount=int(context.option_values.numbers), user_id=user_id,
+        elif numbers.isdigit():
+            if int(numbers) < 0:
+                await context.edit_response(content='You can\'t buy negative amount of lotteries!')
+                return
+
+            result = await self.__bulk_purchase(amount=int(numbers), user_id=user_id,
                                                 user_name=user_name, user_icon_url=str(user_icon_url),
                                                 user_credits=user_credits, channel=channel)
-        elif context.option_values.numbers == 'all':
+        elif numbers == 'all':
             result = await self.__bulk_purchase(amount=user_credits // 10, user_id=user_id,
                                                 user_name=user_name, user_icon_url=str(user_icon_url),
                                                 user_credits=user_credits, channel=channel)
         else:
-            numbers = self.__validate_numbers(context.option_values.numbers)
-            if numbers is None:
+            validated_numbers = self.__validate_numbers(numbers)
+            if validated_numbers is None:
                 await context.edit_response(
                     content='You either have invalid characters/numbers in the input, or you did\'t provide'
                             ' enough numbers!')
                 return
-            result = await lottery_service.buy_lottery(int(user_id), user_name, numbers)
+            result = await lottery_service.buy_lottery(int(user_id), user_name, validated_numbers)
         await context.edit_response(content=result)
 
     async def __bulk_purchase(self, *,

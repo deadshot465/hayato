@@ -10,7 +10,7 @@ from utils.utils import get_author_name
 
 @Lottery.subcommand()
 class Weekly(slash_commands.SlashSubCommand):
-    description: str = 'Get your daily credit!'
+    description: str = 'Get your weekly credit!'
     enabled_guilds: list[int] = [705036924330704968]
 
     async def callback(self, context: slash_commands.SlashCommandContext) -> None:

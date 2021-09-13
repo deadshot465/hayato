@@ -35,6 +35,9 @@ class Transfer(slash_commands.SlashSubCommand):
         if credits_1 - amount < 0:
             await context.respond('You cannot transfer more credits than you currently have!')
             return
+        elif amount < 0:
+            await context.respond('You can\'t trade with negative amounts!')
+            return
 
         await context.respond('Hold on a second...')
         author_credit_item = await credit_service \
