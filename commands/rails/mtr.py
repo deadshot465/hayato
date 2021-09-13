@@ -10,7 +10,6 @@ from utils.utils import get_author_name
 @Rails.subcommand()
 class Mtr(slash_commands.SlashSubCommand):
     description: str = 'Randomly get or query information on an MTR Line.'
-    enabled_guilds: list[int] = [705036924330704968]
     line_name: typing.Optional[str] = \
         slash_commands.Option('The MTR line name you want to ask about. Type "info" or "list" to see more.')
 

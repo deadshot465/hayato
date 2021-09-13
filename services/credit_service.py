@@ -69,11 +69,13 @@ class CreditService:
         await self.__update_user(user_id=user_id, amount=amount, action='minus')
         return user
 
-    async def replenish(self):
+    async def replenish(self, *, channel_id: int = 0):
         users_to_replenish = list(filter(lambda x: x.Credits <= 200, self._user_credits))
         for user in users_to_replenish:
             user.Credits += 200
-            await self.__update_user(user_id=int(user.UserId), amount=200, action='plus')
+            await self.__update_user(user_id=int(user.UserId), amount=200,
+                                     action='plus', channel_id=channel_id)
+            yield random.choice(HAYATO_PLUS_RESPONSES)
 
     async def __add_user(self, user_id: int, user_name: str, amount: int) -> UserCreditItem:
         if len(self._user_credits) == 0:

@@ -7,7 +7,6 @@ from lightbulb import slash_commands
 class Ping(slash_commands.SlashCommand):
     description: str = 'Play a ping-pong message with Hayato and check if Hayato is fine.'
     ping_msgs = ['Pong', 'Pang', 'Peng', 'Pung']
-    enabled_guilds: list[int] = [705036924330704968]
 
     async def callback(self, context) -> None:
         ping_msg = random.choice(self.ping_msgs)

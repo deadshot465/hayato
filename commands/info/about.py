@@ -6,7 +6,6 @@ from utils.constants import HAYATO_COLOR, LAST_UPDATE_DATE, PYTHON_LOGO, VERSION
 
 class About(slash_commands.SlashCommand):
     description: str = 'See the information about Hayato.'
-    enabled_guilds: list[int] = [705036924330704968]
 
     async def callback(self, context) -> None:
         bot_user = configuration_service.bot.get_me()

@@ -1,20 +1,33 @@
+import asyncio
 import datetime
 import logging
 import os.path
+import random
 import typing
 
+import hikari
 import lightbulb
 import yaml
-
 from services.credit_service import credit_service
 from structures.lottery.lottery import Lottery
 from structures.lottery.lottery_participant import LotteryParticipant
+from utils.constants import HAYATO_COLOR, LOTTERY_ICON
 
 
 class LotteryService:
     _directory_name = 'lottery'
     _file_name = 'lottery.yaml'
     _file_path = os.path.join(os.getcwd(), _directory_name, _file_name)
+    _word_list: typing.Final[str] = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
+    _rewards: typing.Final[dict[int, int]] = {
+        0: 0,
+        1: 0,
+        2: 20,
+        3: 100,
+        4: 1000,
+        5: 2000,
+        6: 6000
+    }
 
     def __init__(self):
         self._bot: typing.Optional[lightbulb.Bot] = None
@@ -53,9 +66,77 @@ class LotteryService:
     def lottery_running(self) -> bool:
         return self._lottery_running
 
-    async def buy_lottery(self, user_id: int, user_name: str, numbers: set[int]):
+    async def build_lottery_result(self, drawn_numbers: list[int]) -> typing.Union[str, hikari.Embed]:
+        embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR)\
+            .set_thumbnail(LOTTERY_ICON)
+        result_text = ''
+
+        for participant in self._lottery.lottery_participants:
+            participant_lotteries = participant.lotteries
+
+            if len(participant_lotteries) == 0:
+                continue
+
+            total_credits = 0
+
+            for i, lottery in enumerate(participant_lotteries):
+                hit_numbers = [x for x in lottery if x in drawn_numbers]
+                hit_count = len(hit_numbers)
+                reward = self._rewards[hit_count]
+                total_credits += reward
+                result_text += f'{participant.user_name}\'s lottery #{i + 1} hits **{hit_count}** numbers!' \
+                               f' You gained **{reward}** credits!\n'
+                if len(result_text) >= 1900:
+                    yield result_text
+                    result_text = ''
+
+            if total_credits != 0:
+                await credit_service.add_credits(user_id=participant.user_id, user_name=participant.user_name,
+                                                 amount=total_credits)
+                embed.add_field(name=participant.user_name, value=str(total_credits), inline=True)
+
+            participant_lotteries.clear()
+
+        yield result_text
+        yield embed
+        msg_generator = credit_service.replenish(channel_id=self._lottery.lottery_info.channel_id)
+        try:
+            while True:
+                s = await msg_generator.__anext__()
+                yield s
+        except StopAsyncIteration:
+            pass
+        self._lottery_running = False
+        self.write_lottery()
+
+    async def bulk_purchase(self, user_id: int, user_name: str, numbers: list[list[int]]) -> str:
         if self._lottery_running:
             return 'There is a lottery running now! Please try again after the lottery is over!'
+
+        user_credits = await credit_service.get_user_credits(user_id, user_name)
+        total_count = len(numbers)
+        total_cost = 10 * total_count
+        await credit_service.remove_credits(user_id=user_id, user_name=user_name, amount=total_cost)
+        participant = self.get_participant(user_id)
+        if participant is None:
+            participant = LotteryParticipant(user_id=user_id, user_name=user_name)
+            participant.lotteries = numbers
+            self._lottery.lottery_participants.append(participant)
+            response = '%s, you have got your 100 starting credits! You have successfully bulk purchased %d' \
+                       ' lotteries! Deducted %d credits from your account.' % (user_name, total_count, total_cost)
+        else:
+            participant.lotteries.extend(numbers)
+            if participant.user_name != user_name:
+                participant.user_name = user_name
+            response = '%s, you have successfully bulk purchased %d lotteries! Deducted %d credits from your' \
+                       ' account.' % (user_name, total_count, total_cost)
+        self.write_lottery()
+        return response
+
+    async def buy_lottery(self, user_id: int, user_name: str, numbers: set[int]) -> str:
+        if self._lottery_running:
+            return 'There is a lottery running now! Please try again after the lottery is over!'
+
         user_credits = await credit_service.get_user_credits(user_id, user_name)
         if user_credits - 10 < 0:
             return 'You don\'t have enough credits to buy the lottery!'
@@ -92,6 +173,16 @@ class LotteryService:
             self.lottery_scheduled += datetime.timedelta(days=4)
         logging.info('Next lottery date: ' + str(self.lottery_scheduled))
         self.write_lottery()
+
+    async def start_lottery(self):
+        self._lottery_running = True
+        await asyncio.sleep(10)
+        drawn_numbers: set[int] = set()
+        while len(drawn_numbers) != 6:
+            drawn_numbers.add(random.randint(1, 49))
+        order_and_num = zip(self._word_list, sorted(drawn_numbers))
+        for w, i in order_and_num:
+            yield 'The %s drawn number is **%d**!' % (w, i), i
 
     def write_lottery(self):
         with open(self._file_path, 'w') as file:

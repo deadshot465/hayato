@@ -7,7 +7,6 @@ from lightbulb import slash_commands
 class EightBall(slash_commands.SlashCommand):
     name: str = '8ball'
     description: str = 'Get an answer from a yes/no question.'
-    enabled_guilds: list[int] = [705036924330704968]
     question: str = slash_commands.Option('The question you want to ask Hayato.')
 
     EIGHTBALL_RESPONSE: typing.Final[list[str]] = \

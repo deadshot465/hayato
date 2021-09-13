@@ -10,7 +10,6 @@ from utils.utils import get_author_name
 @Rails.subcommand()
 class TokyoMetro(slash_commands.SlashSubCommand):
     description: str = 'Randomly get or query information on a Tokyo Metro line.'
-    enabled_guilds: list[int] = [705036924330704968]
     line_name: typing.Optional[str] = \
         slash_commands.Option('The Tokyo Metro line name you want to ask about. Type "info" or "list" to see more.')
 

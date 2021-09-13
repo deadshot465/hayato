@@ -7,7 +7,6 @@ from utils.utils import get_author_name
 
 class Guild(slash_commands.SlashCommand):
     description: str = 'Get the information about this server.'
-    enabled_guilds: list[int] = [705036924330704968]
 
     async def callback(self, context) -> None:
         author = context.author
