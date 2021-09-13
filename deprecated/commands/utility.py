@@ -3,7 +3,7 @@ import random
 import re
 from typing import Optional
 
-from utils.rapid_api import *
+from services.judge_zero_service import *
 from utils.utils import search_user
 
 # Available domains.

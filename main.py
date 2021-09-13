@@ -8,9 +8,9 @@ from typing import List, Optional, Union
 
 from discord.ext import commands
 from dotenv import load_dotenv
-from Include.Commands.fun import auto_lottery
+from deprecated.commands.fun import auto_lottery
 from services.credit_service import CreditService
-from utils.configuration_manager import ConfigurationManager
+from utils.deprecated.configuration_manager import ConfigurationManager
 
 load_dotenv(verbose=True)
 # A simple description of our bot.
@@ -21,11 +21,11 @@ TRAINS = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100
 RESPONSE = ['I am a punctual and trustworthy man!', 'Hello! My name is Hayasugi Hayato. Nice to meet you!', 'Uhh...I am afraid of heights...Don\'t tell me to board an airplane!', 'Change form, Shinkalion!', 'My dream is to be a Shinkansen train conductor!', 'All people who like Shinkansen are good people!', 'Shinkansen trains are so cool!', 'Shinkansen E5 Series is my favourite!', 'Do you know how much it costs for a Shinkansen trip from Tokyo to Osaka?']
 
 # Available cogs. Path is separated with dots, without file extensions.
-EXTENSIONS = ['Include.Commands.admin',
-              'Include.Commands.fun',
-              'Include.Commands.info',
-              'Include.Commands.rails',
-              'Include.Commands.utility']
+EXTENSIONS = ['deprecated.commands.admin',
+              'deprecated.commands.fun',
+              'deprecated.commands.info',
+              'deprecated.commands.rails',
+              'deprecated.commands.utility']
 
 ADMIN_COMMANDS = ['enable', 'disable', 'allow', 'ignore', 'warn', 'ban']
 

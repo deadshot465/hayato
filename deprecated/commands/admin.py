@@ -1,9 +1,9 @@
 from discord.ext import commands
-from Include.Commands.warnban.warnban import WarnBanData
+from deprecated.commands.warnban.warnban import WarnBanData
 from marshmallow import Schema
 from dateutil.relativedelta import relativedelta
 from typing import Optional, Union
-from utils.configuration_manager import ConfigurationManager
+from utils.deprecated.configuration_manager import ConfigurationManager
 import asyncio
 import datetime
 import discord

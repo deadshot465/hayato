@@ -19,7 +19,7 @@ class Allow(slash_commands.SlashSubCommand):
             await context.respond('The channel is not ignored!')
             return
 
-        configuration_service.allow_channel(int(channel.id))
+        configuration_service.allow_channel(int(channel))
         await context.respond('Successfully allowed channel for responses!')
 
 
@@ -35,5 +35,5 @@ class Ignore(slash_commands.SlashSubCommand):
             await context.respond('The channel is already ignored!')
             return
 
-        configuration_service.ignore_channel(int(channel.id))
+        configuration_service.ignore_channel(int(channel))
         await context.respond('Successfully disallowed channel for responses!')

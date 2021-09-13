@@ -87,6 +87,10 @@ class ConfigurationService:
         return self._config.random_reply_chance
 
     @property
+    def rapid_api_key(self) -> str:
+        return self._config.rapid_api_key
+
+    @property
     def bot(self):
         return self._bot
 

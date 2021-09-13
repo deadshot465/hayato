@@ -22,7 +22,7 @@ class Help(slash_commands.SlashSubCommand):
 
     async def callback(self, context: slash_commands.SlashCommandContext) -> None:
         author_name = get_author_name(context.author, context.member)
-        embed = hikari.Embed(title='Lottery Commands', description=self.info, color=HAYATO_COLOR)\
+        embed = hikari.Embed(title='Lottery commands', description=self.info, color=HAYATO_COLOR)\
             .set_author(name=author_name, icon=context.author.avatar_url or context.author.default_avatar_url)\
             .set_thumbnail(LOTTERY_ICON)
         await context.respond(embed)

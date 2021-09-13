@@ -15,6 +15,7 @@ from commands.info.about import About
 from commands.info.guild import Guild
 from commands.info.ping import Ping
 from commands.rails import jrwest, mtr, rails, shinkansen, toei, tokyo_metro
+from commands.utility.pick import Pick
 
 from services.configuration_service import configuration_service
 
@@ -49,7 +50,7 @@ bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level,
                     intents=hikari.Intents.ALL, delete_unbound_slash_commands=False,
                     recreate_changed_slash_commands=False)
 cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
-    [About, admin.Admin, CoinFlip, EightBall, Guild, lottery.Lottery, Ping, rails.Rails]
+    [About, admin.Admin, CoinFlip, EightBall, Guild, lottery.Lottery, Pick, Ping, rails.Rails]
 initialize_railway_lines()
 initialize_lottery_commands()
 for cmd in cmds:
@@ -77,6 +78,7 @@ async def update_presence():
 async def ready(_: hikari.ShardReadyEvent):
     await set_initial_presence()
     configuration_service.bot = bot
+    from commands.utility.eval import evaluate
 
 
 @bot.listen()
@@ -100,4 +102,4 @@ async def message_create(e: hikari.GuildMessageCreateEvent):
             await e.get_channel().send(random.choice(configuration_service.responses))
 
 
-bot.run(asyncio_debug=True)
+bot.run()

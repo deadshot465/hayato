@@ -4,9 +4,9 @@ import discord
 import typing
 import random
 from discord.ext import commands
-from Include.Commands.lottery.lottery import LotteryParticipant
+from deprecated.commands.lottery.lottery import LotteryParticipant
 from utils.utils import USER_MENTION_REGEX
-from utils.configuration_manager import ConfigurationManager
+from utils.deprecated.configuration_manager import ConfigurationManager
 from services.credit_service import CreditService
 
 LOTTERY_RUNNING = False
@@ -419,7 +419,7 @@ class Fun(commands.Cog):
                    'Check balance: `h!lottery balance`\n' \
                    'Check bought lotteries: `h!lottery list`\n' \
                    'Transfer credits to another person: `h!lottery transfer <amount> <recipient>`'
-            embed = discord.Embed(title='Lottery Commands', description=desc, color=self.color)
+            embed = discord.Embed(title='Lottery commands', description=desc, color=self.color)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
         elif args == '':
