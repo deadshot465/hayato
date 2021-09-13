@@ -20,23 +20,23 @@ class Line(slash_commands.SlashSubCommand):
         slash_commands.Option('The Shinkansen line name you want to ask about. Type "info" or "list" to see'
                               ' more.')
 
-    path = 'assets/rails/shinkansen.json'
-    formal_name = 'Shinkansen'
-    short_name = 'Shinkansen'
-    footer_name = 'the Shinkansen'
-    color = HAYATO_COLOR
+    _path = 'assets/rails/shinkansen.json'
+    _formal_name = 'Shinkansen'
+    _short_name = 'Shinkansen'
+    _footer_name = 'the Shinkansen'
+    _color = HAYATO_COLOR
 
     def __init__(self, bot):
         super().__init__(bot)
-        with open(self.path, 'r', encoding='utf-8') as file:
+        with open(self._path, 'r', encoding='utf-8') as file:
             self.lines: list[dict] = json.loads(file.read())
 
     def __get_info_embed(self, author_name: str, author_avatar_url: str) -> hikari.Embed:
         return Rails \
             .build_general_embed(author_name=author_name,
                                  author_avatar_url=author_avatar_url,
-                                 title=self.formal_name,
-                                 color=self.color,
+                                 title=self._formal_name,
+                                 color=self._color,
                                  description='The Shinkansen (Japanese: 新幹線), colloquially known in English as the'
                                              ' bullet train, is a network of high-speed railway lines in Japan.'
                                              ' Initially, it was built to connect distant Japanese regions with Tokyo,'
@@ -46,17 +46,17 @@ class Line(slash_commands.SlashSubCommand):
                                              ' by five Japan Railways Group companies. Over the Shinkansen\'s 50-plus'
                                              ' year history, carrying over 10 billion passengers, there has not been a'
                                              ' single passenger fatality or injury due to train accidents.',
-                                 footer_name=self.footer_name)
+                                 footer_name=self._footer_name)
 
     def __get_list_embed(self, author_name: str, author_avatar_url: str, line_list: str) \
             -> hikari.Embed:
         return Rails.build_general_embed(author_name=author_name,
                                          author_avatar_url=author_avatar_url,
-                                         title=self.short_name,
-                                         color=self.color,
+                                         title=self._short_name,
+                                         color=self._color,
                                          description='Here is a list of lines in %s:\n\n%s' %
-                                                     (self.short_name, line_list),
-                                         footer_name=self.footer_name)
+                                                     (self._short_name, line_list),
+                                         footer_name=self._footer_name)
 
     async def callback(self, context) -> None:
         author_name = get_author_name(context.author, context.member)
@@ -70,11 +70,11 @@ class Line(slash_commands.SlashSubCommand):
         elif context.option_values.line_name is None:
             line = Rails.get_random_line(self.lines)
             embed = Rails.build_single_result_embed(author_name, author_avatar_url, line,
-                                                    self.footer_name, '%s Shinkansen' % line['name'])
+                                                    self._footer_name, '%s Shinkansen' % line['name'])
         else:
-            embed = Rails.search_line(author_name, author_avatar_url, self.color,
-                                      context.option_values.line_name, self.lines, self.short_name,
-                                      self.footer_name, '%s Shinkansen')
+            embed = Rails.search_line(author_name, author_avatar_url, self._color,
+                                      context.option_values.line_name, self.lines, self._short_name,
+                                      self._footer_name, '%s Shinkansen')
         await context.respond(embed)
 
 
@@ -85,42 +85,43 @@ class Train(slash_commands.SlashSubCommand):
         slash_commands.Option('The Shinkansen vehicle name you want to ask about. Type "list" to see all available'
                               ' trains.')
 
-    path = 'assets/rails/shinkansen_vehicles.json'
-    short_name = 'Shinkansen Trains'
-    footer_name = 'the Shinkansen'
-    color = HAYATO_COLOR
+    _path = 'assets/rails/shinkansen_vehicles.json'
+    _short_name = 'Shinkansen Trains'
+    _footer_name = 'the Shinkansen'
+    _display_name = 'Shinkansen %s Series'
+    _color = HAYATO_COLOR
 
     def __init__(self, bot):
         super().__init__(bot)
-        with open(self.path, 'r', encoding='utf-8') as file:
+        with open(self._path, 'r', encoding='utf-8') as file:
             self.trains: list[dict] = json.loads(file.read())
 
     def __get_list_embed(self, author_name: str, author_avatar_url: str, train_list: str) \
             -> hikari.Embed:
         return Rails.build_general_embed(author_name=author_name,
                                          author_avatar_url=author_avatar_url,
-                                         title=self.short_name,
-                                         color=self.color,
+                                         title=self._short_name,
+                                         color=self._color,
                                          description='Here is a list of trains in %s:\n\n%s' %
-                                                     (self.short_name, train_list),
-                                         footer_name=self.footer_name)
+                                                     (self._short_name, train_list),
+                                         footer_name=self._footer_name)
 
     async def callback(self, context) -> None:
         author_name = get_author_name(context.author, context.member)
         author_avatar_url = str(context.author.avatar_url) or str(context.author.default_avatar_url)
 
         if context.option_values.train_name == 'list':
-            line_list = list(map(lambda t: 'Shinkansen %s Series' % t['name'], self.trains))
+            line_list = list(map(lambda t: self._display_name % t['name'], self.trains))
             line_list.sort()
             embed = self.__get_list_embed(author_name, author_avatar_url, '\n'.join(line_list))
         elif context.option_values.train_name is None:
             train = Rails.get_random_line(self.trains)
             embed = Rails.build_single_result_embed(author_name, author_avatar_url, train,
-                                                    self.footer_name, 'Shinkansen %s Series' % train['name'])
+                                                    self._footer_name, self._display_name % train['name'])
         else:
-            embed = Rails.search_line(author_name, author_avatar_url, self.color,
-                                      context.option_values.train_name, self.trains, self.short_name,
-                                      self.footer_name, 'Shinkansen %s Series',
+            embed = Rails.search_line(author_name, author_avatar_url, self._color,
+                                      context.option_values.train_name, self.trains, self._short_name,
+                                      self._footer_name, self._display_name,
                                       keyword_limit=0)
 
         try:

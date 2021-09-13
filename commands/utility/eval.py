@@ -28,7 +28,6 @@ async def evaluate(ctx: Context):
     eval_result = await eval_task
     if eval_result is None:
         await ctx.respond('Uhh...I\'ve tried many times but I can\'t seem to get anything for you... :(')
-        return
     else:
         stderr = eval_result.get('stderr')
         message = eval_result.get('message')

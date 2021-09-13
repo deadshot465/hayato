@@ -11,8 +11,7 @@ class Guild(slash_commands.SlashCommand):
     async def callback(self, context) -> None:
         author = context.author
         member = context.member
-        guild = context.guild
-        bot_user = configuration_service.bot.get_me()
+        guild = context.get_guild()
         avatar_url = author.avatar_url or author.default_avatar_url
         embed = hikari.Embed(color=HAYATO_COLOR,
                              title='Server Information',

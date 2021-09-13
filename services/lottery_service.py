@@ -144,7 +144,7 @@ class LotteryService:
         if self._lottery_running:
             return 'There is a lottery running now! Please try again after the lottery is over!'
 
-        user_credits = await credit_service.get_user_credits(user_id, user_name)
+        await credit_service.get_user_credits(user_id, user_name)
         total_count = len(numbers)
         total_cost = 10 * total_count
         await credit_service.remove_credits(user_id=user_id, user_name=user_name, amount=total_cost)

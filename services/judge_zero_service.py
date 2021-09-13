@@ -101,7 +101,7 @@ class JudgeZeroService:
             return response
 
         stdout: typing.Optional[str] = response.get('stdout')
-        if request is None or stdout is None or stdout == '':
+        if stdout is None or stdout == '':
             return None
 
         return response
