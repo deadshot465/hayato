@@ -1,149 +1,128 @@
 import asyncio
-import discord
-import help
-import os
+import datetime
+import logging
 import random
-from datetime import datetime
-from typing import List, Optional, Union
+import typing
 
-from discord.ext import commands
-from dotenv import load_dotenv
-from Include.Commands.fun import auto_lottery
-from Utils.credit_manager import CreditManager
-from Utils.configuration_manager import ConfigurationManager
+import hikari
+import lightbulb
 
-load_dotenv(verbose=True)
-# A simple description of our bot.
-DESCRIPTION = 'A Discord bot that can do some fun stuffs.'
-# Various trains for Hayato to play.
-TRAINS = ['Shinkansen E5', 'Shinkansen N700', 'Shinkansen L0', 'JR East KiHa 100', 'Shinkansen H5',
-                       'Shinkansen E6', 'Shinkansen E7', 'JR East E233', 'JR East E235']
-RESPONSE = ['I am a punctual and trustworthy man!', 'Hello! My name is Hayasugi Hayato. Nice to meet you!', 'Uhh...I am afraid of heights...Don\'t tell me to board an airplane!', 'Change form, Shinkalion!', 'My dream is to be a Shinkansen train conductor!', 'All people who like Shinkansen are good people!', 'Shinkansen trains are so cool!', 'Shinkansen E5 Series is my favourite!', 'Do you know how much it costs for a Shinkansen trip from Tokyo to Osaka?']
+from commands.admin import admin
+from commands.fun.coinflip import CoinFlip
+from commands.fun.eight_ball import EightBall
+from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_help, lottery_info,\
+    lottery_list, lottery_start, lottery_transfer, lottery_weekly
+from commands.info.about import About
+from commands.info.guild import Guild
+from commands.info.ping import Ping
+from commands.rails import jrwest, mtr, rails, shinkansen, toei, tokyo_metro
+from commands.utility.pick import Pick
 
-# Available cogs. Path is separated with dots, without file extensions.
-EXTENSIONS = ['Include.Commands.admin',
-              'Include.Commands.fun',
-              'Include.Commands.info',
-              'Include.Commands.rails',
-              'Include.Commands.utility']
-
-ADMIN_COMMANDS = ['enable', 'disable', 'allow', 'ignore', 'warn', 'ban']
-
-# Initialize our bot and set the prefix to 'h!', also set up the description and help command.
-HELP = {
-    'description': 'List and show helps for available commands.',
-    'help': 'List available commands. Specifying a category will show available commands under that specific category. Specifying a command will show detailed usage and description of that command.',
-    'aliases': ['manual']
-}
-
-# Setup intents.
-intents = discord.Intents.default()
-intents.members = True
-intents.presences = True
-# Load prefix from .env file, or use a default prefix.
-PREFIX = os.getenv('PREFIX') or 'h!'
-bot = commands.Bot(command_prefix=PREFIX, description=DESCRIPTION, help_command=help.Help(command_attrs=HELP), intents=intents)
+from services.configuration_service import configuration_service
+from services.lottery_service import lottery_service
 
 
-# Change the initial presence and set up a loop that changes the presence every hour
-async def set_presence():
-    game = discord.Game(random.choice(TRAINS))
-    await bot.change_presence(status=discord.Status.online, activity=game)
-    asyncio.create_task(update_presence())
+def initialize_railway_lines():
+    _ = jrwest.JrWest(bot)
+    _ = mtr.Mtr(bot)
+    _ = tokyo_metro.TokyoMetro(bot)
+    _ = toei.Toei(bot)
+    _ = shinkansen.Shinkansen(bot)
+    _ = shinkansen.Line(bot)
+    _ = shinkansen.Train(bot)
 
 
-# The main function that updates the presence every hour
-async def update_presence():
-    try:
-        await asyncio.sleep(3600)
-        game = discord.Game(random.choice(TRAINS))
-        await bot.change_presence(status=discord.Status.online, activity=game)
-        asyncio.create_task(update_presence())
-    except Exception as e:
-        print(e)
+def initialize_lottery_commands():
+    _ = lottery_buy.Buy(bot)
+    _ = lottery_info.Info(bot)
+    _ = lottery_list.List(bot)
+    _ = lottery_help.Help(bot)
+    _ = lottery_balance.Balance(bot)
+    _ = lottery_daily.Daily(bot)
+    _ = lottery_weekly.Weekly(bot)
+    _ = lottery_start.Start(bot)
+    _ = lottery_transfer.Transfer(bot)
 
 
-@bot.event
-async def on_message(message: discord.Message):
-    if message.author.id == 565305035592957954 and len(message.embeds) > 0:
-        try:
-            embed = message.embeds[0]
-            if 'won the game' in embed.title.lower():
-                title: str = embed.title
-                index = title.index(' ')
-                username = title[0:index]
-                guild: Optional[discord.Guild] = message.guild
-                members: List[discord.Member] = guild.members
-                match_members = list(filter(lambda x: x.display_name.startswith(username), members))
-                if len(match_members) == 0:
-                    match_members = list(filter(lambda x: x.name.startswith(username), members))
-                await CreditManager.add_credits(int(match_members[0].id), 20, channel_id=716483752544698450,
-                                                channel=message.channel)
-        except AttributeError:
-            pass
-        except IndexError:
-            pass
+token = configuration_service.token
+prefix = configuration_service.prefix
+log_level = configuration_service.log_level
 
-    # Don't do anything to messages from Hayato himself.
-    if message.author == bot.user:
+bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level,
+                    intents=hikari.Intents.ALL, delete_unbound_slash_commands=False,
+                    recreate_changed_slash_commands=False)
+cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
+    [About, admin.Admin, CoinFlip, EightBall, Guild, lottery.Lottery, Pick, Ping, rails.Rails]
+initialize_railway_lines()
+initialize_lottery_commands()
+for cmd in cmds:
+    bot.add_slash_command(cmd)
+
+
+@bot.listen()
+async def message_create(e: hikari.GuildMessageCreateEvent):
+    if e.author.is_bot:
         return
 
-    # Strip out prefix so we can get the command name to test if it's used in a valid channel.
-    command: str = message.content.strip(os.getenv('PREFIX')).lower()
-    # Allow admin commands.
-    for cmd in ADMIN_COMMANDS:
-        if command.startswith(cmd):
-            await bot.process_commands(message)
-            return
-    # Process commands in valid channels only.
-    if message.channel.id in ConfigurationManager.get_available_channels():
-        await bot.process_commands(message)
+    ignored_channels = configuration_service.ignored_channels
+    if int(e.channel_id) in ignored_channels:
+        return
 
-    # Don't reply to bot users including Hayato himself.
-    if message.author.bot:
-        return
-    # Don't reply in ignored channels.
-    if message.channel.id in ConfigurationManager.get_ignored_channels():
-        return
-    # Change message content to lowercase for comparison.
-    lower_case = message.content.lower()
-    if '<@737017231522922556>' in lower_case or 'hayato' in lower_case:
-        chance = random.randint(1, 100)
-        if chance > 85:
-            channel = message.channel
-            await channel.send(random.choice(RESPONSE))
+    bot_user = bot.get_me()
+    msg = e.message
+    lowercase_content = msg.content.lower()
+    chance = random.randint(1, 100)
+    if bot_user.mention in lowercase_content or 'hayato' in lowercase_content:
+        if chance > configuration_service.mention_reply_chance:
+            await e.get_channel().send(random.choice(configuration_service.responses))
     else:
-        chance = random.randint(1, 100)
-        if chance > 97:
-            channel = message.channel
-            await channel.send(random.choice(RESPONSE))
+        if chance > configuration_service.random_reply_chance:
+            await e.get_channel().send(random.choice(configuration_service.responses))
+
+
+@bot.listen()
+async def ready(_: hikari.ShardReadyEvent):
+    await set_initial_presence()
+    configuration_service.bot = bot
+    asyncio.create_task(schedule_lottery())
+    from commands.utility.eval import evaluate
 
 
 async def schedule_lottery():
-    next_lottery_time = ConfigurationManager.get_next_lottery_time()
-    seconds = (next_lottery_time - datetime.now()).total_seconds()
+    next_lottery_time = lottery_service.lottery_scheduled
+    seconds = (next_lottery_time - datetime.datetime.now()).total_seconds()
+    while seconds < 0.0:
+        lottery_service.set_next_lottery_time()
+        next_lottery_time = lottery_service.lottery_scheduled
+        seconds = (next_lottery_time - datetime.datetime.now()).total_seconds()
     try:
         await asyncio.sleep(seconds)
-        channel: Optional[Union[discord.abc.GuildChannel, discord.abc.PrivateChannel]] = bot.get_channel(744550089908813945)
-        if isinstance(channel, discord.TextChannel):
-            await auto_lottery(channel)
-            ConfigurationManager.set_next_lottery_time()
-            asyncio.create_task(schedule_lottery())
+        channel = bot.cache.get_guild_channel(lottery_service.lottery_channel_id)
+        await lottery_service.auto_lottery(bot, channel)
+        lottery_service.set_next_lottery_time()
+        asyncio.create_task(schedule_lottery())
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
-@bot.event
-async def on_ready():
-    await CreditManager.initialize()
-    print('Logged on as', bot.user)
-    await set_presence()
-    asyncio.create_task(schedule_lottery())
+async def set_initial_presence():
+    activity = hikari.Activity(name=random.choice(configuration_service.trains), type=hikari.ActivityType.PLAYING)
+    await bot.update_presence(activity=activity)
+    asyncio.create_task(update_presence())
+
+
+async def update_presence():
+    try:
+        await asyncio.sleep(3600)
+        new_activity = hikari.Activity(name=random.choice(configuration_service.trains),
+                                       type=hikari.ActivityType.PLAYING)
+        await bot.update_presence(activity=new_activity)
+        asyncio.create_task(update_presence())
+    except Exception as e:
+        logging.error(e)
 
 
 if __name__ == '__main__':
-    for extension in EXTENSIONS:
-        bot.load_extension(extension)
-    print('Extensions successfully loaded.')
+    logging.info('Hayato is loaded.')
 
-bot.run(os.getenv('TOKEN'), bot=True, reconnect=True)
+bot.run()

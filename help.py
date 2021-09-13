@@ -2,7 +2,7 @@ import discord
 
 from discord.ext import commands
 from typing import List, Mapping, Optional, Set
-from Utils.utils import HAYATO_COLOR
+from utils.utils import HAYATO_COLOR
 
 
 class Help(commands.HelpCommand):

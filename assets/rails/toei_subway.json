@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Asakusa",
+    "abbrev": "A",
+    "image": "https://cdn.discordapp.com/attachments/734604988717858846/739494123656052796/Asakusa.jpg",
+    "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739492867420192818/Asakusa_logo.png",
+    "colour": "ec6e65",
+    "overview": "The Toei Asakusa Line is a subway line in Tokyo, Japan, operated by the Tokyo subway operator Toei Subway. The line runs between Nishi-magome in Ōta and Oshiage in Sumida. The line is named after the Asakusa district, a cultural center of Tokyo, under which it passes. The Asakusa line is the only train line that offers a direct connection between Tokyo's two main airports. Express/Rapid service is available in this line.\n \nThe Asakusa Line is actually split into two routes: Oshiage–Sengakuji and Sengakuji–Nishi-magome. On maps and signboards, the line is shown in the color rose. Stations carry the letter A followed by a two-digit number inside a more reddish vermilion circle.",
+    "route": "Nishi-Magome to Oshiage",
+    "stations": 20,
+    "length": 18.3,
+    "gauge": 1435,
+    "opened": "4 December, 1960",
+    "daily_ridership": 718855
+  },
+  {
+    "name": "Mita",
+    "abbrev": "I",
+    "image": "https://cdn.discordapp.com/attachments/734604988717858846/739494124041797692/Mita.jpg",
+    "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739492869009702984/Mita_logo.png",
+    "colour": "006ab8",
+    "overview": "The Toei Mita Line is a subway line of the Tokyo Metropolitan Bureau of Transportation (Toei) network in Tokyo, Japan. The line runs between Nishi-Takashimadaira in Itabashi and Meguro in Shinagawa. Trains continue with direct service into the Meguro Line of Tokyu Corporation for Hiyoshi. The portion between Shirokane-Takanawa and Meguro is shared with the Tokyo Metro Namboku Line.\n \nThe line was named after the Mita district in Minato, Tokyo, under which it passes. On maps and signboards, the line is shown in blue. Stations carry the letter I followed by a two-digit number.",
+    "route": "Meguro to Nishi-Takashimadaira",
+    "stations": 27,
+    "length": 26.5,
+    "gauge": 1067,
+    "opened": "27 December, 1968",
+    "daily_ridership": 638365
+  },
+  {
+    "name": "Shinjuku",
+    "abbrev": "S",
+    "image": "https://cdn.discordapp.com/attachments/734604988717858846/739494131772031036/Shinjuku.jpg",
+    "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739492872985772152/Shinjuku_logo.png",
+    "colour": "b0bf1e",
+    "overview": "The Toei Shinjuku Line is a rapid transit line in Tokyo and Chiba Prefecture, Japan, operated by Tokyo Metropolitan Bureau of Transportation (Toei). The line runs between Motoyawata Station in Ichikawa, Chiba in the east and Shinjuku Station in the west. At Shinjuku, most trains continue as through services to Sasazuka Station on the Keiō New Line, with some services continuing to Hashimoto Station in Sagamihara, Kanagawa via the Keiō Line and the Keiō Sagamihara Line. On maps and signboards, the line is shown in the color leaf green. Stations carry the letter S followed by a two-digit number inside a yellow-green chartreuse circle.",
+    "route": "Shinjuku to Moto-Yawata",
+    "stations": 21,
+    "length": 23.5,
+    "gauge": 1372,
+    "opened": "21 December, 1978",
+    "daily_ridership": 745889
+  },
+    {
+    "name": "Oedo",
+    "abbrev": "E",
+    "image": "https://cdn.discordapp.com/attachments/734604988717858846/739494126914895923/Oedo.jpg",
+    "logo": "https://cdn.discordapp.com/attachments/734604988717858846/739492870829899846/Oedo_logo.png",
+    "colour": "ce045b",
+    "overview": "The Toei Ōedo Line is a subway line in Tokyo, Japan, operated by the Tokyo Metropolitan Bureau of Transportation (Toei). It commenced full operations on December 12, 2000; using the Japanese calendar this reads 12/12/12 as the year 2000 equals Heisei 12. The line is completely underground, making it the second-longest railway tunnel in Japan after the Seikan Tunnel. On maps and signboards, the line is shown in magenta. Stations carry the letter E followed by a two-digit number inside a more pinkish ruby circle.",
+    "route": "Hikarigaoka to Tochōmae via Tochōmae, Roppongi and Ryogoku",
+    "stations": 38,
+    "length": 40.7,
+    "gauge": 1435,
+    "opened": "10 December, 1991",
+    "daily_ridership": 933621
+  }
+]
