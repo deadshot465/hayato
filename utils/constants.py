@@ -13,3 +13,4 @@ LOTTERY_ICON: typing.Final[str] = 'https://cdn.discordapp.com/attachments/734604
                                   'IMGBIN_lottery-machine-illustration-png_nU9g7tRi.png'
 TOTAL_SECONDS_PER_DAY: typing.Final[int] = 86400
 TOTAL_SECONDS_PER_WEEK: typing.Final[int] = 604800
+KOU_ADMIN_ROLE_ID: typing.Final[int] = 706778860812894228

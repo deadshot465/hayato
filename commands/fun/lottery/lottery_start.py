@@ -6,6 +6,7 @@ from lightbulb import slash_commands
 
 from commands.fun.lottery.lottery import Lottery
 from services.lottery_service import lottery_service
+from utils.constants import KOU_ADMIN_ROLE_ID
 
 
 @Lottery.subcommand()
@@ -16,6 +17,16 @@ class Start(slash_commands.SlashSubCommand):
     async def callback(self, context: slash_commands.SlashCommandContext) -> None:
         if lottery_service.lottery_running:
             await context.respond('There is already a lottery running now!')
+            return
+
+        starter = context.member
+        if starter is None:
+            await context.respond('The lottery can only be started in a guild channel!')
+            return
+        starter_roles = starter.get_roles()
+        admin_role = (x for x in starter_roles if x.id == KOU_ADMIN_ROLE_ID)
+        if next(admin_role, -1) == -1:
+            await context.respond('The lottery can only be started by admins!')
             return
 
         await context.respond('The lottery will start in 10 seconds!')

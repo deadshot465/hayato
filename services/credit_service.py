@@ -40,37 +40,40 @@ class CreditService:
 
     async def add_credits(self, *, user_id: int, user_name: str, amount: int) -> UserCreditItem:
         await self.__fetch(True)
-        users = list(filter(lambda x: x.UserId == str(user_id), self._user_credits))
-        if len(users) == 0:
+        users = (item for item in self._user_credits if item.UserId == str(user_id))
+        found_user = next(users, -1)
+        if found_user == -1:
             user = await self.__add_user(user_id, user_name, 100)
         else:
-            user = users.pop(0)
+            user = found_user
         user.Credits += amount
         await self.__update_user(user_id=user_id, amount=amount, action='plus')
         return user
 
     async def get_user_credits(self, user_id: int, user_name: str, force: bool = False) -> int:
         await self.__fetch(not self._initialized or force)
-        items = list(filter(lambda x: x.UserId == str(user_id), self._user_credits))
-        if len(items) != 0:
-            return items.pop(0).Credits
+        items = (item for item in self._user_credits if item.UserId == str(user_id))
+        found_item = next(items, -1)
+        if found_item != -1:
+            return found_item.Credits
         else:
             item = await self.__add_user(user_id, user_name, 100)
             return item.Credits
 
     async def remove_credits(self, *, user_id: int, user_name: str, amount: int) -> UserCreditItem:
         await self.__fetch(True)
-        users = list(filter(lambda x: x.UserId == str(user_id), self._user_credits))
-        if len(users) == 0:
+        users = (item for item in self._user_credits if item.UserId == str(user_id))
+        found_user = next(users, -1)
+        if found_user == -1:
             user = await self.__add_user(user_id, user_name, 100)
         else:
-            user = users.pop(0)
+            user = found_user
         user.Credits -= amount
         await self.__update_user(user_id=user_id, amount=amount, action='minus')
         return user
 
     async def replenish(self, *, channel_id: int = 0):
-        users_to_replenish = list(filter(lambda x: x.Credits <= 200, self._user_credits))
+        users_to_replenish = [x for x in self._user_credits if x.Credits <= 200]
         for user in users_to_replenish:
             user.Credits += 200
             await self.__update_user(user_id=int(user.UserId), amount=200,

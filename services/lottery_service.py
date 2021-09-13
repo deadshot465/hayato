@@ -160,11 +160,12 @@ class LotteryService:
         return response
 
     def get_participant(self, user_id: int) -> typing.Optional[LotteryParticipant]:
-        participant = list(filter(lambda p: p.user_id == user_id, self._lottery.lottery_participants))
-        if len(participant) == 0:
+        participants = (p for p in self._lottery.lottery_participants if p.user_id == user_id)
+        participant = next(participants, -1)
+        if participant == -1:
             return None
         else:
-            return participant.pop(0)
+            return participant
 
     def set_next_lottery_time(self):
         if datetime.datetime.today().weekday() == 3:
