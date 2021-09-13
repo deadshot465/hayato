@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import logging
+import os
 import random
 import typing
 
@@ -42,6 +43,11 @@ def initialize_lottery_commands():
     _ = lottery_weekly.Weekly(bot)
     _ = lottery_start.Start(bot)
     _ = lottery_transfer.Transfer(bot)
+
+
+if os.name != 'nt':
+    import uvloop
+    uvloop.install()
 
 
 token = configuration_service.token
