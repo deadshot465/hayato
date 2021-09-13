@@ -27,4 +27,4 @@ class Balance(slash_commands.SlashSubCommand):
             .set_author(name=author_name, icon=context.author.avatar_url or context.author.default_avatar_url)\
             .set_thumbnail(LOTTERY_ICON)\
             .add_field(name='Credits', value=str(user_credit), inline=True)
-        await context.edit_response(embed=embed)
+        await context.edit_response(embed=embed, content='')
