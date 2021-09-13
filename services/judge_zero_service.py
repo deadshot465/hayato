@@ -1,13 +1,12 @@
 import asyncio
 import base64
+import json
 import logging
 import typing
-import discord
-import json
-import os
-import requests
 
 import hikari
+import requests
+
 from services.configuration_service import configuration_service
 from utils.constants import HAYATO_COLOR, PYTHON_LOGO
 
