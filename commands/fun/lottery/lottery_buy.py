@@ -29,7 +29,7 @@ class Buy(slash_commands.SlashSubCommand):
         user_name = get_author_name(context.author, context.member)
         user_id = context.author.id
         user_icon_url = context.author.avatar_url or context.author.default_avatar_url
-        user_credits = await credit_service.get_user_credits(int(user_id), user_name)
+        user_credits = await credit_service.get_user_credits(int(user_id), user_name, True)
 
         numbers: typing.Optional[str] = context.option_values.numbers
         if numbers is None:
