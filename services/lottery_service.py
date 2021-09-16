@@ -32,6 +32,10 @@ class LotteryService:
     def __init__(self):
         self._bot: typing.Optional[lightbulb.Bot] = None
         self._lottery_running = False
+        self._lottery_embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR) \
+            .set_thumbnail(LOTTERY_ICON)
+        self._lottery_result_text = ''
+        self._lottery_result_texts: list[str] = []
         if not os.path.isdir(self._directory_name):
             os.mkdir(self._directory_name)
         if os.path.exists(self._file_path):
@@ -66,7 +70,7 @@ class LotteryService:
     def lottery_running(self) -> bool:
         return self._lottery_running
 
-    async def auto_lottery(self, bot: lightbulb.Bot, channel: hikari.TextableGuildChannel):
+    async def auto_lottery(self, channel: hikari.TextableGuildChannel):
         running_message = ''
         drawn_numbers: list[int] = []
         msg_generator = self.start_lottery()
@@ -98,9 +102,7 @@ class LotteryService:
             return
 
     async def build_lottery_result(self, drawn_numbers: list[int]):
-        embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR)\
-            .set_thumbnail(LOTTERY_ICON)
-        result_text = ''
+        self._lottery_result_text = ''
 
         for participant in self._lottery.lottery_participants:
             participant_lotteries = participant.lotteries
@@ -115,22 +117,31 @@ class LotteryService:
                 hit_count = len(hit_numbers)
                 reward = self._rewards[hit_count]
                 total_credits += reward
-                result_text += f'{participant.user_name}\'s lottery #{i + 1} hits **{hit_count}** numbers!' \
-                               f' You gained **{reward}** credits!\n'
-                if len(result_text) >= 1900:
-                    yield result_text
-                    result_text = ''
+                self._lottery_result_text += f'{participant.user_name}\'s lottery #{i + 1} hits **{hit_count}**' \
+                                             f' numbers! You gained **{reward}** credits!\n'
+                if len(self._lottery_result_text) >= 1900:
+                    self._lottery_result_texts.append(self._lottery_result_text)
+                    self._lottery_result_text = ''
 
             if total_credits != 0:
                 await credit_service.add_credits(user_id=participant.user_id, user_name=participant.user_name,
                                                  amount=total_credits)
-                embed.add_field(name=participant.user_name, value=str(total_credits), inline=True)
+                self._lottery_embed.add_field(name=participant.user_name, value=str(total_credits), inline=True)
 
             participant_lotteries.clear()
 
-        yield result_text
-        yield embed
-        msg_generator = credit_service.replenish(channel_id=self._lottery.lottery_info.channel_id)
+        self._lottery_result_texts.append(self._lottery_result_text)
+        for text in self._lottery_result_texts:
+            yield text
+        self._lottery_result_text = ''
+        self._lottery_result_texts = []
+
+        yield self._lottery_embed
+        field_count = len(self._lottery_embed.fields)
+        for i in range(0, field_count):
+            self._lottery_embed.remove_field(i)
+
+        msg_generator = credit_service.replenish()
         try:
             while True:
                 s = await msg_generator.__anext__()
@@ -144,7 +155,7 @@ class LotteryService:
         if self._lottery_running:
             return 'There is a lottery running now! Please try again after the lottery is over!'
 
-        await credit_service.get_user_credits(user_id, user_name)
+        await credit_service.get_user_credits(user_id, user_name, True)
         total_count = len(numbers)
         total_cost = 10 * total_count
         await credit_service.remove_credits(user_id=user_id, user_name=user_name, amount=total_cost)
@@ -168,7 +179,7 @@ class LotteryService:
         if self._lottery_running:
             return 'There is a lottery running now! Please try again after the lottery is over!'
 
-        user_credits = await credit_service.get_user_credits(user_id, user_name)
+        user_credits = await credit_service.get_user_credits(user_id, user_name, True)
         if user_credits - 10 < 0:
             return 'You don\'t have enough credits to buy the lottery!'
 
@@ -179,13 +190,13 @@ class LotteryService:
             participant = LotteryParticipant(user_id=user_id, user_name=user_name)
             participant.lotteries.append(sorted_numbers)
             self._lottery.lottery_participants.append(participant)
-            response = '%s, you have got your 100 starting credits! You have successfully bought a lottery of `%s`!'\
+            response = '%s, you have got your 100 starting credits! You have successfully bought a lottery of `%s`!' \
                        % (user_name, str(sorted_numbers))
         else:
             participant.lotteries.append(sorted_numbers)
             if participant.user_name != user_name:
                 participant.user_name = user_name
-            response = '%s, you have successfully bought a lottery of `%s`! Deducted 10 credits from your account.'\
+            response = '%s, you have successfully bought a lottery of `%s`! Deducted 10 credits from your account.' \
                        % (user_name, str(sorted_numbers))
         self.write_lottery()
         return response

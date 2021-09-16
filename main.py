@@ -104,7 +104,7 @@ async def schedule_lottery():
     try:
         await asyncio.sleep(seconds)
         channel = bot.cache.get_guild_channel(lottery_service.lottery_channel_id)
-        await lottery_service.auto_lottery(bot, channel)
+        await lottery_service.auto_lottery(channel)
         lottery_service.set_next_lottery_time()
         asyncio.create_task(schedule_lottery())
     except Exception as e:
