@@ -138,8 +138,9 @@ class LotteryService:
 
         yield self._lottery_embed
         field_count = len(self._lottery_embed.fields)
-        for i in range(0, field_count):
-            self._lottery_embed.remove_field(i)
+        while field_count > 0:
+            self._lottery_embed.remove_field(0)
+            field_count = len(self._lottery_embed.fields)
 
         msg_generator = credit_service.replenish()
         try:
