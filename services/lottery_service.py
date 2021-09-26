@@ -103,6 +103,7 @@ class LotteryService:
 
     async def build_lottery_result(self, drawn_numbers: list[int]):
         self._lottery_result_text = ''
+        self._lottery_result_texts = []
 
         for participant in self._lottery.lottery_participants:
             participant_lotteries = participant.lotteries
@@ -132,6 +133,8 @@ class LotteryService:
 
         self._lottery_result_texts.append(self._lottery_result_text)
         for text in self._lottery_result_texts:
+            if len(text) == 0:
+                continue
             yield text
         self._lottery_result_text = ''
         self._lottery_result_texts = []
