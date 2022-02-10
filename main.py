@@ -3,66 +3,55 @@ import datetime
 import logging
 import os
 import random
-import typing
 
 import hikari
 import lightbulb
 
-from commands.admin import admin
-from commands.fun.coinflip import CoinFlip
-from commands.fun.eight_ball import EightBall
-from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_help, lottery_info,\
+from commands.admin.admin import admin, allow, ignore
+from commands.fun.coinflip import coin_flip
+from commands.fun.eight_ball import eight_ball
+from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_help, lottery_info, \
     lottery_list, lottery_start, lottery_transfer, lottery_weekly
-from commands.info.about import About
-from commands.info.guild import Guild
-from commands.info.ping import Ping
+from commands.info.about import about
+from commands.info.guild import guild_info
+from commands.info.ping import ping
 from commands.rails import jrwest, mtr, rails, shinkansen, toei, tokyo_metro
-from commands.utility.pick import Pick
-
+from commands.utility.pick import pick
 from services.configuration_service import configuration_service
 from services.lottery_service import lottery_service
 
-
-def initialize_railway_lines():
-    _ = jrwest.JrWest(bot)
-    _ = mtr.Mtr(bot)
-    _ = tokyo_metro.TokyoMetro(bot)
-    _ = toei.Toei(bot)
-    _ = shinkansen.Shinkansen(bot)
-    _ = shinkansen.Line(bot)
-    _ = shinkansen.Train(bot)
-
-
-def initialize_lottery_commands():
-    _ = lottery_buy.Buy(bot)
-    _ = lottery_info.Info(bot)
-    _ = lottery_list.List(bot)
-    _ = lottery_help.Help(bot)
-    _ = lottery_balance.Balance(bot)
-    _ = lottery_daily.Daily(bot)
-    _ = lottery_weekly.Weekly(bot)
-    _ = lottery_start.Start(bot)
-    _ = lottery_transfer.Transfer(bot)
-
-
 if os.name != 'nt':
     import uvloop
-    uvloop.install()
 
+    uvloop.install()
 
 token = configuration_service.token
 prefix = configuration_service.prefix
 log_level = configuration_service.log_level
 
-bot = lightbulb.Bot(prefix=prefix, token=token, logs=log_level,
-                    intents=hikari.Intents.ALL, delete_unbound_slash_commands=False,
-                    recreate_changed_slash_commands=False)
-cmds: list[typing.Type[lightbulb.slash_commands.BaseSlashCommand]] =\
-    [About, admin.Admin, CoinFlip, EightBall, Guild, lottery.Lottery, Pick, Ping, rails.Rails]
-initialize_railway_lines()
-initialize_lottery_commands()
+bot = lightbulb.BotApp(prefix=prefix, token=token, logs=log_level,
+                       intents=hikari.Intents.ALL)
+
+cmds = \
+    [about, admin, allow, ignore, coin_flip, eight_ball, guild_info,
+     lottery.lottery,
+     lottery_balance.balance,
+     lottery_buy.buy,
+     lottery_daily.daily,
+     lottery_help.help,
+     lottery_info.info,
+     lottery_list.list_lotteries,
+     lottery_start.start,
+     lottery_transfer.transfer,
+     lottery_weekly.weekly,
+     pick, ping,
+     rails.rails, jrwest.jr_west, mtr.mtr,
+     shinkansen.shinkansen,
+     shinkansen.line, shinkansen.train,
+     toei.toei, tokyo_metro.tokyo_metro]
+
 for cmd in cmds:
-    bot.add_slash_command(cmd)
+    bot.command(cmd)
 
 
 @bot.listen()
@@ -91,7 +80,6 @@ async def ready(_: hikari.ShardReadyEvent):
     await set_initial_presence()
     configuration_service.bot = bot
     asyncio.create_task(schedule_lottery())
-    from commands.utility.eval import evaluate
 
 
 async def schedule_lottery():

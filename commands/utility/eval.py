@@ -1,16 +1,16 @@
 import asyncio
 import typing
 
-from lightbulb.context import Context
+import lightbulb
 
 from services.configuration_service import configuration_service
 from services.judge_zero_service import judge_zero_service
 from utils.utils import get_author_name
 
 
-# Currently it's not possible to send multi-lined strings to slash commands.
+# Currently, it's not possible to send multi-lined strings to slash commands.
 @configuration_service.bot.command(name='eval', aliases=['evaluate'])
-async def evaluate(ctx: Context):
+async def evaluate(ctx: lightbulb.Context):
     msg_content = ctx.content
     code_block_start_index = msg_content.index('`')
     code_block_text = msg_content[code_block_start_index:]\

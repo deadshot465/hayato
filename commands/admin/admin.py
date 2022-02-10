@@ -1,39 +1,38 @@
 import hikari
-from lightbulb import slash_commands
+import lightbulb
+
 from services.configuration_service import configuration_service
 
 
-class Admin(slash_commands.SlashCommandGroup):
-    description: str = 'Administrative commands.'
+@lightbulb.command(name='admin', description='Administrative commands.')
+@lightbulb.implements(lightbulb.SlashCommandGroup)
+async def admin(ctx: lightbulb.Context) -> None:
+    pass
 
 
-@Admin.subcommand()
-class Allow(slash_commands.SlashSubCommand):
-    description: str = 'Allow a channel for Hayato\'s responses.'
-    channel: hikari.TextableChannel = slash_commands.Option('The channel to allow responses.')
+@admin.child
+@lightbulb.option('channel', 'The channel to allow responses.', type=hikari.TextableChannel, required=True)
+@lightbulb.command('allow', description='Allow a channel for Hayato\'s responses.')
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def allow(ctx: lightbulb.Context) -> None:
+    channel: hikari.TextableChannel = ctx.options.channel
+    if int(channel) not in configuration_service.ignored_channels:
+        await ctx.respond('The channel is not ignored!')
+        return
 
-    async def callback(self, context: slash_commands.SlashCommandContext) -> None:
-        channel: hikari.TextableChannel = context.option_values.channel
-
-        if int(channel) not in configuration_service.ignored_channels:
-            await context.respond('The channel is not ignored!')
-            return
-
-        configuration_service.allow_channel(int(channel))
-        await context.respond('Successfully allowed channel for responses!')
+    configuration_service.allow_channel(int(channel))
+    await ctx.respond('Successfully allowed channel for responses!')
 
 
-@Admin.subcommand()
-class Ignore(slash_commands.SlashSubCommand):
-    description: str = 'Disallow a channel for Hayato\'s responses.'
-    channel: hikari.TextableChannel = slash_commands.Option('The channel to disallow responses.')
+@admin.child
+@lightbulb.option('channel', 'The channel to disallow responses.', type=hikari.TextableChannel, required=True)
+@lightbulb.command('ignore', description='Disallow a channel for Hayato\'s responses.')
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def ignore(ctx: lightbulb.Context) -> None:
+    channel: hikari.TextableChannel = ctx.options.channel
+    if int(channel) in configuration_service.ignored_channels:
+        await ctx.respond('The channel is already ignored!')
+        return
 
-    async def callback(self, context: slash_commands.SlashCommandContext) -> None:
-        channel: hikari.TextableChannel = context.option_values.channel
-
-        if int(channel) in configuration_service.ignored_channels:
-            await context.respond('The channel is already ignored!')
-            return
-
-        configuration_service.ignore_channel(int(channel))
-        await context.respond('Successfully disallowed channel for responses!')
+    configuration_service.ignore_channel(int(channel))
+    await ctx.respond('Successfully disallowed channel for responses!')

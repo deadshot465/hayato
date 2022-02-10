@@ -30,7 +30,7 @@ class LotteryService:
     }
 
     def __init__(self):
-        self._bot: typing.Optional[lightbulb.Bot] = None
+        self._bot: typing.Optional[lightbulb.BotApp] = None
         self._lottery_running = False
         self._lottery_embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR) \
             .set_thumbnail(LOTTERY_ICON)
@@ -59,11 +59,11 @@ class LotteryService:
         self._lottery.lottery_info.lottery_scheduled = value
 
     @property
-    def bot(self) -> typing.Optional[lightbulb.Bot]:
+    def bot(self) -> typing.Optional[lightbulb.BotApp]:
         return self._bot
 
     @bot.setter
-    def bot(self, value: lightbulb.Bot) -> None:
+    def bot(self, value: lightbulb.BotApp) -> None:
         self._bot = value
 
     @property

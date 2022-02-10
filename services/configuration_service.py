@@ -13,7 +13,7 @@ class ConfigurationService:
     _config_file_path = os.path.join(os.getcwd(), _config_directory_name, _config_file_name)
 
     def __init__(self):
-        self._bot: typing.Optional[lightbulb.Bot] = None
+        self._bot: typing.Optional[lightbulb.BotApp] = None
         if not os.path.isdir(self._config_directory_name):
             os.mkdir(self._config_directory_name)
         if os.path.exists(self._config_file_path):
@@ -95,7 +95,7 @@ class ConfigurationService:
         return self._bot
 
     @bot.setter
-    def bot(self, value: lightbulb.Bot):
+    def bot(self, value: lightbulb.BotApp):
         self._bot = value
 
 

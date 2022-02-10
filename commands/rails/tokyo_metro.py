@@ -1,73 +1,72 @@
 import json
-import typing
 
 import hikari
-from commands.rails.rails import Rails
-from lightbulb import slash_commands
+import lightbulb
+
+from commands.rails import rails
 from utils.utils import get_author_name
 
+__path = 'assets/rails/tokyo_metro.json'
+__thumbnail = 'https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034/Tokyo_Metro.png'
+__formal_name = 'Tokyo Metro'
+__short_name = __formal_name
+__footer_name = 'the Tokyo Metro'
+__color = hikari.Color.of(0x149dd3)
 
-@Rails.subcommand()
-class TokyoMetro(slash_commands.SlashSubCommand):
-    description: str = 'Randomly get or query information on a Tokyo Metro line.'
-    line_name: typing.Optional[str] = \
-        slash_commands.Option('The Tokyo Metro line name you want to ask about. Type "info" or "list" to see more.')
+with open(__path, 'r', encoding='utf-8') as file:
+    __lines: list[dict] = json.loads(file.read())
 
-    _path = 'assets/rails/tokyo_metro.json'
-    _thumbnail = 'https://cdn.discordapp.com/attachments/734604988717858846/739284406556033034/Tokyo_Metro.png'
-    _formal_name = 'Tokyo Metro'
-    _short_name = _formal_name
-    _footer_name = 'the Tokyo Metro'
-    _color = hikari.Color.of(0x149dd3)
 
-    def __init__(self, bot):
-        super().__init__(bot)
-        with open(self._path, 'r', encoding='utf-8') as file:
-            self.lines: list[dict] = json.loads(file.read())
+def __get_info_embed(author_name: str, author_avatar_url: str) -> hikari.Embed:
+    return rails \
+        .build_general_embed(author_name=author_name,
+                             author_avatar_url=author_avatar_url,
+                             title=__formal_name,
+                             color=__color,
+                             description='The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it'
+                                         ' is not the only rapid transit system operating in Tokyo, it has the '
+                                         'higher ridership among the two subway operators: in 2014, the Tokyo Metro'
+                                         ' had an average daily ridership of 6.84 million passengers, with 9 lines'
+                                         ' and 180 stations.\n\n Tokyo Metro is operated by Tokyo Metro Co., Ltd.,'
+                                         ' a private company jointly owned by the Japanese government (through the'
+                                         ' Ministry of Finance) and the Tokyo metropolitan government.',
+                             footer_name=__footer_name,
+                             thumbnail=__thumbnail)
 
-    def __get_info_embed(self, author_name: str, author_avatar_url: str) -> hikari.Embed:
-        return Rails \
-            .build_general_embed(author_name=author_name,
-                                 author_avatar_url=author_avatar_url,
-                                 title=self._formal_name,
-                                 color=self._color,
-                                 description='The Tokyo Metro is a major rapid transit system in Tokyo, Japan. While it'
-                                             ' is not the only rapid transit system operating in Tokyo, it has the '
-                                             'higher ridership among the two subway operators: in 2014, the Tokyo Metro'
-                                             ' had an average daily ridership of 6.84 million passengers, with 9 lines'
-                                             ' and 180 stations.\n\n Tokyo Metro is operated by Tokyo Metro Co., Ltd.,'
-                                             ' a private company jointly owned by the Japanese government (through the'
-                                             ' Ministry of Finance) and the Tokyo metropolitan government.',
-                                 footer_name=self._footer_name,
-                                 thumbnail=self._thumbnail)
 
-    def __get_list_embed(self, author_name: str, author_avatar_url: str, line_list: str) \
-            -> hikari.Embed:
-        return Rails.build_general_embed(author_name=author_name,
-                                         author_avatar_url=author_avatar_url,
-                                         title=self._short_name,
-                                         color=self._color,
-                                         description='Here is a list of lines in the %s:\n\n%s' %
-                                                     (self._short_name, line_list),
-                                         footer_name=self._footer_name,
-                                         thumbnail=self._thumbnail)
+def __get_list_embed(author_name: str, author_avatar_url: str, line_list: str) \
+        -> hikari.Embed:
+    return rails.build_general_embed(author_name=author_name,
+                                     author_avatar_url=author_avatar_url,
+                                     title=__short_name,
+                                     color=__color,
+                                     description='Here is a list of lines in the %s:\n\n%s' %
+                                                 (__short_name, line_list),
+                                     footer_name=__footer_name,
+                                     thumbnail=__thumbnail)
 
-    async def callback(self, context) -> None:
-        author_name = get_author_name(context.author, context.member)
-        author_avatar_url = str(context.author.avatar_url) or str(context.author.default_avatar_url)
 
-        if context.option_values.line_name == 'info':
-            embed = self.__get_info_embed(author_name, author_avatar_url)
-        elif context.option_values.line_name == 'list':
-            line_list = list(map(lambda l: l['name'] + ' Line', self.lines))
-            line_list.sort()
-            embed = self.__get_list_embed(author_name, author_avatar_url, '\n'.join(line_list))
-        elif context.option_values.line_name is None:
-            line = Rails.get_random_line(self.lines)
-            embed = Rails.build_single_result_embed(author_name, author_avatar_url, line,
-                                                    self._footer_name, 'Tokyo Metro %s Line' % line['name'])
-        else:
-            embed = Rails.search_line(author_name, author_avatar_url, self._color,
-                                      context.option_values.line_name, self.lines, self._short_name,
-                                      self._footer_name, 'Tokyo Metro %s Line')
-        await context.respond(embed)
+@rails.rails.child
+@lightbulb.option('line_name', 'The Tokyo Metro line name you want to ask about. Type "info" or "list" to see more.',
+                  required=False)
+@lightbulb.command('tokyo_metro', 'Randomly get or query information on a Tokyo Metro line.')
+@lightbulb.implements(lightbulb.SlashSubCommand)
+async def tokyo_metro(ctx: lightbulb.Context) -> None:
+    author_name = get_author_name(ctx.author, ctx.member)
+    author_avatar_url = str(ctx.author.avatar_url) or str(ctx.author.default_avatar_url)
+
+    if ctx.options.line_name == 'info':
+        embed = __get_info_embed(author_name, author_avatar_url)
+    elif ctx.options.line_name == 'list':
+        line_list = list(map(lambda l: l['name'] + ' Line', __lines))
+        line_list.sort()
+        embed = __get_list_embed(author_name, author_avatar_url, '\n'.join(line_list))
+    elif ctx.options.line_name is None:
+        line = rails.get_random_line(__lines)
+        embed = rails.build_single_result_embed(author_name, author_avatar_url, line,
+                                                __footer_name, 'Tokyo Metro %s Line' % line['name'])
+    else:
+        embed = rails.search_line(author_name, author_avatar_url, __color,
+                                  ctx.options.line_name, __lines, __short_name,
+                                  __footer_name, 'Tokyo Metro %s Line')
+    await ctx.respond(embed)
