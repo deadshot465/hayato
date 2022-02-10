@@ -1,12 +1,12 @@
 import json
 import logging
-import os
 import random
 import typing
 from datetime import datetime
 
 import requests
 from marshmallow_dataclass import class_schema
+
 from services.authentication_service import AuthenticationService
 from services.configuration_service import configuration_service
 from structures.lottery.user_credit_item import UserCreditItem

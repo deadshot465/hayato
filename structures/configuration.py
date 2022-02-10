@@ -34,3 +34,4 @@ class Configuration(yaml.YAMLObject):
     rapid_api_key: str = attr.ib(default='')
     mention_reply_chance: int = attr.ib(default=90)
     random_reply_chance: int = attr.ib(default=97)
+    joat_endpoint: str = attr.ib(default='')

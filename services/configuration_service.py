@@ -91,6 +91,10 @@ class ConfigurationService:
         return self._config.rapid_api_key
 
     @property
+    def joat_endpoint(self) -> str:
+        return self._config.joat_endpoint
+
+    @property
     def bot(self):
         return self._bot
 

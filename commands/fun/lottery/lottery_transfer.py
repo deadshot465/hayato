@@ -8,7 +8,7 @@ from utils.utils import get_author_name
 
 
 @lottery.child
-@lightbulb.option('amount', 'The amount of credits to transfer.', type=int, required=True)
+@lightbulb.option('amount', 'The amount of credits to transfer.', type=int, required=True, min_value=0)
 @lightbulb.option('user', 'The user to whom you want to transfer credits.', type=hikari.User, required=True)
 @lightbulb.command('transfer', 'Transfer your credits to another member.', auto_defer=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)

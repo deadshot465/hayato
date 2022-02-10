@@ -10,7 +10,8 @@ import lightbulb
 from commands.admin.admin import admin, allow, ignore
 from commands.fun.coinflip import coin_flip
 from commands.fun.eight_ball import eight_ball
-from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_help, lottery_info, \
+from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_exchange, lottery_help, \
+    lottery_info, \
     lottery_list, lottery_start, lottery_transfer, lottery_weekly
 from commands.info.about import about
 from commands.info.guild import guild_info
@@ -38,6 +39,7 @@ cmds = \
      lottery_balance.balance,
      lottery_buy.buy,
      lottery_daily.daily,
+     lottery_exchange.exchange,
      lottery_help.help,
      lottery_info.info,
      lottery_list.list_lotteries,
