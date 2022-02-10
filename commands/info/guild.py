@@ -1,3 +1,5 @@
+import logging
+
 import hikari
 import lightbulb
 
@@ -8,6 +10,7 @@ from utils.utils import get_author_name
 @lightbulb.command(name='guild', description='Get the information about this server.', auto_defer=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def guild_info(ctx: lightbulb.Context) -> None:
+    logging.info(f'Application ID: {ctx.bot.application.id}')
     author = ctx.author
     member = ctx.member
     guild = ctx.get_guild()

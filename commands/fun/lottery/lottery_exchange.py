@@ -17,7 +17,7 @@ from utils.utils import get_author_name
                   'The amount of credits you want to change to Jack of All Trades\' tips. 1 credit = 10 tips.',
                   required=True, min_value=0, type=int)
 @lightbulb.command('exchange', 'Exchange for Jack of All Trades\' tips with your credits. 1 credit = 10 tips.',
-                   auto_defer=True, guilds=[705036924330704968])
+                   auto_defer=True)
 @lightbulb.implements(lightbulb.SlashSubCommand)
 async def exchange(ctx: lightbulb.Context) -> None:
     amount: int = ctx.options.amount
