@@ -79,6 +79,7 @@ async def message_create(e: hikari.GuildMessageCreateEvent):
 
 @bot.listen()
 async def ready(_: hikari.ShardReadyEvent):
+    logging.info(f'Application ID: {bot.application.id}')
     await set_initial_presence()
     configuration_service.bot = bot
     asyncio.create_task(schedule_lottery())
