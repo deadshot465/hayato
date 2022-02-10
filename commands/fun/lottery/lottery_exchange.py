@@ -54,4 +54,5 @@ async def exchange(ctx: lightbulb.Context) -> None:
         await ctx.respond(embed=embed)
     except requests.exceptions.HTTPError as ex:
         logging.error('An error occurred when patching to the database: %s' % ex.response)
-        await ctx.respond(f'Sorry, but I can\'t seem to exchange tips for you! Here are some messages: {ex.response}')
+        await ctx.respond(f'Sorry, but I can\'t seem to exchange tips for you! '
+                          f'Have you joined Jack of All Trades already?')
