@@ -187,7 +187,7 @@ class LotteryService:
         }
 
         try:
-            response = requests.post(configuration_service + f'/lottery/{user_id}/new', headers=headers,
+            response = requests.post(configuration_service.api_endpoint + f'/lottery/{user_id}/new', headers=headers,
                                      json=body)
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
