@@ -47,6 +47,6 @@ async def transfer(ctx: lightbulb.Context) -> None:
                          description='%s has transferred %d credits to %s!' %
                                      (author_name, amount, target_user_name), color=HAYATO_COLOR) \
         .set_author(name=author_name, icon=ctx.author.avatar_url or ctx.author.default_avatar_url) \
-        .add_field('Balance', str(author_credit_item.Credits), inline=False) \
+        .add_field('Balance', str(author_credit_item.credits), inline=False) \
         .set_thumbnail(LOTTERY_ICON)
     await ctx.respond(embed=embed)

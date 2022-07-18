@@ -16,11 +16,11 @@ class AuthenticationService:
         if arrow.utcnow().datetime < cls.expiry:
             return
         data = {
-            'UserName': configuration_service.login_name,
-            'Password': configuration_service.login_pass
+            'user_name': configuration_service.login_name,
+            'password': configuration_service.login_pass
         }
         try:
-            response = requests.post('https://tetsukizone.com/api/login', json=json.dumps(data))
+            response = requests.post(configuration_service.api_endpoint + '/login', json=data)
             response.raise_for_status()
             res_data = json.loads(response.text)
             cls.token = str(res_data['token'])

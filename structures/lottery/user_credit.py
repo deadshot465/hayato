@@ -4,9 +4,9 @@ from typing import ClassVar, Type
 
 
 @dataclass
-class UserCreditItem:
-    Id: int
-    Username: str
-    UserId: str
-    Credits: int
+class UserCredit:
+    id: str
+    username: str
+    user_id: str
+    credits: int
     Schema: ClassVar[Type[marshmallow.Schema]]

@@ -27,7 +27,7 @@ class Configuration(yaml.YAMLObject):
     ignored_channels: list[int] = attr.ib(default=[])
     trains: list[str] = attr.ib(default=_default_trains)
     responses: list[str] = attr.ib(default=_default_responses)
-    google_api_ley: str = attr.ib(default='')
+    google_api_key: str = attr.ib(default='')
     fetch_from_server: bool = attr.ib(default=False)
     login_name: str = attr.ib(default='')
     login_pass: str = attr.ib(default='')
@@ -35,3 +35,4 @@ class Configuration(yaml.YAMLObject):
     mention_reply_chance: int = attr.ib(default=90)
     random_reply_chance: int = attr.ib(default=97)
     joat_endpoint: str = attr.ib(default='')
+    api_endpoint: str = attr.ib(default='')

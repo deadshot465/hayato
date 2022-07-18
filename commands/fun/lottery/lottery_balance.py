@@ -14,8 +14,8 @@ from utils.utils import get_author_name
 async def balance(ctx: lightbulb.Context) -> None:
     await ctx.respond('Hold on a second...')
     author_name = get_author_name(ctx.author, ctx.member)
-    participant = lottery_service.get_participant(int(ctx.author.id))
-    if participant is None:
+    user_lottery = await lottery_service.get_user_lottery(int(ctx.author.id))
+    if user_lottery is None:
         await ctx.respond(content='You need to create an account by buying a lottery first!')
         return
 

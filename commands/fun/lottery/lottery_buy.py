@@ -86,9 +86,12 @@ async def buy(ctx: lightbulb.Context) -> None:
     user_icon_url = ctx.author.avatar_url or ctx.author.default_avatar_url
     user_credits = await credit_service.get_user_credits(int(user_id), user_name, True)
 
+    await ctx.respond(response_type=hikari.interactions.ResponseType.DEFERRED_MESSAGE_CREATE)
+
     numbers: typing.Optional[str] = ctx.options.numbers
     if numbers is None:
         result = await lottery_service.buy_lottery(int(user_id), user_name, next(__random_lottery()))
+        await ctx.respond(content=result)
     elif numbers.isdigit():
         if int(numbers) < 0:
             await ctx.respond(content='You can\'t buy negative amount of lotteries!')
@@ -97,16 +100,17 @@ async def buy(ctx: lightbulb.Context) -> None:
         result = await __bulk_purchase(ctx.bot, amount=int(numbers), user_id=user_id,
                                        user_name=user_name, user_icon_url=str(user_icon_url),
                                        user_credits=user_credits, channel=channel)
+        await ctx.respond(content=result)
     elif numbers == 'all':
         result = await __bulk_purchase(ctx.bot, amount=user_credits // 10, user_id=user_id,
                                        user_name=user_name, user_icon_url=str(user_icon_url),
                                        user_credits=user_credits, channel=channel)
+        await ctx.respond(content=result)
     else:
         validated_numbers = __validate_numbers(numbers)
         if validated_numbers is None:
-            await ctx.respond(
-                content='You either have invalid characters/numbers in the input, or you did\'t provide'
-                        ' enough numbers!')
+            await ctx.respond(content='You either have invalid characters/numbers in the input, or you did\'t provide'
+                                      ' enough numbers!')
             return
         result = await lottery_service.buy_lottery(int(user_id), user_name, validated_numbers)
-    await ctx.respond(content=result)
+        await ctx.respond(content=result)

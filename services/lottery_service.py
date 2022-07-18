@@ -7,10 +7,14 @@ import typing
 
 import hikari
 import lightbulb
+import requests
 import yaml
+from marshmallow_dataclass import class_schema
+from services.authentication_service import AuthenticationService
+from services.configuration_service import configuration_service
 from services.credit_service import credit_service
 from structures.lottery.lottery import Lottery
-from structures.lottery.lottery_participant import LotteryParticipant
+from structures.lottery.user_lottery import UserLottery
 from utils.constants import HAYATO_COLOR, LOTTERY_ICON
 
 
@@ -19,6 +23,7 @@ class LotteryService:
     _file_name = 'lottery.yaml'
     _file_path = os.path.join(os.getcwd(), _directory_name, _file_name)
     _word_list: typing.Final[str] = ['first', 'second', 'third', 'fourth', 'fifth', 'last']
+    _user_lottery_schema = class_schema(UserLottery)
     _rewards: typing.Final[dict[int, int]] = {
         0: 0,
         1: 0,
@@ -32,10 +37,6 @@ class LotteryService:
     def __init__(self):
         self._bot: typing.Optional[lightbulb.BotApp] = None
         self._lottery_running = False
-        self._lottery_embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR) \
-            .set_thumbnail(LOTTERY_ICON)
-        self._lottery_result_text = ''
-        self._lottery_result_texts: list[str] = []
         if not os.path.isdir(self._directory_name):
             os.mkdir(self._directory_name)
         if os.path.exists(self._file_path):
@@ -102,48 +103,62 @@ class LotteryService:
             return
 
     async def build_lottery_result(self, drawn_numbers: list[int]):
-        self._lottery_result_text = ''
-        self._lottery_result_texts = []
+        lottery_result_text = ''
+        lottery_result_texts = []
+        credit_service.fetch(True)
+        user_credits = credit_service.user_credits
+        lottery_embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR).set_thumbnail(LOTTERY_ICON)
+        all_lotteries = list()
 
-        for participant in self._lottery.lottery_participants:
-            participant_lotteries = participant.lotteries
+        AuthenticationService.login()
+        headers = {
+            'Authorization': f'Bearer {AuthenticationService.token}'
+        }
+        try:
+            response = requests.get(configuration_service.api_endpoint + '/lottery', headers=headers)
+            raw_json = response.text
+            all_lotteries: typing.List[UserLottery] = self._user_lottery_schema().loads(json_data=raw_json, many=True)
+        except requests.exceptions.HTTPError as ex:
+            logging.error(f'An error occurred when retrieving all lotteries: {ex.response}')
 
-            if len(participant_lotteries) == 0:
+        for user in all_lotteries:
+            user_lotteries = user.lotteries
+            user_name = user_credits[user.user_id].username
+
+            if len(user_lotteries) == 0:
                 continue
 
             total_credits = 0
 
-            for i, lottery in enumerate(participant_lotteries):
+            for i, lottery in enumerate(user_lotteries):
                 hit_numbers = [x for x in lottery if x in drawn_numbers]
                 hit_count = len(hit_numbers)
                 reward = self._rewards[hit_count]
-                total_credits += reward
-                self._lottery_result_text += f'{participant.user_name}\'s lottery #{i + 1} hits **{hit_count}**' \
-                                             f' numbers! You gained **{reward}** credits!\n'
-                if len(self._lottery_result_text) >= 1900:
-                    self._lottery_result_texts.append(self._lottery_result_text)
-                    self._lottery_result_text = ''
+                if reward > 0:
+                    total_credits += reward
+                    lottery_result_text += f'{user_name}\'s lottery #{i + 1} hits **{hit_count}**' \
+                                           f' numbers! {user_name} gained **{reward}** credits!\n'
+
+                if len(lottery_result_text) >= 1900:
+                    lottery_result_texts.append(lottery_result_text)
+                    lottery_result_text = ''
 
             if total_credits != 0:
-                await credit_service.add_credits(user_id=participant.user_id, user_name=participant.user_name,
+                await credit_service.add_credits(user_id=user.user_id, user_name=user_name,
                                                  amount=total_credits)
-                self._lottery_embed.add_field(name=participant.user_name, value=str(total_credits), inline=True)
+                lottery_embed.add_field(name=user_name, value=str(total_credits), inline=True)
 
-            participant_lotteries.clear()
+            user_lotteries.clear()
 
-        self._lottery_result_texts.append(self._lottery_result_text)
-        for text in self._lottery_result_texts:
+        if len(lottery_result_text) > 0:
+            lottery_result_texts.append(lottery_result_text)
+
+        for text in lottery_result_texts:
             if len(text) == 0:
                 continue
             yield text
-        self._lottery_result_text = ''
-        self._lottery_result_texts = []
 
-        yield self._lottery_embed
-        field_count = len(self._lottery_embed.fields)
-        while field_count > 0:
-            self._lottery_embed.remove_field(0)
-            field_count = len(self._lottery_embed.fields)
+        yield lottery_embed
 
         msg_generator = credit_service.replenish()
         try:
@@ -153,7 +168,6 @@ class LotteryService:
         except StopAsyncIteration:
             pass
         self._lottery_running = False
-        self.write_lottery()
 
     async def bulk_purchase(self, user_id: int, user_name: str, numbers: list[list[int]]) -> str:
         if self._lottery_running:
@@ -162,22 +176,27 @@ class LotteryService:
         await credit_service.get_user_credits(user_id, user_name, True)
         total_count = len(numbers)
         total_cost = 10 * total_count
-        await credit_service.remove_credits(user_id=user_id, user_name=user_name, amount=total_cost)
-        participant = self.get_participant(user_id)
-        if participant is None:
-            participant = LotteryParticipant(user_id=user_id, user_name=user_name)
-            participant.lotteries = numbers
-            self._lottery.lottery_participants.append(participant)
-            response = '%s, you have got your 100 starting credits! You have successfully bulk purchased %d' \
-                       ' lotteries! Deducted %d credits from your account.' % (user_name, total_count, total_cost)
-        else:
-            participant.lotteries.extend(numbers)
-            if participant.user_name != user_name:
-                participant.user_name = user_name
-            response = '%s, you have successfully bulk purchased %d lotteries! Deducted %d credits from your' \
-                       ' account.' % (user_name, total_count, total_cost)
-        self.write_lottery()
-        return response
+
+        AuthenticationService.login()
+        headers = {
+            'Authorization': f'Bearer {AuthenticationService.token}'
+        }
+        body = {
+            'username': user_name,
+            'lotteries': numbers
+        }
+
+        try:
+            response = requests.post(configuration_service + f'/lottery/{user_id}/new', headers=headers,
+                                     json=body)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as ex:
+            error_message = f'Failed to purchase lotteries for user {user_name} ({user_id}): {ex.response}'
+            logging.error(error_message)
+            return error_message
+
+        return '%s, you have successfully bulk purchased %d lotteries! Deducted %d credits from your' \
+               ' account.' % (user_name, total_count, total_cost)
 
     async def buy_lottery(self, user_id: int, user_name: str, numbers: set[int]) -> str:
         if self._lottery_running:
@@ -187,31 +206,31 @@ class LotteryService:
         if user_credits - 10 < 0:
             return 'You don\'t have enough credits to buy the lottery!'
 
-        await credit_service.remove_credits(user_id=user_id, user_name=user_name, amount=10)
-        participant = self.get_participant(user_id)
-        sorted_numbers = sorted(numbers)
-        if participant is None:
-            participant = LotteryParticipant(user_id=user_id, user_name=user_name)
-            participant.lotteries.append(sorted_numbers)
-            self._lottery.lottery_participants.append(participant)
-            response = '%s, you have got your 100 starting credits! You have successfully bought a lottery of `%s`!' \
-                       % (user_name, str(sorted_numbers))
-        else:
-            participant.lotteries.append(sorted_numbers)
-            if participant.user_name != user_name:
-                participant.user_name = user_name
-            response = '%s, you have successfully bought a lottery of `%s`! Deducted 10 credits from your account.' \
-                       % (user_name, str(sorted_numbers))
-        self.write_lottery()
-        return response
+        AuthenticationService.login()
+        headers = {
+            'Authorization': f'Bearer {AuthenticationService.token}'
+        }
+        body = {
+            'username': user_name,
+            'lotteries': [list(numbers)]
+        }
 
-    def get_participant(self, user_id: int) -> typing.Optional[LotteryParticipant]:
-        participants = (p for p in self._lottery.lottery_participants if p.user_id == user_id)
-        participant = next(participants, -1)
-        if participant == -1:
-            return None
-        else:
-            return participant
+        try:
+            response = requests.post(configuration_service.api_endpoint + f'/lottery/{user_id}/new', headers=headers,
+                                     json=body)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as ex:
+            error_message = f'Failed to purchase lotteries for user {user_name} ({user_id}): {ex.response}'
+            logging.error(error_message)
+            return error_message
+
+        return '%s, you have successfully bought a lottery of `%s`! Deducted 10 credits from your account.' \
+               % (user_name, str(sorted(numbers)))
+
+    async def get_user_lottery(self, user_id: int) -> typing.Optional[UserLottery]:
+        all_lotteries = await self.__fetch_lotteries()
+        participants = (p for p in all_lotteries if p.user_id == str(user_id))
+        return next(participants, None)
 
     def set_next_lottery_time(self):
         if datetime.datetime.today().weekday() == 3:
@@ -237,6 +256,19 @@ class LotteryService:
         with open(self._file_path, 'w') as file:
             s = yaml.dump(self._lottery, Dumper=yaml.SafeDumper)
             file.write(s)
+
+    async def __fetch_lotteries(self) -> typing.List[UserLottery]:
+        AuthenticationService.login()
+        headers = {
+            'Authorization': f'Bearer {AuthenticationService.token}'
+        }
+        try:
+            response = requests.get(configuration_service.api_endpoint + '/lottery', headers=headers)
+            response.raise_for_status()
+            raw_json = response.text
+            return self._user_lottery_schema().loads(json_data=raw_json, many=True)
+        except requests.exceptions.HTTPError as ex:
+            logging.error(f'Failed to retrieve all lotteries: {ex.response}')
 
 
 lottery_service = LotteryService()

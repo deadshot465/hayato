@@ -32,12 +32,12 @@ async def exchange(ctx: lightbulb.Context) -> None:
             'adjustment': 'Plus',
             'new_amount': amount * 10
         }
-        header = {
+        headers = {
             'Content-Type': 'application/json'
         }
         logging.info(json.dumps(payload))
         endpoint = f'{configuration_service.joat_endpoint}/tip/{int(ctx.author.id)}'
-        response = requests.patch(endpoint, data=json.dumps(payload), headers=header)
+        response = requests.patch(endpoint, data=json.dumps(payload), headers=headers)
         response.raise_for_status()
         author_credit_item = await credit_service.remove_credits(user_id=int(ctx.author.id),
                                                                  user_name=author_name, amount=amount)
@@ -48,7 +48,7 @@ async def exchange(ctx: lightbulb.Context) -> None:
                              description=f'You have successfully exchanged {amount * 10} Jack of All Trades tips with'
                                          f' {amount} credits!\'', colour=HAYATO_COLOR)\
             .set_author(name=author_name, icon=ctx.author.avatar_url or ctx.author.default_avatar_url)\
-            .add_field('Lottery Balance', str(author_credit_item.Credits), inline=True)\
+            .add_field('Lottery Balance', str(author_credit_item.credits), inline=True)\
             .add_field('Jack of All Trades Balance', str(new_joat_tips), inline=True)\
             .set_thumbnail(LOTTERY_ICON)
         await ctx.respond(embed=embed)

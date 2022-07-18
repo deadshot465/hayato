@@ -95,6 +95,10 @@ class ConfigurationService:
         return self._config.joat_endpoint
 
     @property
+    def api_endpoint(self) -> str:
+        return self._config.api_endpoint
+
+    @property
     def bot(self):
         return self._bot
 
