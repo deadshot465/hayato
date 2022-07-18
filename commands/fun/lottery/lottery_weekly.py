@@ -39,10 +39,10 @@ async def weekly(ctx: lightbulb.Context) -> None:
                 schema = class_schema(UserLottery)
                 payload: UserLottery = schema().loads(json_data=response.text)
 
-                next_daily_time = arrow.get(payload.next_daily_time).datetime
-                remaining_time = next_daily_time - arrow.utcnow().datetime
+                next_weekly_time = arrow.get(payload.next_weekly_time).datetime
+                delta = next_weekly_time - arrow.utcnow().datetime
 
-                days = 7 - remaining_time.total_seconds() / 60 / 60 / 24
+                days = delta.total_seconds() / 60 / 60 / 24
                 hours = (days - int(days)) * 24
                 minutes = (hours - int(hours)) * 60
                 seconds = (minutes - int(minutes)) * 60
@@ -50,7 +50,7 @@ async def weekly(ctx: lightbulb.Context) -> None:
                 await ctx.respond(content='You need to wait at least 7 days to receive the next weekly credits!'
                                           ' Time left: ' + result)
     except requests.exceptions.HTTPError as ex:
-        error_message = f'Failed to get daily reward response: {ex.response}'
+        error_message = f'Failed to get weekly reward response: {ex.response}'
         logging.error(error_message)
         await ctx.respond(content=error_message)
         return

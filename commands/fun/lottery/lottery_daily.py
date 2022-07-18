@@ -41,11 +41,10 @@ async def daily(ctx: lightbulb.Context) -> None:
                 payload: UserLottery = schema().loads(json_data=response.text)
 
                 next_daily_time = arrow.get(payload.next_daily_time).datetime
-                remaining_time = next_daily_time - arrow.utcnow().datetime
+                delta = next_daily_time - arrow.utcnow().datetime
 
-                seconds_left = 86400 - remaining_time.seconds
-                hours = seconds_left // 60 // 60
-                leftover_sec = seconds_left - (hours * 60 * 60)
+                hours = delta.seconds // 60 // 60
+                leftover_sec = delta.seconds - (hours * 60 * 60)
                 minutes = leftover_sec // 60
                 seconds = leftover_sec - (60 * minutes)
                 result = '%02d:%02d:%02d' % (hours, minutes, seconds)
