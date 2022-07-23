@@ -149,6 +149,16 @@ class LotteryService:
                 lottery_embed.add_field(name=user_name, value=str(total_credits), inline=True)
 
             user_lotteries.clear()
+            try:
+                AuthenticationService.login()
+                headers = {
+                    'Authorization': f'Bearer {AuthenticationService.token}'
+                }
+                response = requests.delete(f'{configuration_service.api_endpoint}/lottery/{user.user_id}',
+                                           headers=headers)
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as ex:
+                logging.error(f'Failed to remove all lotteries from the user {user.user_id}: {ex.response}')
 
         if len(lottery_result_text) > 0:
             lottery_result_texts.append(lottery_result_text)
