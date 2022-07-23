@@ -93,7 +93,8 @@ class CreditService:
         AuthenticationService.login()
         if self._fetch_from_server:
             headers = {
-                'Authorization': f'Bearer {AuthenticationService.token}'
+                'Authorization': f'Bearer {AuthenticationService.token}',
+                'Content-Type': 'application/json'
             }
             try:
                 response = requests.post(configuration_service.api_endpoint + '/credit/',
@@ -145,7 +146,7 @@ class CreditService:
             }
             try:
                 response = requests.patch(configuration_service.api_endpoint + f'/credit/{user_id}/{action}',
-                                          json=json.dumps(data), headers=headers)
+                                          json=data, headers=headers)
                 response.raise_for_status()
             except requests.exceptions.HTTPError as ex:
                 logging.error('An error occurred when patching to the database: %s' % ex.response)

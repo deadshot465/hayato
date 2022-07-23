@@ -105,7 +105,7 @@ class LotteryService:
     async def build_lottery_result(self, drawn_numbers: list[int]):
         lottery_result_text = ''
         lottery_result_texts = []
-        credit_service.fetch(True)
+        await credit_service.fetch(True)
         user_credits = credit_service.user_credits
         lottery_embed = hikari.Embed(title='Lottery Result', color=HAYATO_COLOR).set_thumbnail(LOTTERY_ICON)
         all_lotteries = list()

@@ -67,6 +67,9 @@ async def message_create(e: hikari.GuildMessageCreateEvent):
 
     bot_user = bot.get_me()
     msg = e.message
+    if msg.content is None:
+        return
+
     lowercase_content = msg.content.lower()
     chance = random.randint(1, 100)
     if bot_user.mention in lowercase_content or 'hayato' in lowercase_content:
