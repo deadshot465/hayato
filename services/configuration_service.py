@@ -99,6 +99,10 @@ class ConfigurationService:
         return self._config.api_endpoint
 
     @property
+    def upload_destination(self) -> str:
+        return self._config.upload_destination
+
+    @property
     def bot(self):
         return self._bot
 

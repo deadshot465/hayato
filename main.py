@@ -7,7 +7,8 @@ import random
 import hikari
 import lightbulb
 
-from commands.admin.admin import admin, allow, ignore
+import services.google_api_service
+from commands.admin.admin import admin, allow, ignore, save_to_drive
 from commands.fun.coinflip import coin_flip
 from commands.fun.eight_ball import eight_ball
 from commands.fun.lottery import lottery, lottery_balance, lottery_buy, lottery_daily, lottery_exchange, lottery_help, \
@@ -34,7 +35,7 @@ bot = lightbulb.BotApp(prefix=prefix, token=token, logs=log_level,
                        intents=hikari.Intents.ALL)
 
 cmds = \
-    [about, admin, allow, ignore, coin_flip, eight_ball, guild_info,
+    [about, admin, allow, ignore, coin_flip, eight_ball, guild_info, save_to_drive,
      lottery.lottery,
      lottery_balance.balance,
      lottery_buy.buy,
@@ -122,6 +123,7 @@ async def update_presence():
 
 
 if __name__ == '__main__':
+    services.google_api_service.initialize()
     logging.info('Hayato is loaded.')
 
 bot.run()

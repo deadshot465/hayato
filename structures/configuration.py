@@ -36,3 +36,4 @@ class Configuration(yaml.YAMLObject):
     random_reply_chance: int = attr.ib(default=97)
     joat_endpoint: str = attr.ib(default='')
     api_endpoint: str = attr.ib(default='')
+    upload_destination: str = attr.ib(default='')

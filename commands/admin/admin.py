@@ -1,7 +1,9 @@
 import hikari
 import lightbulb
+import logging
 
 from services.configuration_service import configuration_service
+from services.google_api_service import upload
 
 
 @lightbulb.command(name='admin', description='Administrative commands.')
@@ -36,3 +38,21 @@ async def ignore(ctx: lightbulb.Context) -> None:
 
     configuration_service.ignore_channel(int(channel))
     await ctx.respond('Successfully disallowed channel for responses!')
+
+@admin.child
+@lightbulb.command('Save to Tetsu\'s Google Drive', '', auto_defer=True)
+@lightbulb.implements(lightbulb.MessageCommand)
+async def save_to_drive(ctx: lightbulb.Context) -> None:
+    results = []
+    messages = ctx.resolved.messages
+    for message in messages.values():
+        attachments = message.attachments
+        for attachment in attachments:
+            logging.info(f'Reading file: {attachment.filename}...')
+            raw_bytes = await attachment.read()
+            result = await upload(raw_bytes)
+            results.append(result)
+    if False in results:
+        await ctx.respond('Some uploads failed. Check the error log!')
+    else:
+        await ctx.respond('All uploads completed!')

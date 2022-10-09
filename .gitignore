@@ -23,3 +23,5 @@ assets/warnban.json
 .vscode/
 config/
 /lottery/
+credentials.json
+token.json
