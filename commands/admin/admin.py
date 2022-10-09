@@ -46,6 +46,7 @@ async def save_to_drive(ctx: lightbulb.Context) -> None:
     results = []
     messages = ctx.resolved.messages
     for message in messages.values():
+        await message.add_reaction('hayato', 1028759638713311293)
         attachments = message.attachments
         for attachment in attachments:
             logging.info(f'Reading file: {attachment.filename}...')
