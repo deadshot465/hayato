@@ -37,3 +37,4 @@ class Configuration(yaml.YAMLObject):
     joat_endpoint: str = attr.ib(default='')
     api_endpoint: str = attr.ib(default='')
     upload_destination: str = attr.ib(default='')
+    announcement_channel_id: int = attr.ib(default=727428664215732244)

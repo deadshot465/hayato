@@ -86,6 +86,7 @@ async def ready(_: hikari.ShardReadyEvent):
     await set_initial_presence()
     configuration_service.bot = bot
     asyncio.create_task(schedule_lottery())
+    asyncio.create_task(schedule_birthday())
 
 
 async def schedule_lottery():
@@ -101,6 +102,24 @@ async def schedule_lottery():
         await lottery_service.auto_lottery(channel)
         lottery_service.set_next_lottery_time()
         asyncio.create_task(schedule_lottery())
+    except Exception as e:
+        logging.error(e)
+
+
+async def schedule_birthday():
+    today = datetime.datetime.now()
+    next_birthday = datetime.datetime(today.year, 10, 17)
+    if today > next_birthday:
+        next_birthday = datetime.datetime(today.year + 1, 10, 17)
+    seconds = (next_birthday - today).total_seconds()
+    try:
+        await asyncio.sleep(seconds)
+        channel: hikari.TextableGuildChannel = bot.cache.get_guild_channel(configuration_service.announcement_channel_id)
+        lottery_channel = bot.cache.get_guild_channel(lottery_service.lottery_channel_id)
+        await channel.send('Oh, today is my birthday! As a bonus, I will start a bonus lottery now! Hope everyone is '
+                           'having a good day!')
+        await lottery_service.auto_lottery(lottery_channel)
+        asyncio.create_task(schedule_birthday())
     except Exception as e:
         logging.error(e)
 

@@ -103,6 +103,10 @@ class ConfigurationService:
         return self._config.upload_destination
 
     @property
+    def announcement_channel_id(self) -> int:
+        return self._config.announcement_channel_id
+
+    @property
     def bot(self):
         return self._bot
 
