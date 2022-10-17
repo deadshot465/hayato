@@ -5,9 +5,7 @@ import uuid
 from typing import Final, List, Optional
 
 from google.auth.exceptions import RefreshError
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
@@ -31,24 +29,11 @@ SERVICE: Optional[Resource] = None
 
 def initialize():
     credentials: Optional[Credentials] = None
-    if os.path.exists(TOKEN_FILE_NAME):
-        credentials = Credentials.from_authorized_user_file(TOKEN_FILE_NAME, SCOPES)
-
-    if not credentials or not credentials.valid:
-        if credentials and credentials.expired and credentials.refresh_token:
-            try:
-                credentials.refresh(Request())
-            except RefreshError as error:
-                logging.error(f'An error occurred when refreshing token: {error}. Try retrieving token again from '
-                              f'credentials...')
-                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIAL_FILE_NAME, SCOPES)
-                credentials = flow.run_local_server(port=0)
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIAL_FILE_NAME, SCOPES)
-            credentials = flow.run_local_server(port=0)
-
-        with open(TOKEN_FILE_NAME, 'w') as token:
-            token.write(credentials.to_json())
+    if os.path.exists(CREDENTIAL_FILE_NAME):
+        credentials = Credentials.from_service_account_file(CREDENTIAL_FILE_NAME, scopes=SCOPES)
+    else:
+        logging.error(f'Cannot build credentials from service account file.')
+        return
 
     try:
         global SERVICE
