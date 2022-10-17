@@ -36,7 +36,13 @@ def initialize():
 
     if not credentials or not credentials.valid:
         if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
+            try:
+                credentials.refresh(Request())
+            except RefreshError as error:
+                logging.error(f'An error occurred when refreshing token: {error}. Try retrieving token again from '
+                              f'credentials...')
+                flow = InstalledAppFlow.from_client_secrets_file(CREDENTIAL_FILE_NAME, SCOPES)
+                credentials = flow.run_local_server(port=0)
         else:
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIAL_FILE_NAME, SCOPES)
             credentials = flow.run_local_server(port=0)

@@ -24,4 +24,5 @@ assets/warnban.json
 config/
 /lottery/
 credentials.json
+credentials_old.json
 token.json
