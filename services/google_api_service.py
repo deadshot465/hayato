@@ -4,6 +4,7 @@ import os.path
 import uuid
 from typing import Final, List, Optional
 
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -73,3 +74,7 @@ async def upload(raw_bytes: bytes) -> bool:
     except HttpError as error:
         logging.error(f'An error occurred when uploading file: {error}')
         return False
+    except RefreshError as error:
+        logging.error(f'An error occurred when uploading file: {error}. Try refreshing the token...')
+        initialize()
+        return await upload(raw_bytes)
