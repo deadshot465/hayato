@@ -4,8 +4,8 @@ import hikari
 
 
 HAYATO_COLOR: typing.Final[hikari.Color] = hikari.Color(0x1e63af)
-VERSION: typing.Final[str] = '4.2.1'
-LAST_UPDATE_DATE: typing.Final[str] = '2022-10-18'
+VERSION: typing.Final[str] = '4.2.2'
+LAST_UPDATE_DATE: typing.Final[str] = '2023-03-02'
 PYTHON_LOGO: typing.Final[str] = \
     'https://cdn.discordapp.com/attachments/746200551007584337/810741576946941972/768px-Python-logo-notext' \
     '.svg.png'

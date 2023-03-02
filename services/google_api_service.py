@@ -39,7 +39,7 @@ def initialize():
         global SERVICE
         SERVICE = build('drive', 'v3', credentials=credentials)
 
-        results = SERVICE.files().list(pageSize=10, fields='nextPageToken, files(id, name)', q='name = \'Midjourney\'').execute()
+        results = SERVICE.files().list(pageSize=10, fields='nextPageToken, files(id, name)', q='name = \'AI\'').execute()
         items = results.get('files', [])
 
         if not items:
