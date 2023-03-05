@@ -28,6 +28,7 @@ class Configuration(yaml.YAMLObject):
     trains: list[str] = attr.ib(default=_default_trains)
     responses: list[str] = attr.ib(default=_default_responses)
     google_api_key: str = attr.ib(default='')
+    openai_api_key: str = attr.ib(default='')
     fetch_from_server: bool = attr.ib(default=False)
     login_name: str = attr.ib(default='')
     login_pass: str = attr.ib(default='')

@@ -18,6 +18,7 @@ from commands.info.about import about
 from commands.info.guild import guild_info
 from commands.info.ping import ping
 from commands.rails import jrwest, mtr, rails, shinkansen, toei, tokyo_metro
+from commands.utility.chat import chat
 from commands.utility.pick import pick
 from services.configuration_service import configuration_service
 from services.lottery_service import lottery_service
@@ -47,7 +48,7 @@ cmds = \
      lottery_start.start,
      lottery_transfer.transfer,
      lottery_weekly.weekly,
-     pick, ping,
+     chat, pick, ping,
      rails.rails, jrwest.jr_west, mtr.mtr,
      shinkansen.shinkansen,
      shinkansen.line, shinkansen.train,

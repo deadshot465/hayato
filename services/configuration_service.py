@@ -107,6 +107,10 @@ class ConfigurationService:
         return self._config.announcement_channel_id
 
     @property
+    def openai_api_key(self) -> str:
+        return self._config.openai_api_key
+
+    @property
     def bot(self):
         return self._bot
 
