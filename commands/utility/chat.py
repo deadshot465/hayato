@@ -9,39 +9,22 @@ TEMPERATURE: Final[float] = 0.7
 INITIAL_PROMPT: Final[str] = 'You are Hayasugi Hayato from the anime Shinkalion, and your responses will be energetic ' \
                              'and friendly, and should match the personality of Hayasugi Hayato.'
 
+OPENAI_CLIENT: openai.AsyncOpenAI = openai.AsyncOpenAI(api_key=configuration_service.openai_api_key)
+
 
 @lightbulb.option('prompt', 'The question you want to ask Hayato or anything you want to say.', required=True)
 @lightbulb.command('chat', 'Hayato will chat with you or answer your questions with best efforts!', auto_defer=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def chat(ctx: lightbulb.Context) -> None:
     prompt: str = ctx.options.prompt
-    openai.api_key = configuration_service.openai_api_key
     messages = [
         {'role': 'system', 'content': INITIAL_PROMPT},
         {'role': 'user', 'content': prompt}
     ]
-    response = await openai.ChatCompletion.acreate(model=TEXT_MODEL, temperature=TEMPERATURE, messages=messages)
+    response = await OPENAI_CLIENT.chat.completions.create(model=TEXT_MODEL, temperature=TEMPERATURE, messages=messages)
 
-    if isinstance(response, list) or isinstance(response, dict):
-        reply = extract(response)
+    if len(response.choices) > 0 and response.choices[0].message.content is not None:
+        reply = response.choices[0].message.content
         await ctx.respond(reply)
     else:
-        try:
-            reply = ''
-            for obj in response:
-                reply += extract(obj)
-            await ctx.respond(reply)
-        except Exception:
-            await ctx.respond(str(response))
-
-
-def extract(obj: list | dict) -> str:
-    if isinstance(obj, list):
-        reply = ''
-        for inner_obj in obj:
-            reply += inner_obj['choices'][0]['message']['content']
-        return reply
-    elif isinstance(obj, dict):
-        return obj['choices'][0]['message']['content']
-    else:
-        return str(obj)
+        await ctx.respond("Sorry, but I can't reply to you at the moment!")
