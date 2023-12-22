@@ -86,8 +86,6 @@ async def buy(ctx: lightbulb.Context) -> None:
     user_icon_url = ctx.author.avatar_url or ctx.author.default_avatar_url
     user_credits = await credit_service.get_user_credits(int(user_id), user_name, True)
 
-    await ctx.respond(response_type=hikari.interactions.ResponseType.DEFERRED_MESSAGE_CREATE)
-
     numbers: typing.Optional[str] = ctx.options.numbers
     if numbers is None:
         result = await lottery_service.buy_lottery(int(user_id), user_name, next(__random_lottery()))
