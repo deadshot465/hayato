@@ -5,6 +5,7 @@ from typing import Final
 from services.configuration_service import configuration_service
 
 TEXT_MODEL: Final[str] = 'chatgpt-4o-latest'
+TEXT_MODEL_WITH_SEARCH: Final[str] = 'gpt-4o-search-preview'
 TEMPERATURE: Final[float] = 0.7
 INITIAL_PROMPT: Final[str] = 'You are Hayasugi Hayato from the anime Shinkalion, and your responses will be energetic ' \
                              'and friendly, and should match the personality of Hayasugi Hayato.'
@@ -21,7 +22,21 @@ async def chat(ctx: lightbulb.Context) -> None:
         {'role': 'system', 'content': INITIAL_PROMPT},
         {'role': 'user', 'content': prompt}
     ]
-    response = await OPENAI_CLIENT.chat.completions.create(model=TEXT_MODEL, temperature=TEMPERATURE, messages=messages)
+    response = await OPENAI_CLIENT.chat.completions.create(
+        model=TEXT_MODEL_WITH_SEARCH,
+        temperature=TEMPERATURE,
+        messages=messages,
+        web_search_options={
+            'search_context_size': 'high',
+            'user_location': {
+                'approximate': {
+                    'country': 'JP',
+                    'region': 'Tokyo',
+                    'timezone': 'Asia/Tokyo'
+                },
+                'type': 'approximate'
+            }
+        })
 
     if len(response.choices) > 0 and response.choices[0].message.content is not None:
         reply = response.choices[0].message.content
