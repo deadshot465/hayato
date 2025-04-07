@@ -24,7 +24,6 @@ async def chat(ctx: lightbulb.Context) -> None:
     ]
     response = await OPENAI_CLIENT.chat.completions.create(
         model=TEXT_MODEL_WITH_SEARCH,
-        temperature=TEMPERATURE,
         messages=messages,
         web_search_options={
             'search_context_size': 'high',
