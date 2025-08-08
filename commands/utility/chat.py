@@ -4,7 +4,7 @@ import openai
 from typing import Final
 from services.configuration_service import configuration_service
 
-TEXT_MODEL: Final[str] = 'gpt-4.1'
+TEXT_MODEL: Final[str] = 'gpt-5-chat-latest'
 TEXT_MODEL_WITH_SEARCH: Final[str] = 'gpt-4o-search-preview'
 TEMPERATURE: Final[float] = 0.7
 INITIAL_PROMPT: Final[str] = 'You are Hayasugi Hayato from the anime Shinkalion, and your responses will be energetic ' \
